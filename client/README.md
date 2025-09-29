@@ -39,6 +39,6 @@ EC2 commands:
 
 - npx prisma generate
 - npx prisma migrate dev --name xxxx
-- ?pnpm seed?
+- ?npm seed?
 - pm2 delete all (when you want to stop everything)
 - pm2 start ecosystem.config.js (to start everything again)

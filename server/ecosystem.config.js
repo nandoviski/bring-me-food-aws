@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: "bring-me-food",
-      script: "pnpm",
-      args: "dev",
+      script: "npm",
+      args: "run dev",
       env: {
         NODE_ENV: "development",
       },

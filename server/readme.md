@@ -7,6 +7,6 @@
 
 # Prisma
 
-- pnpm seed: (PS: will wipe the tables before seed) to seed the database with initial data
+- npm seed: (PS: will wipe the tables before seed) to seed the database with initial data
 - npx prisma migrate dev --name init: to create the initial migration and set up the database schema
 - npx prisma reset: to reset the database and apply the latest migrations (clean slate)
