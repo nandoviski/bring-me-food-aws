@@ -13,7 +13,7 @@ import chefRoutes from "./routes/chefRoutes";
 /* CONFIGURATIONS */
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = Number(process.env.PORT) || 3000;
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -37,6 +37,6 @@ app.use("/menus", menuRoutes);
 app.use("/chefs", chefRoutes);
 
 /* SERVER */
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
