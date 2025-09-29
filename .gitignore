@@ -16,3 +16,6 @@ server/.env
 server/.env*.local
 server/generated/prisma
 server/build
+
+# General
+AmazonAWS-standart-key.pem

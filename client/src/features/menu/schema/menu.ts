@@ -1,4 +1,5 @@
-import type { Meal, Menu, Prisma } from "@prisma/client";
+// import type { Meal, Menu, Prisma } from "@prisma/client";
+import type { Meal } from "@/state/apiTypes";
 import { z } from "zod";
 
 // export type MealsOnMenusWithMeal = MealsOnMenus & {
@@ -9,11 +10,17 @@ import { z } from "zod";
 //   meals: MealsOnMenusWithMeal[];
 // };
 
-export type MenuWithMeals = Prisma.MenuGetPayload<{
-  include: {
-    meals: true;
-  };
-}>;
+export type MenuWithMeals = {
+  id: string;
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  orderFrom?: Date;
+  orderTo?: Date;
+
+  meals: Meal[];
+};
 
 export type EditMenuType = z.infer<typeof EditMenuSchema>;
 export const EditMenuSchema = z.object({

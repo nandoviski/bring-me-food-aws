@@ -1,3 +1,5 @@
+"use client";
+
 import NotFound from "@/components/notFound";
 import Error from "@/components/error";
 import EditChefForm from "@/features/chef/components/edit-chef-form";

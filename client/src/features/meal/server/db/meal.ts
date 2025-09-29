@@ -1,7 +1,7 @@
 "use server";
 
 import { loggedChefId } from "@/lib/authUtils";
-import { db } from "@/server/db";
+// import { db } from "@/server/db";
 import { type EditMealType } from "../../schema/meal";
 
 export async function getMealsByChef() {
@@ -11,10 +11,12 @@ export async function getMealsByChef() {
     throw new Error("Chef ID is required");
   }
 
-  return await db.meal.findMany({
-    where: { chefId },
-    orderBy: { name: "asc" },
-  });
+  // TODO: fix this
+  return undefined;
+  // return await db.meal.findMany({
+  //   where: { chefId },
+  //   orderBy: { name: "asc" },
+  // });
 }
 
 export async function addMealToChef(meal: EditMealType) {
@@ -34,9 +36,12 @@ export async function addMealToChef(meal: EditMealType) {
       allergens: meal.allergens.map((allergen) => allergen.value),
     };
 
-    const result = await db.meal.create({
-      data: newMeal,
-    });
+    // TODO: fix this
+
+    const result = undefined;
+    // await db.meal.create({
+    //   data: newMeal,
+    // });
 
     if (!result) {
       return {
@@ -75,10 +80,13 @@ export async function updateMeal(mealId: string, meal: EditMealType) {
       allergens: cleanArray(meal.allergens),
     };
 
-    const result = await db.meal.update({
-      where: { id: mealId, chefId },
-      data: updatedMeal,
-    });
+    // TODO: fix this
+
+    const result = undefined;
+    // await db.meal.update({
+    //   where: { id: mealId, chefId },
+    //   data: updatedMeal,
+    // });
 
     if (!result) {
       return {

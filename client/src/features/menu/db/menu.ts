@@ -1,7 +1,7 @@
 "use server";
 
 import { loggedChefId } from "@/lib/authUtils";
-import { db } from "@/server/db";
+// import { db } from "@/server/db";
 import { type EditMenuType } from "../schema/menu";
 
 export async function getMenusByChef() {
@@ -11,17 +11,18 @@ export async function getMenusByChef() {
     throw new Error("Chef ID is required");
   }
 
-  const coco = await db.menu.findMany({
-    where: { chefId },
-    include: {
-      meals: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+  // TODO: fix this
+  return undefined;
 
-  return coco;
+  // return await db.menu.findMany({
+  //   where: { chefId },
+  //   include: {
+  //     meals: true,
+  //   },
+  //   orderBy: {
+  //     name: "asc",
+  //   },
+  // });
 }
 
 export async function addMenuToChef(menu: EditMenuType) {
@@ -32,15 +33,18 @@ export async function addMenuToChef(menu: EditMenuType) {
   }
 
   try {
-    const result = await db.menu.create({
-      data: {
-        ...menu,
-        chefId,
-        meals: {
-          connect: menu.meals.map((mealId) => ({ id: mealId })),
-        },
-      },
-    });
+    // TODO: fix this
+
+    const result = undefined;
+    // await db.menu.create({
+    //   data: {
+    //     ...menu,
+    //     chefId,
+    //     meals: {
+    //       connect: menu.meals.map((mealId) => ({ id: mealId })),
+    //     },
+    //   },
+    // });
 
     if (!result) {
       return {
@@ -71,43 +75,46 @@ export async function updateMenu(menuId: string, menu: EditMenuType) {
   }
 
   try {
-    const existingMenu = await db.menu.findUnique({
-      where: { id: menuId, chefId },
-      include: { meals: true },
-    });
+    // TODO: fix this
+    const result = undefined;
 
-    if (!existingMenu) {
-      return {
-        success: false,
-        message: "Menu not found",
-      };
-    }
+    // const existingMenu = await db.menu.findUnique({
+    //   where: { id: menuId, chefId },
+    //   include: { meals: true },
+    // });
 
-    // Disconnect all existing meals first
-    await db.menu.update({
-      where: { id: menuId },
-      data: {
-        meals: {
-          disconnect: existingMenu.meals.map((meal) => ({ id: meal.id })),
-        },
-      },
-    });
+    // if (!existingMenu) {
+    //   return {
+    //     success: false,
+    //     message: "Menu not found",
+    //   };
+    // }
 
-    // Then update the menu with new data and connect new meals
-    const result = await db.menu.update({
-      where: { id: menuId },
-      data: {
-        name: menu.name,
-        description: menu.description,
-        startDate: menu.startDate,
-        endDate: menu.endDate,
-        orderFrom: menu.orderFrom,
-        orderTo: menu.orderTo,
-        meals: {
-          connect: menu.meals.map((mealId) => ({ id: mealId })),
-        },
-      },
-    });
+    // // Disconnect all existing meals first
+    // await db.menu.update({
+    //   where: { id: menuId },
+    //   data: {
+    //     meals: {
+    //       disconnect: existingMenu.meals.map((meal) => ({ id: meal.id })),
+    //     },
+    //   },
+    // });
+
+    // // Then update the menu with new data and connect new meals
+    // const result = await db.menu.update({
+    //   where: { id: menuId },
+    //   data: {
+    //     name: menu.name,
+    //     description: menu.description,
+    //     startDate: menu.startDate,
+    //     endDate: menu.endDate,
+    //     orderFrom: menu.orderFrom,
+    //     orderTo: menu.orderTo,
+    //     meals: {
+    //       connect: menu.meals.map((mealId) => ({ id: mealId })),
+    //     },
+    //   },
+    // });
 
     if (!result) {
       return {

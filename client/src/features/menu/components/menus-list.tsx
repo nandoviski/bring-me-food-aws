@@ -34,7 +34,7 @@ export function MenusList() {
 
   async function fetchMenus() {
     const fetchedMenus = await getMenusByChef();
-    setMenus(fetchedMenus || []);
+    setMenus(fetchedMenus ?? []);
   }
 
   useEffect(() => {

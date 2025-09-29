@@ -11,7 +11,8 @@ export async function formSaveAction(customer: EditCustomerType) {
     //   data: { ...user, id: loggedUser.id },
     // });
 
-    const saveResult = await updateCustomer(loggedUser.id, customer);
+    // TODO: fix this to update
+    const saveResult = undefined; // await updateCustomer(loggedUser.id, customer);
 
     if (!saveResult) {
       return {

@@ -64,7 +64,7 @@ export default function AddMenuForm({
   useEffect(() => {
     async function fetchMeals() {
       const fetchedMeals = await getMealsByChef();
-      setMeals(fetchedMeals || []);
+      setMeals(fetchedMeals ?? []);
     }
 
     fetchMeals().catch((error) => {

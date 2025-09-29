@@ -39,7 +39,7 @@ export function MealsList() {
 
   async function fetchMeals() {
     const fetchedMeals = await getMealsByChef();
-    setMeals(fetchedMeals || []);
+    setMeals(fetchedMeals ?? []);
   }
 
   useEffect(() => {
