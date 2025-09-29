@@ -1,0 +1,18 @@
+# Client
+client/node_modules
+client/dist/
+client/.env
+client/.env*.local
+client/.env.example
+client/.next/
+client/next-env.d.ts
+client/out/
+client/build
+
+# Server
+server/node_modules
+server/dist/
+server/.env
+server/.env*.local
+server/generated/prisma
+server/build

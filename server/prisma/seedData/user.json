@@ -1,0 +1,16 @@
+[
+  {
+    "id": "879c31a3-5354-49ed-be60-8ab4b00c9537",
+    "email": "sarah@example.com",
+    "status": "CREATED",
+    "createdAt": "2025-04-08T00:00:00.000Z",
+    "updatedAt": "2025-04-08T23:38:08.000Z"
+  },
+  {
+    "id": "eacc7be0-860d-450e-a4d4-4b069fb9cd47",
+    "email": "fmarostega@gmail.com",
+    "status": "CREATED",
+    "createdAt": "2025-04-08T00:00:00.000Z",
+    "updatedAt": "2025-04-08T00:00:00.000Z"
+  }
+]

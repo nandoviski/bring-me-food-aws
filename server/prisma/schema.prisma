@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid()) @db.VarChar(50)
+  email     String     @unique @db.VarChar(150)
+  status    UserStatus @default(CREATED)
+  deletedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  chef      Chef?
+  customer  Customer?
+
+  @@index([email])
+}
+
+model Customer {
+  id          String    @id @default(uuid()) @db.VarChar(50)
+  firstName   String    @db.VarChar(150)
+  middleName  String?   @db.VarChar(150)
+  lastName    String    @db.VarChar(150)
+  phoneNumber String    @db.VarChar(20)
+  address     String    @db.VarChar(250)
+  city        String    @db.VarChar(100)
+  state       String    @db.VarChar(10)
+  country     String    @db.VarChar(3)
+  postalCode  String    @db.VarChar(10)
+  company     String?   @db.VarChar(150)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String    @unique @db.VarChar(50)
+  user        User      @relation(fields: [userId], references: [id])
+  order       Order[]
+}
+
+model Chef {
+  id          String    @id @default(uuid()) @db.VarChar(50)
+  username    String    @unique @db.VarChar(200)
+  name        String    @db.VarChar(200)
+  location    String    @db.VarChar(150)
+  bio         String?
+  specialties String?   @db.VarChar(250)
+  phoneNumber String?   @db.VarChar(20)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String    @unique @db.VarChar(50)
+  user        User      @relation(fields: [userId], references: [id])
+  meals       Meal[]
+  menus       Menu[]
+  order       Order[]
+
+  @@index([username])
+}
+
+model Menu {
+  id          String    @id @default(uuid()) @db.VarChar(50)
+  name        String    @db.VarChar(100)
+  description String    @db.VarChar(250)
+  startDate   DateTime
+  endDate     DateTime
+  orderFrom   DateTime?
+  orderTo     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  chefId      String    @db.VarChar(50)
+  chef        Chef      @relation(fields: [chefId], references: [id])
+  meals       Meal[]    @relation("menu_meal")
+}
+
+// model MealsOnMenus {
+//     mealId     String   @db.VarChar(50)
+//     meal       Meal     @relation(fields: [mealId], references: [id])
+//     menuId     String   @db.VarChar(50)
+//     menu       Menu     @relation(fields: [menuId], references: [id])
+//     assignedAt DateTime @default(now())
+
+//     @@id([menuId, mealId])
+// }
+
+model Meal {
+  id            String          @id @default(uuid()) @db.VarChar(50)
+  name          String          @db.VarChar(150)
+  description   String          @db.VarChar(250)
+  price         Float //https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types
+  size          Int?
+  image         String?
+  ingredients   String[]
+  allergens     String[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  chefId        String          @db.VarChar(50)
+  chef          Chef            @relation(fields: [chefId], references: [id])
+  mealsOnOrders MealsOnOrders[]
+  menus         Menu[]          @relation("menu_meal")
+}
+
+//https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations
+model MealsOnOrders {
+  id      String @id @default(uuid()) //@db.VarChar(50)
+  mealId  String //@db.VarChar(50)
+  meal    Meal   @relation(fields: [mealId], references: [id])
+  orderId String //@db.VarChar(50)
+  order   Order  @relation(fields: [orderId], references: [id])
+}
+
+model Order {
+  id            String          @id @default(uuid()) //@db.VarChar(50)
+  status        OrderStatus     @default(PENDING)
+  paymentStatus PaymentStatus   @default(PENDING)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  chefId        String //@db.VarChar(50)
+  chef          Chef            @relation(fields: [chefId], references: [id])
+  customerId    String //@db.VarChar(50)
+  customer      Customer        @relation(fields: [customerId], references: [id])
+  mealsOnOrders MealsOnOrders[]
+}
+
+enum UserStatus {
+  CREATED
+  PENDING_VERIFICATION
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}

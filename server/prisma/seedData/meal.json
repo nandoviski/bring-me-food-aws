@@ -1,0 +1,67 @@
+[
+  {
+    "id": "5f0b1749-f71c-41bf-a971-4ec8349694d1",
+    "name": "test 4",
+    "description": "sdf sadf sdf sad fsad fsd fsd",
+    "price": 103.2,
+    "size": 750,
+    "image": null,
+    "ingredients": [],
+    "allergens": [],
+    "createdAt": "2025-04-11T11:05:32.967Z",
+    "updatedAt": "2025-04-15T12:16:33.075Z",
+    "chefId": "d6a8e654-a4ee-4c45-8f3b-11f037981496"
+  },
+  {
+    "id": "36eff025-b216-43cc-95b0-94c8cc60c12e",
+    "name": "Massa",
+    "description": "Test another desc",
+    "price": 10.22,
+    "size": null,
+    "image": null,
+    "ingredients": ["Agua", "Farinha"],
+    "allergens": ["Nuts"],
+    "createdAt": "2025-04-09T06:45:21.75Z",
+    "updatedAt": "2025-04-15T12:23:54.158Z",
+    "chefId": "d6a8e654-a4ee-4c45-8f3b-11f037981496"
+  },
+  {
+    "id": "4e36612f-4e98-4cc5-a550-663befd42498",
+    "name": "Pizza",
+    "description": "Best pizza ever made",
+    "price": 13.9,
+    "size": null,
+    "image": null,
+    "ingredients": [],
+    "allergens": [],
+    "createdAt": "2025-04-09T05:59:45.256Z",
+    "updatedAt": "2025-04-15T12:24:38.334Z",
+    "chefId": "d6a8e654-a4ee-4c45-8f3b-11f037981496"
+  },
+  {
+    "id": "7530dd4d-d3d0-4ab3-91e5-833b51315bbd",
+    "name": "Burger",
+    "description": "Belo burger a venda massa",
+    "price": 22.5,
+    "size": 300,
+    "image": null,
+    "ingredients": [],
+    "allergens": [],
+    "createdAt": "2025-04-11T10:59:39.516Z",
+    "updatedAt": "2025-04-15T12:26:18.487Z",
+    "chefId": "d6a8e654-a4ee-4c45-8f3b-11f037981496"
+  },
+  {
+    "id": "611c4530-8b7e-4bd0-8e87-b285b12b401f",
+    "name": "Lasagna",
+    "description": "Some description is here",
+    "price": 13.5,
+    "size": null,
+    "image": null,
+    "ingredients": [],
+    "allergens": [],
+    "createdAt": "2025-04-09T05:34:02.971Z",
+    "updatedAt": "2025-04-15T12:29:48.549Z",
+    "chefId": "d6a8e654-a4ee-4c45-8f3b-11f037981496"
+  }
+]
