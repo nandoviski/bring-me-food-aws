@@ -21,29 +21,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EditCustomerSchema, type EditCustomerType } from "../schema/customer";
-import { formSaveAction } from "../server/actions/customer";
+import { useUpdateCustomerMutation } from "@/state/api";
 import { toast } from "sonner";
+import { fakeLoggedUser } from "@/hooks/mock-data";
 
 type Props = {
   customer: EditCustomerType;
 };
 
 export default function EditCustomerForm({ customer }: Props) {
+  const loggedUser = fakeLoggedUser(); // TODO: replace with actual logged user
+
   const form = useForm<z.infer<typeof EditCustomerSchema>>({
     resolver: zodResolver(EditCustomerSchema),
     defaultValues: customer,
   });
 
-  async function onSubmit(values: z.infer<typeof EditCustomerSchema>) {
-    const result = await formSaveAction(values);
+  const [mutation] = useUpdateCustomerMutation();
 
-    if (result.success) {
-      toast.success("Customer saved", {
-        description: result.message,
+  async function onSubmit(values: z.infer<typeof EditCustomerSchema>) {
+    const result = await mutation({
+      userId: loggedUser.id,
+      customer: values,
+    });
+
+    if (result.data) {
+      toast.success("Success", {
+        description: "Customer profile updated successfully",
       });
     } else {
-      toast.error("Error saving customer", {
-        description: result.message,
+      toast.error("Error", {
+        description: "An error occurred while updating customer profile",
       });
     }
   }

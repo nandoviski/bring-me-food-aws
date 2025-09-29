@@ -2,7 +2,7 @@
 // create Project endpoints 2:55 - 3:05
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Chef, Meal, Menu } from "./apiTypes";
+import type { Chef, Customer, Meal, Menu } from "./apiTypes";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -16,8 +16,10 @@ export const api = createApi({
     "ChefByUsername",
     "ChefsWeeklyMenu",
     "ChefByUserId",
+    "Customers",
   ],
   endpoints: (build) => ({
+    // Meals
     getMeals: build.query<Meal[], void>({
       query: () => "meals",
       providesTags: ["Meals"],
@@ -30,6 +32,8 @@ export const api = createApi({
       }),
       invalidatesTags: ["Meals"],
     }),
+
+    // Chefs
     updateChef: build.mutation<
       boolean,
       { chefId: string; chef: Partial<Chef> }
@@ -53,6 +57,23 @@ export const api = createApi({
       query: ({ userId }) => `chefs/byUserId/${userId}`,
       providesTags: ["ChefByUserId"],
     }),
+
+    // Customers
+    getCustomer: build.query<Customer, { userId: string }>({
+      query: ({ userId }) => `customers/${userId}`,
+      providesTags: ["Customers"],
+    }),
+    updateCustomer: build.mutation<
+      boolean,
+      { userId: string; customer: Partial<Customer> }
+    >({
+      query: ({ userId, customer }) => ({
+        url: `customers/${userId}`,
+        method: "PUT",
+        body: customer,
+      }),
+      invalidatesTags: ["Customers"],
+    }),
   }),
 });
 
@@ -64,4 +85,6 @@ export const {
   useGetChefsWeeklyMenuQuery,
   useLazyGetChefsWeeklyMenuQuery,
   useGetChefByUserIdQuery,
+  useGetCustomerQuery,
+  useUpdateCustomerMutation,
 } = api;

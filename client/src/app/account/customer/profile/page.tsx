@@ -1,17 +1,20 @@
+"use client";
+
+import NotFound from "@/components/notFound";
 import EditCustomerForm from "@/features/customer/components/edit-customer-form";
 import { EditCustomerSchema } from "@/features/customer/schema/customer";
-import { getCustomer } from "@/features/customer/server/db/customer";
 import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useGetCustomerQuery } from "@/state/api";
 
-export default async function CustomerProfilePage() {
+export default function CustomerProfilePage() {
   const logUser = fakeLoggedUser(); // TODO: Replace with actual user ID from logged-in user
-  const user = await getCustomer(logUser.id);
+  const customer = useGetCustomerQuery({ userId: logUser.id });
 
-  if (!user?.customer) {
-    return <div>Customer not found</div>;
+  if (!customer) {
+    return <NotFound message="Customer not found" />;
   }
 
-  const validatedData = EditCustomerSchema.safeParse(user.customer);
+  const validatedData = EditCustomerSchema.safeParse(customer);
   if (!validatedData.success) {
     return <div>Fail to validate customer</div>;
   }

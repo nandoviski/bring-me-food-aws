@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import mealRoutes from "./routes/mealRoutes";
 import menuRoutes from "./routes/menuRoutes";
 import chefRoutes from "./routes/chefRoutes";
+import customerRoutes from "./routes/customerRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -35,6 +36,7 @@ app.get("/", (req, res) => {
 app.use("/meals", mealRoutes);
 app.use("/menus", menuRoutes);
 app.use("/chefs", chefRoutes);
+app.use("/customers", customerRoutes);
 
 /* SERVER */
 app.listen(port, "0.0.0.0", () => {
