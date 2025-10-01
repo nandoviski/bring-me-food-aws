@@ -91,7 +91,7 @@ model Meal {
   description   String          @db.VarChar(250)
   price         Float //https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types
   size          Int?
-  image         String?
+  image         String?         @db.VarChar(150)
   ingredients   String[]
   allergens     String[]
   createdAt     DateTime        @default(now())
@@ -104,22 +104,22 @@ model Meal {
 
 //https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations
 model MealsOnOrders {
-  id      String @id @default(uuid()) //@db.VarChar(50)
-  mealId  String //@db.VarChar(50)
+  id      String @id @default(uuid()) @db.VarChar(50)
+  mealId  String @db.VarChar(50)
   meal    Meal   @relation(fields: [mealId], references: [id])
-  orderId String //@db.VarChar(50)
+  orderId String @db.VarChar(50)
   order   Order  @relation(fields: [orderId], references: [id])
 }
 
 model Order {
-  id            String          @id @default(uuid()) //@db.VarChar(50)
+  id            String          @id @default(uuid()) @db.VarChar(50)
   status        OrderStatus     @default(PENDING)
   paymentStatus PaymentStatus   @default(PENDING)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  chefId        String //@db.VarChar(50)
+  chefId        String          @db.VarChar(50)
   chef          Chef            @relation(fields: [chefId], references: [id])
-  customerId    String //@db.VarChar(50)
+  customerId    String          @db.VarChar(50)
   customer      Customer        @relation(fields: [customerId], references: [id])
   mealsOnOrders MealsOnOrders[]
 }

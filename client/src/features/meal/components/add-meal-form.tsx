@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/form";
 import { EditMealSchema, type EditMealType } from "../schema/meal";
 import Image from "next/image";
-import { addMealToChef, updateMeal } from "../server/db/meal";
 import { toast } from "sonner";
 import {
   Select,
@@ -29,6 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateMealMutation, useUpdateMealMutation } from "@/state/api";
+import { fakeLoggedUser } from "@/hooks/mock-data";
 
 interface Props {
   onOpenChange: (open: boolean) => void;
@@ -46,6 +47,15 @@ export default function AddMealForm({
   const [imagePreview, setImagePreview] = useState(
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
+  const loggedUser = fakeLoggedUser();
+
+  console.log("mealId", mealId);
+  console.log("loggedUser?.id", loggedUser?.id);
+  //mealId 5f0b1749-f71c-41bf-a971-4ec8349694d1
+  //loggedUser?.id 879c31a3-5354-49ed-be60-8ab4b00c9537
+
+  const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();
+  const [triggerCreate, { isLoading: isCreating }] = useCreateMealMutation();
 
   // Initialize the form
   const form = useForm<EditMealType>({
@@ -79,6 +89,10 @@ export default function AddMealForm({
     name: "allergens",
   });
 
+  if (!loggedUser.chef) {
+    return <div>You must be logged in as a chef to add or edit meals.</div>;
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -94,19 +108,24 @@ export default function AddMealForm({
 
   const onSubmit: SubmitHandler<EditMealType> = async (data) => {
     const dataSanitized = {
-      ...data,
+      name: data.name.trim(),
+      description: data.description.trim(),
+      price: Number.parseFloat(data.price as unknown as string),
+      size: data.size ? Number.parseInt(data.size) : undefined,
+      ingredients: data.ingredients.map((ing) => ing.value),
+      allergens: data.allergens.map((all) => all.value),
       image: data.image?.startsWith("/placeholder.svg")
         ? undefined
         : data.image,
     };
 
     const result = mealId
-      ? await updateMeal(mealId, dataSanitized)
-      : await addMealToChef(dataSanitized);
+      ? await triggerUpdate({ mealId, meal: dataSanitized })
+      : await triggerCreate({ ...dataSanitized, chefId: loggedUser.chef?.id });
 
-    if (result.success) {
+    if (result.data) {
       toast.success(mealId ? "Meal updated" : "Meal saved", {
-        description: result.message,
+        description: `Meal ${data.name} has been ${mealId ? "updated" : "added"} successfully.`,
       });
       if (!mealId) {
         form.reset();
@@ -116,7 +135,7 @@ export default function AddMealForm({
       onOpenChange(false);
     } else {
       toast.error(mealId ? "Error updating meal" : "Error saving meal", {
-        description: result.message,
+        description: `There was an error ${mealId ? "updating" : "adding"} the meal. Please try again.`,
       });
     }
   };
@@ -325,7 +344,11 @@ export default function AddMealForm({
         >
           Cancel
         </Button>
-        <Button type="submit" className="bg-orange-500 hover:bg-orange-600">
+        <Button
+          type="submit"
+          className="bg-orange-500 hover:bg-orange-600"
+          disabled={isCreating || isUpdating}
+        >
           {mealId ? "Update Meal" : "Add Meal"}
         </Button>
       </form>

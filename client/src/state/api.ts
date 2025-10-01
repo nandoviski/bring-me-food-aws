@@ -17,6 +17,7 @@ export const api = createApi({
     "ChefsWeeklyMenu",
     "ChefByUserId",
     "Customers",
+    "MealsByChef",
   ],
   endpoints: (build) => ({
     // Meals
@@ -30,7 +31,19 @@ export const api = createApi({
         method: "POST",
         body: meal,
       }),
-      invalidatesTags: ["Meals"],
+      invalidatesTags: ["Meals", "MealsByChef"],
+    }),
+    updateMeal: build.mutation<Meal, { mealId: string; meal: Partial<Meal> }>({
+      query: ({ meal, mealId }) => ({
+        url: `meals/${mealId}`,
+        method: "PUT",
+        body: meal,
+      }),
+      invalidatesTags: ["Meals", "MealsByChef"],
+    }),
+    getMealsByChef: build.query<Meal[], { chefId: string }>({
+      query: ({ chefId }) => `meals/${chefId}/byChef`,
+      providesTags: ["MealsByChef"],
     }),
 
     // Chefs
@@ -80,6 +93,8 @@ export const api = createApi({
 export const {
   useGetMealsQuery,
   useCreateMealMutation,
+  useUpdateMealMutation,
+  useGetMealsByChefQuery,
   useGetChefByUsernameQuery,
   useUpdateChefMutation,
   useGetChefsWeeklyMenuQuery,

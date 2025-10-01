@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export interface Meal {
+  id: string;
+  name: string;
+  chefId: string;
+  description: string;
+  price: number;
+  size?: number;
+  image?: string;
+  ingredients: string[];
+  allergens: string[];
+}
+
 export type EditMealType = z.infer<typeof EditMealSchema>;
 export const EditMealSchema = z.object({
   name: z.string().min(2, "Meal name must be at least 2 characters"),
@@ -25,18 +37,3 @@ export const EditMealSchema = z.object({
   ),
   image: z.string().optional(),
 });
-
-// export const coco2: z.ZodType<Prisma.MealCreateWithoutChefInput> = z.object({
-//   id: z.string().optional(),
-//   name: z.string(),
-//   description: z.string(),
-//   price: z.number(),
-//   image: z.string().optional(),
-//   ingredients: z.string().optional(),
-//   allergens: z.string().optional(),
-//   createdAt: z.date().optional(),
-//   updatedAt: z.date().optional(),
-//   chefId: z.string().optional(),
-//   // menus?: Prisma.MenuCreateNestedManyWithoutMealsInput;
-//   // mealsOnOrders?: Prisma.MealsOnOrdersCreateNestedManyWithoutMealInput;
-// });

@@ -1,5 +1,5 @@
 export interface Meal {
-  id: string;
+  id?: string;
   name: string;
   chefId: string;
   description: string;
@@ -8,8 +8,8 @@ export interface Meal {
   image?: string;
   ingredients: string[];
   allergens: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 
 export interface Chef {

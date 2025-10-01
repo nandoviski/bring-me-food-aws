@@ -7,8 +7,7 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "prebuild": "echo 'build started...'"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

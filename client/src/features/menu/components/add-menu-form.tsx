@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EditMenuSchema, type EditMenuType } from "../schema/menu";
 import { toast } from "sonner";
-import { getMealsByChef } from "@/features/meal/server/db/meal";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Meal } from "@/state/apiTypes";
 import { addMenuToChef, updateMenu } from "../db/menu";
 import { format } from "date-fns";
 import {
@@ -31,6 +29,8 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { Search } from "lucide-react";
+import { useGetMealsByChefQuery } from "@/state/api";
+import { fakeLoggedUser } from "@/hooks/mock-data";
 
 interface Props {
   onOpenChange: (open: boolean) => void;
@@ -45,7 +45,10 @@ export default function AddMenuForm({
   initialData,
   menuId,
 }: Props) {
-  const [meals, setMeals] = useState<Meal[]>([]);
+  const loggedUser = fakeLoggedUser();
+  const { data: meals } = useGetMealsByChefQuery({
+    chefId: loggedUser.chef?.id ?? "",
+  });
   const [searchQuery, setSearchQuery] = useState("");
 
   // Initialize the form
@@ -60,17 +63,9 @@ export default function AddMenuForm({
     },
   });
 
-  // Fetch available meals when component mounts
-  useEffect(() => {
-    async function fetchMeals() {
-      const fetchedMeals = await getMealsByChef();
-      setMeals(fetchedMeals ?? []);
-    }
-
-    fetchMeals().catch((error) => {
-      console.error("Error fetching meals:", error);
-    });
-  }, []);
+  if (!loggedUser.chef) {
+    return <div>You must be logged in as a chef to add or edit meals.</div>;
+  }
 
   const onSubmit: SubmitHandler<EditMenuType> = async (data) => {
     const result = menuId
@@ -90,9 +85,11 @@ export default function AddMenuForm({
     }
   };
 
-  const filteredMeals = meals.filter((meal) =>
-    meal.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredMeals = meals
+    ? meals.filter((meal) =>
+        meal.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : [];
 
   return (
     <Form {...form}>
@@ -191,50 +188,51 @@ export default function AddMenuForm({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMeals.map((meal) => (
-                  <TableRow key={meal.id}>
-                    <TableCell>
-                      <FormField
-                        control={form.control}
-                        name="meals"
-                        render={({ field }) => (
-                          <Checkbox
-                            checked={field.value?.includes(meal.id)}
-                            onCheckedChange={(checked) => {
-                              const updatedMeals = checked
-                                ? [...field.value, meal.id]
-                                : field.value.filter((id) => id !== meal.id);
-                              field.onChange(updatedMeals);
-                            }}
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src={
-                            meal.image && meal.image !== ""
-                              ? meal.image
-                              : "/placeholder.svg"
-                          }
-                          alt={meal.name}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-md object-cover"
+                {filteredMeals.length > 0 &&
+                  filteredMeals.map((meal) => (
+                    <TableRow key={meal.id}>
+                      <TableCell>
+                        <FormField
+                          control={form.control}
+                          name="meals"
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={field.value?.includes(meal.id!)}
+                              onCheckedChange={(checked) => {
+                                const updatedMeals = checked
+                                  ? [...field.value, meal.id]
+                                  : field.value.filter((id) => id !== meal.id);
+                                field.onChange(updatedMeals);
+                              }}
+                            />
+                          )}
                         />
-                        <div className="flex flex-col">
-                          <span className="font-medium">{meal.name}</span>
-                          <span className="text-muted-foreground line-clamp-1 text-xs">
-                            {meal.description}
-                          </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={
+                              meal.image && meal.image !== ""
+                                ? meal.image
+                                : "/placeholder.svg"
+                            }
+                            alt={meal.name}
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 rounded-md object-cover"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{meal.name}</span>
+                            <span className="text-muted-foreground line-clamp-1 text-xs">
+                              {meal.description}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>${meal.price.toFixed(2)}</TableCell>
-                    <TableCell>{meal.size}</TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>${meal.price.toFixed(2)}</TableCell>
+                      <TableCell>{meal.size}</TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>
