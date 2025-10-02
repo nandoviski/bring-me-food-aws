@@ -7,14 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { MenuWithMeals } from "../schema/menu";
 import AddMenuForm from "./add-menu-form";
+import type { Menu } from "@/state/apiTypes";
 
 interface EditMenuDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMenuUpdated?: () => void;
-  menu: MenuWithMeals;
+  menu: Menu;
 }
 
 export default function EditMenuDialog({
@@ -35,13 +35,10 @@ export default function EditMenuDialog({
           onOpenChange={onOpenChange}
           onMenuAdded={onMenuUpdated}
           initialData={{
-            name: menu.name,
-            description: menu.description,
-            startDate: menu.startDate,
-            endDate: menu.endDate,
-            orderFrom: menu.orderFrom ?? undefined,
-            orderTo: menu.orderTo ?? undefined,
-            meals: menu.meals.map((m) => m.id),
+            ...menu,
+            meals: menu.meals
+              .map((m) => m.id)
+              .filter((id): id is string => typeof id === "string"),
           }}
           menuId={menu.id}
         />

@@ -17,7 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { EditMenuSchema, type EditMenuType } from "../schema/menu";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addMenuToChef, updateMenu } from "../db/menu";
 import { format } from "date-fns";
 import {
   Table,
@@ -30,6 +29,7 @@ import {
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { useGetMealsByChefQuery } from "@/state/api";
+import { useCreateMenuMutation, useUpdateMenuMutation } from "@/state/api";
 import { fakeLoggedUser } from "@/hooks/mock-data";
 
 interface Props {
@@ -51,6 +51,9 @@ export default function AddMenuForm({
   });
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMenuMutation();
+  const [triggerCreate, { isLoading: isCreating }] = useCreateMenuMutation();
+
   // Initialize the form
   const form = useForm<EditMenuType>({
     resolver: zodResolver(EditMenuSchema),
@@ -58,7 +61,11 @@ export default function AddMenuForm({
       name: "",
       description: "",
       startDate: new Date(),
-      endDate: new Date(),
+      endDate: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() + 7);
+        return date;
+      })(),
       meals: [],
     },
   });
@@ -68,19 +75,25 @@ export default function AddMenuForm({
   }
 
   const onSubmit: SubmitHandler<EditMenuType> = async (data) => {
-    const result = menuId
-      ? await updateMenu(menuId, data)
-      : await addMenuToChef(data);
+    const dataSanitized = {
+      ...data,
+      chefId: loggedUser.chef?.id,
+      meals: data.meals || [],
+    };
 
-    if (result.success) {
+    const result = menuId
+      ? await triggerUpdate({ menuId, menu: dataSanitized })
+      : await triggerCreate(dataSanitized);
+
+    if (result.data) {
       toast.success(menuId ? "Menu updated" : "Menu created", {
-        description: result.message,
+        description: `The menu has been successfully ${menuId ? "updated" : "created"}.`,
       });
       onMenuAdded?.();
       onOpenChange(false);
     } else {
       toast.error(menuId ? "Error updating menu" : "Error creating menu", {
-        description: result.message,
+        description: "An error occurred. Please try again.",
       });
     }
   };
@@ -136,8 +149,15 @@ export default function AddMenuForm({
                 <FormControl>
                   <Input
                     type="date"
-                    value={format(field.value, "yyyy-MM-dd")}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={
+                      field.value instanceof Date
+                        ? format(field.value, "yyyy-MM-dd")
+                        : format(new Date(field.value), "yyyy-MM-dd")
+                    }
+                    onChange={(e) => {
+                      const dateValue = new Date(e.target.value + "T00:00:00");
+                      field.onChange(dateValue);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -246,7 +266,11 @@ export default function AddMenuForm({
           >
             Cancel
           </Button>
-          <Button type="submit" className="bg-orange-500 hover:bg-orange-600">
+          <Button
+            type="submit"
+            className="bg-orange-500 hover:bg-orange-600"
+            disabled={isCreating || isUpdating}
+          >
             {menuId ? "Update Menu" : "Create Menu"}
           </Button>
         </div>

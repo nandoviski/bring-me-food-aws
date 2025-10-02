@@ -1,17 +1,5 @@
 import { z } from "zod";
 
-export interface Meal {
-  id: string;
-  name: string;
-  chefId: string;
-  description: string;
-  price: number;
-  size?: number;
-  image?: string;
-  ingredients: string[];
-  allergens: string[];
-}
-
 export type EditMealType = z.infer<typeof EditMealSchema>;
 export const EditMealSchema = z.object({
   name: z.string().min(2, "Meal name must be at least 2 characters"),

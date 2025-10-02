@@ -20,14 +20,16 @@ export default function MealViewModeDialog({ meal }: Props) {
   const { getItemQuantity, increaseItemQuantityByMeal, decreaseItemQuantity } =
     useShoppingCart();
 
-  const formatPrice = (price: number | undefined) => {
+  const formatPrice = (price: number) => {
     if (typeof price !== "number") return "0.00";
     return price.toFixed(2);
   };
 
-  function getTotal(meal: Meal) {
-    const quantities = getItemQuantity(meal.id);
-    const total = (quantities ?? 1) * (meal.price || 0);
+  function getTotal(mealId?: string, price?: number) {
+    if (!mealId) return formatPrice(0);
+
+    const quantities = getItemQuantity(mealId);
+    const total = (quantities ?? 1) * (price ?? 0);
     return formatPrice(total);
   }
 
@@ -85,7 +87,7 @@ export default function MealViewModeDialog({ meal }: Props) {
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => decreaseItemQuantity(meal.id)}
+                  onClick={() => decreaseItemQuantity(meal.id!)}
                   aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
@@ -94,7 +96,7 @@ export default function MealViewModeDialog({ meal }: Props) {
                   type="number"
                   min="1"
                   max="10"
-                  value={getItemQuantity(meal.id)}
+                  value={getItemQuantity(meal.id!)}
                   className="mx-2 h-8 w-16 text-center"
                   aria-label="Quantity"
                   readOnly
@@ -115,7 +117,7 @@ export default function MealViewModeDialog({ meal }: Props) {
               <div className="mb-4 flex items-center justify-between">
                 <span className="font-semibold">Total:</span>
                 <span className="text-xl font-bold text-orange-600">
-                  $ {getTotal(meal)}
+                  $ {getTotal(meal.id, meal.price)}
                 </span>
               </div>
               {/* <Button

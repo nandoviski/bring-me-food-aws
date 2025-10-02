@@ -48,12 +48,6 @@ export default function AddMealForm({
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
   const loggedUser = fakeLoggedUser();
-
-  console.log("mealId", mealId);
-  console.log("loggedUser?.id", loggedUser?.id);
-  //mealId 5f0b1749-f71c-41bf-a971-4ec8349694d1
-  //loggedUser?.id 879c31a3-5354-49ed-be60-8ab4b00c9537
-
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();
   const [triggerCreate, { isLoading: isCreating }] = useCreateMealMutation();
 

@@ -40,6 +40,20 @@ export interface Menu {
   meals: Meal[];
 }
 
+export interface CreateEditMenu {
+  id: string;
+  name: string;
+  chefId: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  orderFrom?: Date;
+  orderTo?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  meals: string[];
+}
+
 export interface User {
   id: string;
   email: string;

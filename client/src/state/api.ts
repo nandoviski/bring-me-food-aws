@@ -2,7 +2,7 @@
 // create Project endpoints 2:55 - 3:05
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Chef, Customer, Meal, Menu } from "./apiTypes";
+import type { Chef, Customer, Meal, Menu, CreateEditMenu } from "./apiTypes";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -11,27 +11,23 @@ export const api = createApi({
   }),
   reducerPath: "api",
   tagTypes: [
-    "Meals",
+    "MealsByChef",
+    "MenusByChef",
     "Chefs",
     "ChefByUsername",
     "ChefsWeeklyMenu",
     "ChefByUserId",
     "Customers",
-    "MealsByChef",
   ],
   endpoints: (build) => ({
     // Meals
-    getMeals: build.query<Meal[], void>({
-      query: () => "meals",
-      providesTags: ["Meals"],
-    }),
     createMeal: build.mutation<Meal, Partial<Meal>>({
       query: (meal) => ({
         url: "meals",
         method: "POST",
         body: meal,
       }),
-      invalidatesTags: ["Meals", "MealsByChef"],
+      invalidatesTags: ["MealsByChef"],
     }),
     updateMeal: build.mutation<Meal, { mealId: string; meal: Partial<Meal> }>({
       query: ({ meal, mealId }) => ({
@@ -39,11 +35,43 @@ export const api = createApi({
         method: "PUT",
         body: meal,
       }),
-      invalidatesTags: ["Meals", "MealsByChef"],
+      invalidatesTags: ["MealsByChef"],
     }),
     getMealsByChef: build.query<Meal[], { chefId: string }>({
       query: ({ chefId }) => `meals/${chefId}/byChef`,
       providesTags: ["MealsByChef"],
+    }),
+
+    // Menus
+    createMenu: build.mutation<Menu, Partial<CreateEditMenu>>({
+      query: (menu) => ({
+        url: "menus",
+        method: "POST",
+        body: menu,
+      }),
+      invalidatesTags: ["MenusByChef"],
+    }),
+    updateMenu: build.mutation<
+      Menu,
+      { menuId: string; menu: Partial<CreateEditMenu> }
+    >({
+      query: ({ menu, menuId }) => ({
+        url: `menus/${menuId}`,
+        method: "PUT",
+        body: menu,
+      }),
+      invalidatesTags: ["MenusByChef"],
+    }),
+    deleteMenu: build.mutation<Menu, string>({
+      query: (menuId) => ({
+        url: `menus/${menuId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["MenusByChef"],
+    }),
+    getMenusByChef: build.query<Menu[], { chefId: string; filter?: string }>({
+      query: ({ chefId, filter }) => `menus/${chefId}/byChef?filter=${filter}`,
+      providesTags: ["MenusByChef"],
     }),
 
     // Chefs
@@ -91,10 +119,13 @@ export const api = createApi({
 });
 
 export const {
-  useGetMealsQuery,
   useCreateMealMutation,
   useUpdateMealMutation,
   useGetMealsByChefQuery,
+  useCreateMenuMutation,
+  useUpdateMenuMutation,
+  useDeleteMenuMutation,
+  useGetMenusByChefQuery,
   useGetChefByUsernameQuery,
   useUpdateChefMutation,
   useGetChefsWeeklyMenuQuery,
