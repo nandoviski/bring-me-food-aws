@@ -26,7 +26,7 @@ import AddMenuDialog from "./add-menu-dialog";
 import EditMenuDialog from "./edit-menu-dialog";
 import { fakeLoggedUser } from "@/hooks/mock-data";
 import { toast } from "sonner";
-import type { Menu } from "@/state/apiTypes";
+import type { Menu } from "@/features/menu/schema/menu";
 
 export function MenusList() {
   const [addMenuOpen, setAddMenuOpen] = useState(false);

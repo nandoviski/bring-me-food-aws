@@ -2,7 +2,10 @@
 // create Project endpoints 2:55 - 3:05
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Chef, Customer, Meal, Menu, CreateEditMenu } from "./apiTypes";
+import type { Chef } from "@/features/chef/schema/chef";
+import type { Customer } from "@/features/customer/schema/customer";
+import type { Meal } from "@/features/meal/schema/meal";
+import type { CreateEditMenu, Menu } from "@/features/menu/schema/menu";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({

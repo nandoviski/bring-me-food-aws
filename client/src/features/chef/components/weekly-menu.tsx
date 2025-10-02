@@ -1,6 +1,6 @@
 "use client";
 
-import { type Meal } from "@/state/apiTypes";
+import { type Meal } from "@/features/meal/schema/meal";
 import MealItem from "./meal-item";
 
 type WeeklyMenuProps = {
@@ -23,7 +23,9 @@ export function WeeklyMenu({ meals }: WeeklyMenuProps) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {meals?.map((meal) => <MealItem key={meal.id} meal={meal} />)}
+        {meals?.map((meal) => (
+          <MealItem key={meal.id} meal={meal} />
+        ))}
       </div>
     </div>
   );

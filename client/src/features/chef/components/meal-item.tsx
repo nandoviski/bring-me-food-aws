@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Meal } from "@/state/apiTypes";
+import type { Meal } from "@/features/meal/schema/meal";
 import { Utensils } from "lucide-react";
 import Image from "next/image";
 import MealViewModeDialog from "./meal-view-mode-dialog";

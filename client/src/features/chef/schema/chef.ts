@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+export interface Chef {
+  username: string;
+  id: string;
+  userId: string;
+  name: string;
+  location: string;
+  bio?: string;
+  specialties?: string;
+  phoneNumber?: string;
+  deletedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type EditChefType = z.infer<typeof EditChefSchema>;
 export const EditChefSchema = z.object({
   username: z

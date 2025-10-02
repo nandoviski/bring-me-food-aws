@@ -1,6 +1,6 @@
 "use client";
 
-import type { Meal } from "@/state/apiTypes";
+import type { Meal } from "@/features/meal/schema/meal";
 import { useState, type ReactNode, useContext, createContext } from "react";
 
 type CartItem = {

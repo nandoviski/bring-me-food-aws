@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AddMenuForm from "./add-menu-form";
-import type { Menu } from "@/state/apiTypes";
+import type { Menu } from "@/features/menu/schema/menu";
 
 interface EditMenuDialogProps {
   open: boolean;

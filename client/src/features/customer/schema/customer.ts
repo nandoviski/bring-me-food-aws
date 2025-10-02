@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+export interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  phoneNumber: string;
+  company?: string | null;
+  userId: string;
+  deletedAt?: Date | null;
+  // createdAt: Date;
+  // updatedAt: Date;
+}
+
 export type EditCustomerType = z.infer<typeof EditCustomerSchema>;
 export const EditCustomerSchema = z.object({
   firstName: z.string({ message: "First name is required" }).max(150),

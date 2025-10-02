@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Customer } from "@/state/apiTypes";
+import type { Customer } from "@/features/customer/schema/customer";
 import { RadioGroup } from "@radix-ui/react-dropdown-menu";
 import {
   ChevronDownIcon,

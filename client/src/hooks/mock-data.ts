@@ -1,4 +1,6 @@
-import type { User, Customer, Chef } from "@/state/apiTypes";
+import type { Chef } from "@/features/chef/schema/chef";
+import type { Customer } from "@/features/customer/schema/customer";
+import type { User } from "@/state/apiTypes";
 
 export function fakeLoggedUser() {
   //return userCustomer;
@@ -22,8 +24,8 @@ const customer: Customer = {
   company: null,
   userId: "eacc7be0-860d-450e-a4d4-4b069fb9cd47",
   deletedAt: undefined,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  // createdAt: new Date(),
+  // updatedAt: new Date(),
 };
 
 const userCustomer: UserComplete = {

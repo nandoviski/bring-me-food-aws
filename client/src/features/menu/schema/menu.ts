@@ -1,4 +1,33 @@
+import type { Meal } from "@/features/meal/schema/meal";
 import { z } from "zod";
+
+export interface Menu {
+  id: string;
+  name: string;
+  chefId: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  orderFrom?: Date;
+  orderTo?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  meals: Meal[];
+}
+
+export interface CreateEditMenu {
+  id: string;
+  name: string;
+  chefId: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  orderFrom?: Date;
+  orderTo?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  meals: string[];
+}
 
 export type EditMenuType = z.infer<typeof EditMenuSchema>;
 export const EditMenuSchema = z.object({

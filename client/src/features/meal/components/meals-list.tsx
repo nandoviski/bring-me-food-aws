@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/card";
 import EditMealDialog from "./edit-meal-dialog";
 import { useState } from "react";
-import { type Meal } from "@/state/apiTypes";
+import { type Meal } from "@/features/meal/schema/meal";
 import { fakeLoggedUser } from "@/hooks/mock-data";
 import AddMealDialog from "./add-meal-dialog";
 

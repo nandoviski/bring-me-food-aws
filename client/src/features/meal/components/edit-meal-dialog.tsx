@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type Meal } from "@/state/apiTypes";
+import { type Meal } from "@/features/meal/schema/meal";
 import AddMealForm from "./add-meal-form";
 
 interface EditMealDialogProps {

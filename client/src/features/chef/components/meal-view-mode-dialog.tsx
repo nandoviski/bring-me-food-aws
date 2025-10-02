@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { Meal } from "@/state/apiTypes";
+import type { Meal } from "@/features/meal/schema/meal";
 import { Utensils, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
