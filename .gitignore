@@ -8,6 +8,7 @@ client/.next/
 client/next-env.d.ts
 client/out/
 client/build
+client/tsconfig.tsbuildinfo
 
 # Server
 server/node_modules
