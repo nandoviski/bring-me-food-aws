@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { getChefByUsername, getChefsWeeklyMenu, updateChef, getChefByUserId } from "../controllers/chefController";
+import {
+  getChefByUsername,
+  getChefsWeeklyMenu,
+  updateChef,
+  getChefByUserId,
+} from "../controllers/chefController";
 
 const router = Router();
 

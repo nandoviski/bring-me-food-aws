@@ -15,7 +15,10 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
       endDate,
       orderFrom,
       orderTo,
-      meals: meals && Array.isArray(meals) ? { connect: meals.map((mealId: string) => ({ id: mealId })) } : undefined,
+      meals:
+        meals && Array.isArray(meals)
+          ? { connect: meals.map((mealId: string) => ({ id: mealId })) }
+          : undefined,
     };
 
     const newMenu = await prisma.menu.create({

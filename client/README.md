@@ -9,6 +9,7 @@ In the chef's page
 
 # General
 
+- Run both client and server with task: Press Ctrl+Shift+P → Run Task → Start Both (Client + Server)
 - the code is a mess, remove comments and old imports
 - Review the Toaster in the main layout page, why are we using it? (I think it was used in the weekly menu page to show a message when the meal is added to cart, we can still implement the message, but I don't think we need that page anymore)
 
@@ -32,7 +33,6 @@ https://youtu.be/KAV8vo7hGAo?si=-daH_nvoiYM4GbE-
   - Click Generate new token.
   - Under Token name, enter a name for the token.
 - PM2: run the server automatically if it goes down and up again: https://youtu.be/KAV8vo7hGAo?si=b3SRmwgQTyyea4mX&t=28748
-
   - it uses "ecosystem.config.js"
 
 EC2 commands:

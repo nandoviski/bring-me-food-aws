@@ -1,19 +1,19 @@
 [
-    {
-      "id": "873d1e0e-16e0-49f9-a0a5-c1947cf0e272",
-  "firstName": "Fernando",
-  "middleName": null,
-  "lastName": "Marostega",
-  "phoneNumber": "0455555555",
-  "address": "123 Main St",
-  "city": "Rhodes",
-  "state": "NSW",
-  "country": "AU",
-  "postalCode": "2038",
-  "company": null,
-  "deletedAt": null,
-  "createdAt": "2025-04-08T00:00:00.000Z",
-  "updatedAt": "2025-04-08T00:00:00.000Z",
-  "userId": "eacc7be0-860d-450e-a4d4-4b069fb9cd47"
-}
+  {
+    "id": "873d1e0e-16e0-49f9-a0a5-c1947cf0e272",
+    "firstName": "Fernando",
+    "middleName": null,
+    "lastName": "Marostega",
+    "phoneNumber": "0455555555",
+    "address": "123 Main St",
+    "city": "Rhodes",
+    "state": "NSW",
+    "country": "AU",
+    "postalCode": "2038",
+    "company": null,
+    "deletedAt": null,
+    "createdAt": "2025-04-08T00:00:00.000Z",
+    "updatedAt": "2025-04-08T00:00:00.000Z",
+    "userId": "eacc7be0-860d-450e-a4d4-4b069fb9cd47"
+  }
 ]

@@ -1,15 +1,15 @@
 [
-    {
-  "id": "d6a8e654-a4ee-4c45-8f3b-11f037981496",
-  "username": "sarah_kitchen",
-  "name": "My Home Kitchen",
-  "location": "Burwood, NSW",
-  "bio": "I am a chef with 10 years of experience in the kitchen. I love to cook and share my passion for food with others.",
-  "specialties": "Italian, French, Asian",
-  "phoneNumber": null,
-  "deletedAt": null,
-  "createdAt": "2025-04-08T00:00:00.000Z",
-  "updatedAt": "2025-04-08T00:00:00.000Z",
-  "userId": "879c31a3-5354-49ed-be60-8ab4b00c9537"
-    }
+  {
+    "id": "d6a8e654-a4ee-4c45-8f3b-11f037981496",
+    "username": "sarah_kitchen",
+    "name": "My Home Kitchen",
+    "location": "Burwood, NSW",
+    "bio": "I am a chef with 10 years of experience in the kitchen. I love to cook and share my passion for food with others.",
+    "specialties": "Italian, French, Asian",
+    "phoneNumber": null,
+    "deletedAt": null,
+    "createdAt": "2025-04-08T00:00:00.000Z",
+    "updatedAt": "2025-04-08T00:00:00.000Z",
+    "userId": "879c31a3-5354-49ed-be60-8ab4b00c9537"
+  }
 ]
