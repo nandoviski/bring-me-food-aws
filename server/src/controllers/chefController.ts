@@ -26,6 +26,18 @@ export const getChefByUsername = async (req: Request, res: Response): Promise<vo
   }
 };
 
+export const checkChefUsernameExists = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username } = req.params;
+
+    const chef = await prisma.chef.findUnique({ where: { username } });
+
+    res.status(200).json({ exists: !!chef });
+  } catch (error: any) {
+    res.status(500).json({ error: `Error checking username: ${error.message}` });
+  }
+};
+
 export const getChefsWeeklyMenu = async (req: Request, res: Response): Promise<void> => {
   try {
     const { chefId } = req.params;

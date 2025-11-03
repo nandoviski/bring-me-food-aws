@@ -21,6 +21,8 @@ This document helps AI tools (like GitHub Copilot or ChatGPT) understand the arc
 - ORM: Prisma
 - Database: PostgreSQL
 - Middleware: cors, express.json()
+- We have routes under `/server/src/routes/*` that handle API requests from the client.
+- We have the route implementations in `/server/src/controllers/*` using Prisma to interact with the database.
 
 ---
 

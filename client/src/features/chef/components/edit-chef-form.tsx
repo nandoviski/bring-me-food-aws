@@ -17,6 +17,7 @@ import { EditChefSchema, type EditChefType } from "../schema/chef";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useUsernameCheck } from "@/hooks/useUsernameCheck";
 import { fakeLoggedUser } from "@/hooks/mock-data";
 import { useUpdateChefMutation } from "@/state/api";
 
@@ -31,6 +32,32 @@ export default function EditChefForm({ chef }: Props) {
   });
 
   const [chefFormSaveAction] = useUpdateChefMutation();
+
+  const { check, status: usernameStatus } = useUsernameCheck();
+
+  async function handleUsernameBlur(value?: string) {
+    const username = (value ?? form.getValues("username") ?? "").trim();
+
+    if (username === (chef?.username ?? "")) {
+      form.clearErrors("username");
+      return;
+    }
+
+    if (!username) {
+      form.clearErrors("username");
+      return;
+    }
+
+    const res = await check(username);
+    if (res.exists) {
+      form.setError("username", {
+        type: "manual",
+        message: "Username already taken",
+      });
+    } else {
+      form.clearErrors("username");
+    }
+  }
 
   async function onSubmit(values: EditChefType) {
     const loggedChef = fakeLoggedUser();
@@ -67,7 +94,15 @@ export default function EditChefForm({ chef }: Props) {
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input id="username" {...field} type="text" />
+                  <Input
+                    id="username"
+                    {...field}
+                    type="text"
+                    onBlur={() => {
+                      field.onBlur();
+                      handleUsernameBlur();
+                    }}
+                  />
                 </FormControl>
 
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -81,6 +116,21 @@ export default function EditChefForm({ chef }: Props) {
                       aria-live="polite"
                     >
                       {field.value ?? ""}
+                    </span>
+
+                    <span className="ml-3 text-sm" aria-hidden>
+                      {usernameStatus === "checking" && (
+                        <span className="text-gray-500">Checking…</span>
+                      )}
+                      {usernameStatus === "available" && (
+                        <span className="text-green-600">Available</span>
+                      )}
+                      {usernameStatus === "taken" && (
+                        <span className="text-red-600">Taken</span>
+                      )}
+                      {usernameStatus === "error" && (
+                        <span className="text-yellow-600">Check failed</span>
+                      )}
                     </span>
                   </div>
 

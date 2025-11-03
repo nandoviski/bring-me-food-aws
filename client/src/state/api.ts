@@ -93,6 +93,11 @@ export const api = createApi({
       query: ({ username }) => `chefs/${username}/profile`,
       providesTags: ["ChefByUsername"],
     }),
+    getUsernameExists: build.query<{ exists: boolean }, { username: string }>({
+      query: ({ username }) => `chefs/${username}/exists`,
+      // Keep a short cache to avoid rechecking immediately
+      keepUnusedDataFor: 60,
+    }),
     getChefsWeeklyMenu: build.query<Menu, { chefId: string }>({
       query: ({ chefId }) => `chefs/${chefId}/menu`,
       providesTags: ["ChefsWeeklyMenu"],
@@ -130,6 +135,8 @@ export const {
   useDeleteMenuMutation,
   useGetMenusByChefQuery,
   useGetChefByUsernameQuery,
+  useGetUsernameExistsQuery,
+  useLazyGetUsernameExistsQuery,
   useUpdateChefMutation,
   useGetChefsWeeklyMenuQuery,
   useLazyGetChefsWeeklyMenuQuery,
