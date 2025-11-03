@@ -61,9 +61,15 @@ export default function EditChefForm({ chef }: Props) {
 
   async function onSubmit(values: EditChefType) {
     const loggedChef = fakeLoggedUser();
+
+    const payload = { ...values } as any;
+    if (payload.username && typeof payload.username === "string") {
+      payload.username = payload.username.toLowerCase().trim();
+    }
+
     const result = await chefFormSaveAction({
       chefId: loggedChef.id,
-      chef: values,
+      chef: payload,
     });
 
     if (result.data) {

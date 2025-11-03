@@ -62,3 +62,28 @@ This document helps AI tools (like GitHub Copilot or ChatGPT) understand the arc
 
 Client root: `/client`
 Server root: `/server`
+
+---
+
+## 🛠️ Prisma migration workflow (how to apply schema changes)
+
+- Preferred workflow: edit `server/prisma/schema.prisma` to make model/constraint changes, then run the Prisma migration tool to generate and apply the migration. This keeps the schema and migrations in sync with Prisma's expectations.
+
+- Typical commands (development):
+
+  - `cd server`
+  - `npx prisma migrate dev --name descriptive_migration_name`
+
+- For deploying migrations in CI / production:
+
+  - `cd server`
+  - `npx prisma migrate deploy`
+
+- Rollback note: If you need to undo a migration you created with `migrate dev`, use `npx prisma migrate reset` (development only) or create a new migration that reverses the change. Be careful: `migrate reset` drops and recreates the database — don't run it against production.
+
+- Avoid directly creating ad-hoc SQL migration files unless you have a specific reason. If you do add raw SQL, prefer generating a proper Prisma migration (so `prisma migrate` knows about it) or document clearly how to apply it manually. If a migration fails due to data conflicts (for example case-insensitive collisions), handle data cleanup first and then re-run the migration.
+
+- After applying migrations, run `prisma generate` to update the Prisma Client if your code depends on newly generated types or client changes:
+
+  - `cd server`
+  - `npx prisma generate`

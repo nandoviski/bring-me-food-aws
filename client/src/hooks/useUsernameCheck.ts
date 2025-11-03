@@ -15,7 +15,7 @@ export function useUsernameCheck() {
   const [error, setError] = useState<string | null>(null);
 
   async function check(username: string) {
-    const trimmed = username?.trim();
+    const trimmed = username?.trim().toLowerCase();
     if (!trimmed) {
       setStatus("idle");
       setError(null);

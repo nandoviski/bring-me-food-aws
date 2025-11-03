@@ -14,10 +14,11 @@ const prisma = new PrismaClient();
 export const getChefByUsername = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username } = req.params;
+    const normalized = username?.toLowerCase();
 
     const chef = await prisma.chef.findUnique({
       where: {
-        username,
+        username: normalized,
       },
     });
     res.status(200).json(chef);
@@ -29,8 +30,9 @@ export const getChefByUsername = async (req: Request, res: Response): Promise<vo
 export const checkChefUsernameExists = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username } = req.params;
+    const normalized = username?.toLowerCase();
 
-    const chef = await prisma.chef.findUnique({ where: { username } });
+    const chef = await prisma.chef.findUnique({ where: { username: normalized } });
 
     res.status(200).json({ exists: !!chef });
   } catch (error: any) {
@@ -70,9 +72,15 @@ export const updateChef = async (req: Request, res: Response): Promise<void> => 
     const { chefId } = req.params;
     const data: ChefEdit = req.body;
 
+    // Normalize username if present to enforce consistent casing
+    const normalizedData = { ...data } as any;
+    if (normalizedData.username && typeof normalizedData.username === "string") {
+      normalizedData.username = normalizedData.username.toLowerCase().trim();
+    }
+
     const chef = await prisma.chef.update({
       where: { id: chefId },
-      data,
+      data: normalizedData,
     });
 
     res.status(200).json(chef !== null);
