@@ -1,4 +1,19 @@
-export default function Error({ message }: { message?: string }) {
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
+export default function Error({
+  message,
+  fetchingError,
+}: {
+  message?: string;
+  fetchingError?: FetchBaseQueryError | SerializedError;
+}) {
+  let displayMessage = message;
+  const err: any = fetchingError;
+  if (err?.data?.message) displayMessage = String(err.data.message);
+  else if (err?.error) displayMessage = String(err.error);
+  else if (err?.message) displayMessage = String(err.message);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <p className="text-center text-gray-500">
@@ -24,7 +39,7 @@ export default function Error({ message }: { message?: string }) {
               d="M12 8v4m0 4h.01"
             />
           </svg>
-          {message ?? "Error retrieving data"}
+          {displayMessage ?? "Error retrieving data"}
         </span>
       </p>
     </div>

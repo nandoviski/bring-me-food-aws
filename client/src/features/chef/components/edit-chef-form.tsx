@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -66,13 +67,60 @@ export default function EditChefForm({ chef }: Props) {
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <div className="flex items-center rounded-md pl-3">
-                    <Label htmlFor="username">
-                      https://www.bringmefood.com.au/chef/
-                    </Label>
-                    <Input {...field} type="text" />
-                  </div>
+                  <Input id="username" {...field} type="text" />
                 </FormControl>
+
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <div className="text-sm text-gray-600">
+                    <span className="select-all">
+                      https://www.bringmefood.com.au/chef/
+                    </span>
+                    <span
+                      className="ml-1 font-medium text-gray-800"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {field.value ?? ""}
+                    </span>
+                  </div>
+
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="inline-flex items-center px-3 py-1 text-sm"
+                      onClick={async () => {
+                        const username = field.value ?? "";
+                        const fullUrl = `https://www.bringmefood.com.au/chef/${username}`;
+                        try {
+                          if (!username) return;
+                          await navigator.clipboard.writeText(fullUrl);
+                          toast.success("Copied URL to clipboard", {
+                            description: fullUrl,
+                          });
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("Failed to copy URL");
+                        }
+                      }}
+                      disabled={!field.value}
+                      aria-label={
+                        field.value
+                          ? "Copy public chef URL to clipboard"
+                          : "Enter username to enable copy"
+                      }
+                      title={
+                        field.value
+                          ? "Copy public chef URL"
+                          : "Enter username to enable copy"
+                      }
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy link
+                    </Button>
+                  </div>
+                </div>
+
                 <FormMessage />
               </FormItem>
             )}
