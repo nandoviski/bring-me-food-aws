@@ -24,7 +24,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import AddMenuDialog from "./add-menu-dialog";
 import EditMenuDialog from "./edit-menu-dialog";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import type { Menu } from "@/features/menu/schema/menu";
 
@@ -32,11 +32,26 @@ export function MenusList() {
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [dateNow] = useState(new Date().setHours(0, 0, 0, 0));
-  const loggedUser = fakeLoggedUser();
+  const { user: loggedUser } = useAuth();
   const [triggerDelete, { isLoading: isDeleting }] = useDeleteMenuMutation();
 
+  if (!loggedUser || !loggedUser.chef) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly Menus</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            You must be logged in as a chef to view menus.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const { data: menus } = useGetMenusByChefQuery({
-    chefId: loggedUser.chef?.id ?? "",
+    chefId: loggedUser.chef.id,
     filter: "upcoming",
   });
 

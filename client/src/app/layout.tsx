@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import DashboardWrapper from "./dashboardWrapper";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Bring Me Food",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <DashboardWrapper>{children}</DashboardWrapper>
+        <AuthProvider>
+          <DashboardWrapper>{children}</DashboardWrapper>
+        </AuthProvider>
       </body>
     </html>
   );

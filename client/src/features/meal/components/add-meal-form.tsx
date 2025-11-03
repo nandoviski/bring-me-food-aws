@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateMealMutation, useUpdateMealMutation } from "@/state/api";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 
 interface Props {
   onOpenChange: (open: boolean) => void;
@@ -47,7 +47,7 @@ export default function AddMealForm({
   const [imagePreview, setImagePreview] = useState(
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
-  const loggedUser = fakeLoggedUser();
+  const { user: loggedUser } = useAuth();
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();
   const [triggerCreate, { isLoading: isCreating }] = useCreateMealMutation();
 
@@ -83,7 +83,7 @@ export default function AddMealForm({
     name: "allergens",
   });
 
-  if (!loggedUser.chef) {
+  if (!loggedUser || !loggedUser.chef) {
     return <div>You must be logged in as a chef to add or edit meals.</div>;
   }
 
@@ -115,7 +115,7 @@ export default function AddMealForm({
 
     const result = mealId
       ? await triggerUpdate({ mealId, meal: dataSanitized })
-      : await triggerCreate({ ...dataSanitized, chefId: loggedUser.chef?.id });
+      : await triggerCreate({ ...dataSanitized, chefId: loggedUser.chef.id });
 
     if (result.data) {
       toast.success(mealId ? "Meal updated" : "Meal saved", {

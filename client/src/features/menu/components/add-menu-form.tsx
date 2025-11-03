@@ -30,7 +30,7 @@ import Image from "next/image";
 import { Search } from "lucide-react";
 import { useGetMealsByChefQuery } from "@/state/api";
 import { useCreateMenuMutation, useUpdateMenuMutation } from "@/state/api";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 
 interface Props {
   onOpenChange: (open: boolean) => void;
@@ -45,9 +45,9 @@ export default function AddMenuForm({
   initialData,
   menuId,
 }: Props) {
-  const loggedUser = fakeLoggedUser();
+  const { user: loggedUser } = useAuth();
   const { data: meals } = useGetMealsByChefQuery({
-    chefId: loggedUser.chef?.id ?? "",
+    chefId: loggedUser?.chef?.id ?? "",
   });
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -70,7 +70,7 @@ export default function AddMenuForm({
     },
   });
 
-  if (!loggedUser.chef) {
+  if (!loggedUser || !loggedUser.chef) {
     return <div>You must be logged in as a chef to add or edit meals.</div>;
   }
 

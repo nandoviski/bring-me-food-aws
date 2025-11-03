@@ -1,8 +1,11 @@
+"use client";
+
 import CheckoutForm from "@/features/checkout/components/checkout-form";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 
 export default async function CheckoutPage() {
-  const user = fakeLoggedUser();
+  const { user } = useAuth();
+
   if (!user) {
     return <div>Redirect to login</div>;
   }

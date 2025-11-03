@@ -23,14 +23,14 @@ import {
 import { EditCustomerSchema, type EditCustomerType } from "../schema/customer";
 import { useUpdateCustomerMutation } from "@/state/api";
 import { toast } from "sonner";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 
 type Props = {
   customer: EditCustomerType;
 };
 
 export default function EditCustomerForm({ customer }: Props) {
-  const loggedUser = fakeLoggedUser(); // TODO: replace with actual logged user
+  const { user: loggedUser } = useAuth();
 
   const form = useForm<z.infer<typeof EditCustomerSchema>>({
     resolver: zodResolver(EditCustomerSchema),
@@ -40,6 +40,11 @@ export default function EditCustomerForm({ customer }: Props) {
   const [mutation] = useUpdateCustomerMutation();
 
   async function onSubmit(values: z.infer<typeof EditCustomerSchema>) {
+    if (!loggedUser) {
+      toast.error("No logged in user");
+      return;
+    }
+
     const result = await mutation({
       userId: loggedUser.id,
       customer: values,

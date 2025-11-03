@@ -5,11 +5,15 @@ import Error from "@/components/error";
 import Loading from "@/components/loading";
 import EditChefForm from "@/features/chef/components/edit-chef-form";
 import { EditChefSchema } from "@/features/chef/schema/chef";
-import { fakeLoggedUser } from "@/hooks/mock-data";
 import { useGetChefByUserIdQuery } from "@/state/api";
+import { useAuth } from "@/lib/auth";
 
 export default function ChefProfilePage() {
-  const logUser = fakeLoggedUser(); // TODO: Replace with actual user ID from logged-in user
+  const { user: loggedUser } = useAuth();
+
+  if (!loggedUser) {
+    return <div>You must be logged in to access this page.</div>;
+  }
 
   const {
     data: chefData,
@@ -17,7 +21,7 @@ export default function ChefProfilePage() {
     isFetching,
     isError,
     error,
-  } = useGetChefByUserIdQuery({ userId: logUser.id });
+  } = useGetChefByUserIdQuery({ userId: loggedUser.id });
 
   if (isLoading || isFetching) {
     return <Loading message="Loading chef profile..." />;

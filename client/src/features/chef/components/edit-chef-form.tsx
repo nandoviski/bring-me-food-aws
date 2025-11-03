@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useUsernameCheck } from "@/hooks/useUsernameCheck";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 import { useUpdateChefMutation } from "@/state/api";
 
 type Props = {
@@ -60,11 +60,16 @@ export default function EditChefForm({ chef }: Props) {
   }
 
   async function onSubmit(values: EditChefType) {
-    const loggedChef = fakeLoggedUser();
+    const { user: loggedChef } = useAuth();
 
     const payload = { ...values } as any;
     if (payload.username && typeof payload.username === "string") {
       payload.username = payload.username.toLowerCase().trim();
+    }
+
+    if (!loggedChef) {
+      toast.error("No logged in user");
+      return;
     }
 
     const result = await chefFormSaveAction({

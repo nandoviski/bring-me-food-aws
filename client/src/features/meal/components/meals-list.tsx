@@ -31,13 +31,13 @@ import {
 import EditMealDialog from "./edit-meal-dialog";
 import { useState } from "react";
 import { type Meal } from "@/features/meal/schema/meal";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 import AddMealDialog from "./add-meal-dialog";
 
 export function MealsList() {
   // const [meals, setMeals] = useState<Meal[]>([]);
-  const loggedUser = fakeLoggedUser();
-  const chefId = loggedUser.chef ? loggedUser.chef.id : "";
+  const { user: loggedUser } = useAuth();
+  const chefId = loggedUser?.chef ? loggedUser.chef.id : "";
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [addMealOpen, setAddMealOpen] = useState(false);
 

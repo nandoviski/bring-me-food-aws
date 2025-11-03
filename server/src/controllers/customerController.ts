@@ -6,14 +6,8 @@ const prisma = new PrismaClient();
 export const getCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;
-    // const user = await prisma.user.findFirst({
-    //   where: { id: userId },
-    //   include: {
-    //     customer: true,
-    //   },
-    // });
 
-    const customer = prisma.customer.findFirst({
+    const customer = await prisma.customer.findFirst({
       where: { userId },
     });
 

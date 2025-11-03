@@ -1,14 +1,40 @@
 "use client";
 
-import NotFound from "@/components/notFound";
+import Loading from "@/components/loading";
+import Error from "@/components/error";
 import EditCustomerForm from "@/features/customer/components/edit-customer-form";
 import { EditCustomerSchema } from "@/features/customer/schema/customer";
-import { fakeLoggedUser } from "@/hooks/mock-data";
+import { useAuth } from "@/lib/auth";
 import { useGetCustomerQuery } from "@/state/api";
+import NotFound from "@/components/notFound";
 
 export default function CustomerProfilePage() {
-  const logUser = fakeLoggedUser(); // TODO: Replace with actual user ID from logged-in user
-  const customer = useGetCustomerQuery({ userId: logUser.id });
+  const { user: loggedUser } = useAuth();
+
+  if (!loggedUser) {
+    return <div>You must be logged in to access this page.</div>;
+  }
+
+  const {
+    data: customer,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useGetCustomerQuery({ userId: loggedUser.id });
+
+  if (isLoading || isFetching) {
+    return <Loading message="Loading customer profile..." />;
+  }
+
+  if (isError) {
+    return (
+      <Error
+        message="Error retrieving customer profile"
+        fetchingError={error}
+      />
+    );
+  }
 
   if (!customer) {
     return <NotFound message="Customer not found" />;
@@ -16,7 +42,7 @@ export default function CustomerProfilePage() {
 
   const validatedData = EditCustomerSchema.safeParse(customer);
   if (!validatedData.success) {
-    return <div>Fail to validate customer</div>;
+    return <Error message="Fail to validate customer" />;
   }
 
   return (

@@ -15,8 +15,8 @@ import {
   LayoutDashboardIcon,
 } from "lucide-react";
 import Link from "next/link";
-// import { useAuth } from "@/lib/auth";
-// import { AuthModal } from "@/components/auth/auth-modal";
+import { useAuth } from "@/lib/auth";
+import LoginModal from "@/components/auth/login-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,13 +30,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import ShoppingCartSheet from "@/features/shopping-cart/components/shoppingCartSheet";
-import { fakeLoggedUser } from "@/hooks/mock-data";
 // import { useFavorites } from "@/hooks/use-favorites";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const user = fakeLoggedUser(); // TODO: Replace with your user fetching logic
+  const { user, logout } = useAuth();
 
   const { cartQuantity } = useShoppingCart();
 
@@ -191,23 +189,19 @@ export function Navbar() {
                     </DropdownMenuSub>
 
                     <DropdownMenuSeparator />
-                    {/* <DropdownMenuItem onClick={signOut} className="flex items-center">
-                      <LogOut className="h-4 w-4 mr-2" />
+                    <DropdownMenuItem
+                      onClick={() => logout()}
+                      className="flex items-center"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
-                    </DropdownMenuItem> */}
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
               <>
-                {/* <AuthModal 
-                  trigger={<Button variant="ghost">Sign In</Button>}
-                  mode="signin"
-                />
-                <AuthModal 
-                  trigger={<Button>Get Started</Button>}
-                  mode="signup"
-                /> */}
+                <LoginModal />
               </>
             )}
           </div>
@@ -353,15 +347,17 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem className="flex items-center">
-                        {/* onClick={signOut} */}
+                      <DropdownMenuItem
+                        className="flex items-center"
+                        onClick={() => logout()}
+                      >
                         <LogOut className="mr-2 h-4 w-4" />
                         Sign Out
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Button variant="ghost">Sign In</Button>
+                  <LoginModal compact />
                 )}
               </div>
               {user ? (
