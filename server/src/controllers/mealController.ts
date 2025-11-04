@@ -1,13 +1,22 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { promoteTmpToFinal } from "../lib/s3Utils";
 
 const prisma = new PrismaClient();
 
 export const createMeal = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, price, chefId, size, ingredients, allergens, image } = req.body;
+
+    let imageUrl = image;
+    // If image is a tmp key (we expect client to send key for tmp uploads), promote it
+    if (typeof image === "string" && image.startsWith(process.env.TMP_PREFIX ?? "uploads/tmp")) {
+      const { url } = await promoteTmpToFinal(image);
+      imageUrl = url;
+    }
+
     const newMeal = await prisma.meal.create({
-      data: { name, description, price, chefId, size, ingredients, allergens, image },
+      data: { name, description, price, chefId, size, ingredients, allergens, image: imageUrl },
     });
 
     res.status(201).json(newMeal);
@@ -21,9 +30,15 @@ export const updateMeal = async (req: Request, res: Response): Promise<void> => 
     const { mealId } = req.params;
     const { name, description, price, size, ingredients, allergens, image } = req.body;
 
+    let imageUrl = image;
+    if (typeof image === "string" && image.startsWith(process.env.TMP_PREFIX ?? "uploads/tmp")) {
+      const { url } = await promoteTmpToFinal(image);
+      imageUrl = url;
+    }
+
     const updatedMeal = await prisma.meal.update({
       where: { id: mealId },
-      data: { name, description, price, size, ingredients, allergens, image },
+      data: { name, description, price, size, ingredients, allergens, image: imageUrl },
     });
 
     res.status(200).json(updatedMeal);

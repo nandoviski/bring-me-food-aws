@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { EditMealSchema, type EditMealType } from "../schema/meal";
+import { EditMealSchema, Meal, type EditMealType } from "../schema/meal";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
@@ -28,7 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateMealMutation, useUpdateMealMutation } from "@/state/api";
+import {
+  useCreateMealMutation,
+  useUpdateMealMutation,
+  useUploadFileMutation,
+} from "@/state/api";
 import { useAuth } from "@/lib/auth";
 
 interface Props {
@@ -47,6 +51,8 @@ export default function AddMealForm({
   const [imagePreview, setImagePreview] = useState(
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [uploadFileTrigger] = useUploadFileMutation();
   const { user: loggedUser } = useAuth();
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();
   const [triggerCreate, { isLoading: isCreating }] = useCreateMealMutation();
@@ -95,39 +101,77 @@ export default function AddMealForm({
         const result = reader.result as string;
         setImagePreview(result);
         form.setValue("image", result);
+        setFileToUpload(file);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const onSubmit: SubmitHandler<EditMealType> = async (data) => {
-    const dataSanitized = {
+    const sanitized = {
       name: data.name.trim(),
       description: data.description.trim(),
-      price: Number.parseFloat(data.price as unknown as string),
+      price: Number.parseFloat(data.price),
       size: data.size ? Number.parseInt(data.size) : undefined,
       ingredients: data.ingredients.map((ing) => ing.value),
       allergens: data.allergens.map((all) => all.value),
-      image: data.image?.startsWith("/placeholder.svg")
-        ? undefined
-        : data.image,
-    };
+    } as Meal;
 
-    const result = mealId
-      ? await triggerUpdate({ mealId, meal: dataSanitized })
-      : await triggerCreate({ ...dataSanitized, chefId: loggedUser.chef.id });
+    let imageKey: string | undefined = undefined;
 
-    if (result.data) {
+    // If a new file was selected, upload via RTK Query mutation and get key
+    if (fileToUpload) {
+      try {
+        const data = await uploadFileTrigger({
+          file: fileToUpload,
+          userId: loggedUser.id,
+        }).unwrap();
+        imageKey = data.key;
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to upload image. Please try again.");
+        return;
+      }
+    } else {
+      // No new file. If editing and original image unchanged, reuse it; otherwise leave undefined
+      if (mealId && initialData?.image && initialData.image === data.image) {
+        // We stored original final URL in initialData.image; if server expects key, client could send the final URL
+        // We'll send the final URL — server will use it as-is (promotion not needed)
+        sanitized.image = initialData.image;
+      } else if (
+        !mealId &&
+        data.image &&
+        !data.image.startsWith("/placeholder.svg")
+      ) {
+        // New meal but user pasted an image data URL (unlikely) — ignore or handle separately
+        sanitized.image = undefined;
+      }
+    }
+
+    if (imageKey) sanitized.image = imageKey;
+
+    try {
+      if (mealId) {
+        await triggerUpdate({ mealId, meal: sanitized }).unwrap();
+      } else {
+        await triggerCreate({
+          ...sanitized,
+          chefId: loggedUser.chef.id,
+        }).unwrap();
+      }
+
       toast.success(mealId ? "Meal updated" : "Meal saved", {
         description: `Meal ${data.name} has been ${mealId ? "updated" : "added"} successfully.`,
       });
+
       if (!mealId) {
         form.reset();
         setImagePreview("/placeholder.svg?height=200&width=200");
       }
       onMealAdded?.();
       onOpenChange(false);
-    } else {
+    } catch (err) {
+      console.error(err);
       toast.error(mealId ? "Error updating meal" : "Error saving meal", {
         description: `There was an error ${mealId ? "updating" : "adding"} the meal. Please try again.`,
       });
@@ -212,6 +256,7 @@ export default function AddMealForm({
                     src={imagePreview || "/placeholder.svg"}
                     alt="Meal preview"
                     className="h-full w-full object-cover"
+                    unoptimized
                     width={200}
                     height={200}
                   />

@@ -123,6 +123,51 @@ export const api = createApi({
       }),
       invalidatesTags: ["Customers"],
     }),
+    uploadFile: build.mutation<
+      { key: string; publicUrl: string },
+      { file: File; userId: string }
+    >({
+      async queryFn(arg) {
+        try {
+          const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
+            /\/$/,
+            "",
+          );
+          const presignUrl = `${base}/upload/presign`;
+
+          const presignResp = await fetch(presignUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contentType: arg.file.type,
+              userId: arg.userId,
+            }),
+          });
+
+          if (!presignResp.ok) {
+            const text = await presignResp.text();
+            return { error: { status: presignResp.status, data: text } as any };
+          }
+
+          const { url, key, publicUrl } = await presignResp.json();
+
+          const putResp = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": arg.file.type },
+            body: arg.file,
+          });
+
+          if (!putResp.ok) {
+            const text = await putResp.text();
+            return { error: { status: putResp.status, data: text } as any };
+          }
+
+          return { data: { key, publicUrl } };
+        } catch (err: any) {
+          return { error: err as any };
+        }
+      },
+    }),
   }),
 });
 
@@ -143,4 +188,5 @@ export const {
   useGetChefByUserIdQuery,
   useGetCustomerQuery,
   useUpdateCustomerMutation,
+  useUploadFileMutation,
 } = api;

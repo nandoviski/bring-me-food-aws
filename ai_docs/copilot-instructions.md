@@ -87,3 +87,24 @@ Server root: `/server`
 
   - `cd server`
   - `npx prisma generate`
+
+# RTK Query: Prefer `.unwrap()` for mutations
+
+This short note explains the convention used in this repository when calling RTK Query mutations from components or async handlers.
+
+- Use the promise returned by a mutation's trigger and call `.unwrap()` to either get the actual response value or have it throw the error.
+- This makes `try/catch` handling straightforward and avoids checking `result.data` nested shapes.
+
+Example:
+
+```ts
+const [createItem] = useCreateItemMutation();
+try {
+  await createItem(payload).unwrap();
+  // success
+} catch (err) {
+  // handle error
+}
+```
+
+Reason: `.unwrap()` provides direct access to the fulfilled value and throws on rejection, matching normal async/await semantics and simplifying component code.

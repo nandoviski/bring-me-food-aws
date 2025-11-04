@@ -10,6 +10,7 @@ import mealRoutes from "./routes/mealRoutes";
 import menuRoutes from "./routes/menuRoutes";
 import chefRoutes from "./routes/chefRoutes";
 import customerRoutes from "./routes/customerRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -29,16 +30,22 @@ app.use(
 );
 
 /* ROUTES */
-app.get("/", (req, res) => {
+const apiRouter = express.Router();
+
+apiRouter.get("/", (req, res) => {
   res.send("Hello, this is the Bring Me Food API!");
 });
 
-app.use("/meals", mealRoutes);
-app.use("/menus", menuRoutes);
-app.use("/chefs", chefRoutes);
-app.use("/customers", customerRoutes);
+apiRouter.use("/meals", mealRoutes);
+apiRouter.use("/menus", menuRoutes);
+apiRouter.use("/chefs", chefRoutes);
+apiRouter.use("/customers", customerRoutes);
+apiRouter.use("/upload", uploadRoutes);
+
+// Mount the router with a prefix
+app.use("/api", apiRouter);
 
 /* SERVER */
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}/api`);
 });

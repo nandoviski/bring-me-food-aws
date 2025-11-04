@@ -35,7 +35,6 @@ import { useAuth } from "@/lib/auth";
 import AddMealDialog from "./add-meal-dialog";
 
 export function MealsList() {
-  // const [meals, setMeals] = useState<Meal[]>([]);
   const { user: loggedUser } = useAuth();
   const chefId = loggedUser?.chef ? loggedUser.chef.id : "";
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
@@ -44,17 +43,6 @@ export function MealsList() {
   const { data: meals } = useGetMealsByChefQuery({
     chefId: chefId,
   });
-
-  // async function fetchMeals() {
-  //   const fetchedMeals = await getMealsByChef();
-  //   setMeals(fetchedMeals ?? []);
-  // }
-
-  // useEffect(() => {
-  //   fetchMeals().catch((error) => {
-  //     console.error("Error fetching meals:", error);
-  //   });
-  // }, []);
 
   return (
     <div className="rounded-md border">
@@ -110,6 +98,7 @@ export function MealsList() {
                           alt={meal.name}
                           width={40}
                           height={40}
+                          unoptimized
                           className="h-10 w-10 rounded-md object-cover"
                         />
                         <div className="flex flex-col">
