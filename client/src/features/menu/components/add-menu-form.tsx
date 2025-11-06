@@ -54,20 +54,39 @@ export default function AddMenuForm({
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMenuMutation();
   const [triggerCreate, { isLoading: isCreating }] = useCreateMenuMutation();
 
-  // Initialize the form
   const form = useForm<EditMenuType>({
     resolver: zodResolver(EditMenuSchema),
-    defaultValues: initialData ?? {
-      name: "",
-      description: "",
-      startDate: new Date(),
-      endDate: (() => {
-        const date = new Date();
-        date.setDate(date.getDate() + 7);
-        return date;
-      })(),
-      meals: [],
-    },
+    defaultValues: (() => {
+      const baseDefaults: EditMenuType = {
+        name: "",
+        description: "",
+        startDate: new Date(),
+        endDate: (() => {
+          const date = new Date();
+          date.setDate(date.getDate() + 7);
+          return date;
+        })(),
+        meals: [],
+      };
+
+      if (!initialData) return baseDefaults;
+
+      // Helper to coerce a value to Date if possible
+      const toDate = (v: any) => {
+        if (!v) return undefined;
+        if (v instanceof Date) return v;
+
+        const parsed = new Date(v);
+        return isNaN(parsed.getTime()) ? undefined : parsed;
+      };
+
+      return {
+        ...baseDefaults,
+        ...initialData,
+        startDate: toDate(initialData.startDate) ?? baseDefaults.startDate,
+        endDate: toDate(initialData.endDate) ?? baseDefaults.endDate,
+      } as EditMenuType;
+    })(),
   });
 
   if (!loggedUser || !loggedUser.chef) {
@@ -174,8 +193,24 @@ export default function AddMenuForm({
                 <FormControl>
                   <Input
                     type="date"
-                    value={format(field.value, "yyyy-MM-dd")}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={
+                      field.value instanceof Date
+                        ? format(field.value, "yyyy-MM-dd")
+                        : (() => {
+                            try {
+                              const d = new Date(field.value);
+                              return isNaN(d.getTime())
+                                ? ""
+                                : format(d, "yyyy-MM-dd");
+                            } catch {
+                              return "";
+                            }
+                          })()
+                    }
+                    onChange={(e) => {
+                      const dateValue = new Date(e.target.value + "T00:00:00");
+                      field.onChange(dateValue);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -237,6 +272,7 @@ export default function AddMenuForm({
                                 : "/placeholder.svg"
                             }
                             alt={meal.name}
+                            unoptimized
                             width={40}
                             height={40}
                             className="h-10 w-10 rounded-md object-cover"

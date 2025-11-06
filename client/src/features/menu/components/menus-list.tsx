@@ -162,6 +162,7 @@ export function MenusList() {
                               }
                               alt={meal.name}
                               className="h-10 w-10 rounded-md object-cover"
+                              unoptimized
                               width={40}
                               height={40}
                             />
@@ -186,9 +187,6 @@ export function MenusList() {
             )}
           </div>
         </CardContent>
-        <CardFooter>
-          <div>test</div>
-        </CardFooter>
       </Card>
 
       <AddMenuDialog open={addMenuOpen} onOpenChange={setAddMenuOpen} />

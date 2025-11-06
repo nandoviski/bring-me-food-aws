@@ -7,6 +7,10 @@ In the chef's page
 
 - need to fix the view more button
 
+# Issues to fix / implement
+
+- A non chef user should not be able to access the chef's page (like account/chef/dashboard)
+
 # General
 
 - Run both client and server with task: Press Ctrl+Shift+P → Run Task → Start Both (Client + Server)
