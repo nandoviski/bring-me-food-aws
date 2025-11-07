@@ -24,6 +24,7 @@ export default function MealItem({ meal }: { meal: Meal }) {
           src={
             meal.image && meal.image !== "" ? meal.image : "/placeholder.svg"
           }
+          loading={meal.image && meal.image !== "" ? undefined : "eager"}
           alt={`${meal.name} - ${meal.description}`}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"

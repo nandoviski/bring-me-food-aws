@@ -179,6 +179,14 @@ export function Navbar() {
                         {/* )} */}
                         <DropdownMenuItem asChild>
                           <Link
+                            href="/chef/sarah_kitchen"
+                            className="flex items-center font-medium"
+                          >
+                            Sarah Kitchen
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
                             href="/favorites"
                             className="flex items-center font-medium"
                           >
