@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Sheet,
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default function ShoppingCartSheet({ children }: Props) {
+  const router = useRouter();
   const {
     cartItems,
     increaseItemQuantity,
@@ -72,13 +74,13 @@ export default function ShoppingCartSheet({ children }: Props) {
               {cartItems.map((item) => (
                 <li key={item.id} className="flex gap-4">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md">
-                    <p>#FIXME</p>
                     <Image
                       src={
                         item.image && item.image !== ""
                           ? item.image
                           : "/placeholder.svg"
                       }
+                      unoptimized
                       alt={item.name}
                       fill
                       className="object-cover"
@@ -141,9 +143,16 @@ export default function ShoppingCartSheet({ children }: Props) {
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
-              <Button className="mt-4 w-full bg-orange-500 hover:bg-orange-600">
-                Proceed to Checkout
-              </Button>
+              <SheetClose asChild>
+                <Button
+                  className="mt-4 w-full bg-orange-500 hover:bg-orange-600"
+                  onClick={() => {
+                    router.push("/checkout");
+                  }}
+                >
+                  Proceed to Checkout
+                </Button>
+              </SheetClose>
             </div>
           </SheetFooter>
         )}

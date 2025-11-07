@@ -11,6 +11,7 @@ import menuRoutes from "./routes/menuRoutes";
 import chefRoutes from "./routes/chefRoutes";
 import customerRoutes from "./routes/customerRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -41,6 +42,7 @@ apiRouter.use("/menus", menuRoutes);
 apiRouter.use("/chefs", chefRoutes);
 apiRouter.use("/customers", customerRoutes);
 apiRouter.use("/upload", uploadRoutes);
+apiRouter.use("/orders", orderRoutes);
 
 // Mount the router with a prefix
 app.use("/api", apiRouter);

@@ -3,7 +3,7 @@
 import CheckoutForm from "@/features/checkout/components/checkout-form";
 import { useAuth } from "@/lib/auth";
 
-export default async function CheckoutPage() {
+export default function CheckoutPage() {
   const { user } = useAuth();
 
   if (!user) {

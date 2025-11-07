@@ -26,6 +26,7 @@ type ShoppingCartContextType = {
   decreaseItemQuantity: (id: string) => void;
   removeItem: (id: string) => void;
   getItemQuantity: (id: string) => number;
+  clearCart: () => void;
 };
 
 const ShoppingCartContext = createContext({} as ShoppingCartContextType);
@@ -118,6 +119,7 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
         increaseItemQuantityByMeal,
         decreaseItemQuantity,
         removeItem,
+        clearCart: () => setCartItems([]),
         // isOpen,
         // openCart,
         // closeCart,

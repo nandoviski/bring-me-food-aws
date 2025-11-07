@@ -112,16 +112,18 @@ model MealsOnOrders {
 }
 
 model Order {
-  id            String          @id @default(uuid()) @db.VarChar(50)
-  status        OrderStatus     @default(PENDING)
-  paymentStatus PaymentStatus   @default(PENDING)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  chefId        String          @db.VarChar(50)
-  chef          Chef            @relation(fields: [chefId], references: [id])
-  customerId    String          @db.VarChar(50)
-  customer      Customer        @relation(fields: [customerId], references: [id])
-  mealsOnOrders MealsOnOrders[]
+  id              String          @id @default(uuid()) @db.VarChar(50)
+  status          OrderStatus     @default(PENDING)
+  paymentStatus   PaymentStatus   @default(PENDING)
+  deliveryAddress String          @db.VarChar(250)
+  notes           String?         @db.VarChar(300)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  chefId          String          @db.VarChar(50)
+  chef            Chef            @relation(fields: [chefId], references: [id])
+  customerId      String          @db.VarChar(50)
+  customer        Customer        @relation(fields: [customerId], references: [id])
+  mealsOnOrders   MealsOnOrders[]
 }
 
 enum UserStatus {
