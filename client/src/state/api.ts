@@ -6,7 +6,10 @@ import type { Chef } from "@/features/chef/schema/chef";
 import type { Customer } from "@/features/customer/schema/customer";
 import type { Meal } from "@/features/meal/schema/meal";
 import type { CreateEditMenu, Menu } from "@/features/menu/schema/menu";
-import { CreateOrderSchema } from "@/features/checkout/schema/order";
+import {
+  CreateOrderSchema,
+  OrderShape,
+} from "@/features/checkout/schema/order";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -169,6 +172,10 @@ export const api = createApi({
         }
       },
     }),
+    getCustomerOrders: build.query<Array<OrderShape>, { userId: string }>({
+      query: ({ userId }) => `customers/${userId}/orders`,
+      providesTags: ["Customers"],
+    }),
     // Orders
     createOrder: build.mutation<
       { orderId: string; status: string },
@@ -202,4 +209,5 @@ export const {
   useUpdateCustomerMutation,
   useUploadFileMutation,
   useCreateOrderMutation,
+  useGetCustomerOrdersQuery,
 } = api;

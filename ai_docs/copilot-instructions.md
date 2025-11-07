@@ -39,6 +39,16 @@ This document helps AI tools (like GitHub Copilot or ChatGPT) understand the arc
 
 ---
 
+## 📦 Component placement & naming
+
+When creating UI components, follow these project-specific rules so generated code stays organized and consistent:
+
+- Place page/feature-specific components inside the feature folder, not in the global `src/components` folder. Example: components used by pages under `src/app/account/customer/...` should be created under `src/features/customer/components`.
+
+- File names for React components must use kebab-case (hyphen-separated), not camelCase. For example create `order-card.tsx` instead of `OrderCard.tsx` or `orderCard.tsx`.
+
+These rules help keep components scoped to features, simplify navigation, and avoid cluttering the global components directory.
+
 ## 🪄 Copilot Should:
 
 - Suggest new Next.js pages, components, and API routes.

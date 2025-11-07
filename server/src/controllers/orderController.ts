@@ -7,9 +7,7 @@ const prisma = new PrismaClient();
 const createOrderSchema = z.object({
   chefId: z.string().optional(),
   customerId: z.string().optional(),
-  mealsOnOrders: z
-    .array(z.object({ mealId: z.string(), quantity: z.number().int().positive() }))
-    .min(1),
+  meals: z.array(z.object({ mealId: z.string(), quantity: z.number().int().positive() })).min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
 });
@@ -25,13 +23,13 @@ export async function createOrder(req: Request, res: Response) {
     const customer = await prisma.customer.findUnique({ where: { id: customerId } });
     if (!customer) return res.status(400).json({ message: "Customer not found" });
 
-    const mealIds = payload.mealsOnOrders.map((i) => i.mealId);
+    const mealIds = payload.meals.map((i) => i.mealId);
     const meals = await prisma.meal.findMany({ where: { id: { in: mealIds } } });
     if (meals.length !== mealIds.length) {
       return res.status(400).json({ message: "One or more meals not found" });
     }
 
-    const total = payload.mealsOnOrders.reduce((sum, it) => {
+    const total = payload.meals.reduce((sum, it) => {
       const meal = meals.find((m) => m.id === it.mealId)!;
       return sum + meal.price * it.quantity;
     }, 0);
@@ -50,7 +48,7 @@ export async function createOrder(req: Request, res: Response) {
       chefId = chefIds[0];
     }
 
-    // Create order and mealsOnOrders in a transaction
+    // Create order and meals in a transaction
     const created = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
@@ -62,7 +60,7 @@ export async function createOrder(req: Request, res: Response) {
         },
       });
 
-      const mData = payload.mealsOnOrders.map((it) => ({ mealId: it.mealId, orderId: order.id }));
+      const mData = payload.meals.map((it) => ({ mealId: it.mealId, orderId: order.id }));
 
       // createMany doesn't return rows; use create for each to be safe with relations
       for (const md of mData) {
