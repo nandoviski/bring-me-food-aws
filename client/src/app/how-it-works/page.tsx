@@ -21,7 +21,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-primary py-20 text-white">
+      <section className="bg-primary-dark py-20 text-white">
         <div className="container mx-auto px-4 text-center">
           <h1 className="mb-6 text-4xl font-bold md:text-5xl">
             How Bring me Food Works
@@ -104,11 +104,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600"
-              asChild
-            >
+            <Button size="lg" variant="orange" asChild>
               <Link href="/explore">Start Ordering</Link>
             </Button>
           </div>
@@ -199,11 +195,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="mt-16 text-center">
-            <Button
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600"
-              asChild
-            >
+            <Button size="lg" variant="orange" asChild>
               <Link href="/become-chef">Start Selling Today</Link>
             </Button>
           </div>
@@ -266,21 +258,12 @@ export default function HowItWorksPage() {
             Join our community today and be part of the homemade food revolution
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600"
-              asChild
-            >
+            <Button size="lg" variant="orange" asChild>
               <Link href="/explore">
                 Find Meals <Search className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white bg-white/10 hover:bg-white/20"
-              asChild
-            >
+            <Button size="lg" variant="green" asChild>
               <Link href="/become-chef">
                 Become a Chef <ChefHat className="ml-2 h-5 w-5" />
               </Link>

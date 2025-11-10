@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -23,9 +23,10 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
       ) : (
         <>
           <Button
-            variant={compact ? "ghost" : "default"}
+            variant={compact ? "green" : "green"}
             onClick={() => setOpen(true)}
           >
+            {/* px-6 py-3 font-medium */}
             Sign In
           </Button>
 

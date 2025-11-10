@@ -12,6 +12,7 @@ In the chef's page
 - Add delivery price to the order on database and frontend + Add a way for the chef to set the delivery price in his settings page
 - Validate on checkout that all the meals in the cart belong to the same chef
 - A non chef user should not be able to access the chef's page (like account/chef/dashboard)
+- Design update pages other than navbar, homepage and how it works page (like footer, chef's page, etc)
 
 # General
 

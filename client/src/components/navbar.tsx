@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   ChefHat,
@@ -34,6 +35,8 @@ import ShoppingCartSheet from "@/features/shopping-cart/components/shoppingCartS
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const { cartQuantity } = useShoppingCart();
@@ -42,12 +45,56 @@ export function Navbar() {
     ? user.customer.firstName
     : (user?.chef?.username ?? "BF");
 
+  // Check if we're on the homepage
+  const isHomePage = true; //pathname === "/" || "/how-it-works";
+
+  // Handle scroll to change navbar appearance
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isHomePage) {
+        setIsScrolled(window.scrollY > 50);
+      } else {
+        setIsScrolled(true);
+      }
+    };
+
+    // Set initial state
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHomePage]);
+
+  // Navbar background and text colors based on scroll state
+  const navBackground =
+    isHomePage && !isScrolled
+      ? "bg-primary-dark backdrop-blur-md top-0 "
+      : "bg-white top-2 container-custom";
+
+  const navTextColor =
+    isHomePage && !isScrolled ? "text-white" : "text-primary-dark";
+
+  const navBorder =
+    isHomePage && !isScrolled
+      ? "border-primary-dark/20  border-y"
+      : "border-primary-dark/20  border rounded-lg";
+
+  const navLinkClass =
+    isHomePage && !isScrolled
+      ? "text-white/90 hover:text-accent-orange"
+      : "primary-dark/90 hover:text-accent-orange";
+
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm supports-backdrop-filter:bg-white/60">
-      <div className="container mx-auto px-4">
+    <nav
+      className={`sticky z-50 w-full transition-all duration-500 ${navBackground} ${navBorder}`}
+    >
+      <div className="container-custom">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link
+              href="/"
+              className={`flex items-center space-x-2 transition-colors ${navTextColor}`}
+            >
               <ChefHat className="h-6 w-6" />
               <span className="text-xl font-bold">Bring me Food</span>
             </Link>
@@ -55,22 +102,29 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <Link href="/search" className="text-gray-600 hover:text-gray-900">
+            <Link
+              href="/search"
+              className={`font-medium transition-colors ${navLinkClass}`}
+            >
               Explore
             </Link>
             <Link
               href="/how-it-works"
-              className="text-gray-600 hover:text-gray-900"
+              className={`font-medium transition-colors ${navLinkClass}`}
             >
               How It Works
             </Link>
             {user ? (
               <>
                 <ShoppingCartSheet>
-                  <Button variant="ghost" size="icon" className="relative">
+                  <Button
+                    variant="green"
+                    size="icon"
+                    className={`relative border-0 ${isScrolled && "text-primary-dark hover:text-accent-orange bg-white"} hover:bg-white/10`}
+                  >
                     <ShoppingBag className="h-5 w-5" />
                     {cartQuantity > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
+                      <span className="bg-accent-orange absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold text-white">
                         {cartQuantity}
                       </span>
                     )}
@@ -82,9 +136,9 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
+                      className={`relative h-8 w-8 rounded-full hover:bg-white/10 ${navTextColor}`}
                     >
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8 ring-2 ring-white/20">
                         <AvatarImage
                           src={`https://api.dicebear.com/7.x/initials/svg?seed=${nameForMenuIcon}`}
                           alt={nameForMenuIcon}
@@ -208,16 +262,16 @@ export function Navbar() {
                 </DropdownMenu>
               </>
             ) : (
-              <>
+              <div className="flex items-center gap-4">
                 <LoginModal />
-              </>
+              </div>
             )}
           </div>
 
           {/* Mobile Navigation */}
           <div className="flex md:hidden">
             <Button
-              variant="ghost"
+              variant="green"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
@@ -228,41 +282,44 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="border-t py-4 md:hidden">
+          <div
+            className={`border-t py-4 md:hidden ${isHomePage && !isScrolled ? "border-white/20" : "border-primary-dark/20"}`}
+          >
             <div className="flex flex-col space-y-4">
               <Link
-                href="/explore"
-                className="text-gray-600 hover:text-gray-900"
+                href="/search"
+                className={`font-medium transition-colors ${navLinkClass}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Explore
               </Link>
               <Link
-                href="/chefs"
-                className="text-gray-600 hover:text-gray-900"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Chefs
-              </Link>
-              <Link
                 href="/how-it-works"
-                className="text-gray-600 hover:text-gray-900"
+                className={`font-medium transition-colors ${navLinkClass}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 How It Works
               </Link>
-              <Link
-                href="/search"
-                className="text-gray-600 hover:text-gray-900"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Search
-              </Link>
               {user && (
                 <>
+                  <ShoppingCartSheet>
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-start ${navLinkClass} hover:bg-white/10`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <ShoppingBag className="mr-2 h-4 w-4" />
+                      Cart
+                      {cartQuantity > 0 && (
+                        <span className="bg-accent-orange ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                          {cartQuantity}
+                        </span>
+                      )}
+                    </Button>
+                  </ShoppingCartSheet>
                   <Link
                     href="/orders"
-                    className="text-gray-600 hover:text-gray-900"
+                    className={`font-medium transition-colors ${navLinkClass}`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="flex items-center">
@@ -272,7 +329,7 @@ export function Navbar() {
                   </Link>
                   <Link
                     href="/favorites"
-                    className="text-gray-600 hover:text-gray-900"
+                    className={`font-medium transition-colors ${navLinkClass}`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="flex items-center">
@@ -283,26 +340,14 @@ export function Navbar() {
                 </>
               )}
               <div className="flex items-center space-x-4">
-                {/* {user && (
-                  <CartSheet>
-                    <Button variant="ghost" size="icon" className="relative">
-                      <ShoppingBag className="h-5 w-5" />
-                      {cartItemsCount > 0 && (
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                          {cartItemsCount}
-                        </span>
-                      )}
-                    </Button>
-                  </CartSheet>
-                )} */}
                 {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="relative h-8 w-8 rounded-full"
+                        className={`relative h-8 w-8 rounded-full hover:bg-white/10 ${navTextColor}`}
                       >
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-8 w-8 ring-2 ring-white/20">
                           <AvatarImage
                             src={`https://api.dicebear.com/7.x/initials/svg?seed=${nameForMenuIcon}`}
                             alt={nameForMenuIcon}
@@ -368,13 +413,6 @@ export function Navbar() {
                   <LoginModal compact />
                 )}
               </div>
-              {user ? (
-                <Link href="/dashboard" className="w-full">
-                  <Button className="w-full">Dashboard</Button>
-                </Link>
-              ) : (
-                <Button className="w-full">Get Started</Button>
-              )}
             </div>
           </div>
         )}
