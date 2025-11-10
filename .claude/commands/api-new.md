@@ -18,7 +18,10 @@ Use Express Router in `server/src/routes/` directory with TypeScript
 ### 2. **Validation**
 
 - Use Zod for runtime type validation
-- Name schemas clearly (e.g., `CreateUserSchema`, `UpdateUserSchema`)
+- Name schemas meaningfully based on their purpose:
+  - **Request body schemas**: `CreateUserSchema`, `UpdateUserSchema`, `CreateOrderSchema`
+  - **Parameter schemas**: `UserIdParamSchema`, `ChefIdParamSchema`, `OrderIdParamSchema`
+  - **Query schemas**: `ListOrdersQuerySchema`, `SearchMealsQuerySchema`
 - Try to reuse existing schemas where possible and extend them if necessary (naming conventions should be followed)
 - Validate input early (before DB/API calls)
 - Return clear validation error messages
