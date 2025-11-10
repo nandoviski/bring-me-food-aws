@@ -12,6 +12,10 @@ const createOrderSchema = z.object({
   deliveryAddress: z.string().optional(),
 });
 
+const ChefIdParamSchema = z.object({
+  chefId: z.string().uuid("Invalid chef ID format"),
+});
+
 export async function createOrder(req: Request, res: Response) {
   try {
     const payload = createOrderSchema.parse(req.body);
@@ -80,5 +84,80 @@ export async function createOrder(req: Request, res: Response) {
     }
     console.error("createOrder error", err);
     return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getOrdersByChefId(req: Request, res: Response) {
+  try {
+    // Validate chef ID from URL params
+    const { chefId } = ChefIdParamSchema.parse({ chefId: req.params.chefId });
+
+    // Verify chef exists
+    const chef = await prisma.chef.findUnique({ where: { id: chefId } });
+    if (!chef) {
+      return res.status(404).json({ error: "Chef not found", success: false });
+    }
+
+    // Fetch orders with related data
+    const orders = await prisma.order.findMany({
+      where: {
+        chefId,
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phoneNumber: true,
+            address: true,
+            city: true,
+            state: true,
+            country: true,
+            postalCode: true,
+          },
+        },
+        mealsOnOrders: {
+          include: {
+            meal: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                price: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Calculate totals for each order
+    const ordersWithTotals = orders.map((order) => {
+      const total = order.mealsOnOrders.reduce((sum, mealOnOrder) => {
+        return sum + mealOnOrder.meal.price;
+      }, 0);
+
+      return {
+        ...order,
+        total,
+      };
+    });
+
+    return res.status(200).json(ordersWithTotals);
+  } catch (err: any) {
+    console.error("getOrdersByChefId error", err);
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Invalid chef ID",
+        details: err.issues,
+        success: false
+      });
+    }
+    return res.status(500).json({ error: "Internal server error", success: false });
   }
 }
