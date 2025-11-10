@@ -96,16 +96,6 @@ export default function HomePage() {
                     Sarah Johnson
                   </p>
                 </div>
-
-                {/* Chef image */}
-                <div className="absolute bottom-0 left-0 h-[120px] w-[120px] overflow-hidden rounded-2xl shadow-xl md:h-[150px] md:w-[150px]">
-                  <Image
-                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=300&q=80"
-                    alt="Local chef"
-                    fill
-                    className="image-rounded-lg"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -160,7 +150,7 @@ export default function HomePage() {
                   <div className="bg-accent-orange/10 mb-4 flex h-16 w-16 items-center justify-center rounded-full">
                     <benefit.icon className="text-accent-orange h-8 w-8" />
                   </div>
-                  <h3 className="text-primary-dark mb-3 text-2xl text-xl font-semibold md:text-3xl">
+                  <h3 className="text-primary-dark mb-3 text-2xl font-semibold md:text-3xl">
                     {benefit.title}
                   </h3>
                   <p className="text-body text-gray-600">
