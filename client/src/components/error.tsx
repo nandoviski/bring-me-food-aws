@@ -6,7 +6,7 @@ export default function Error({
   fetchingError,
 }: {
   message?: string;
-  fetchingError?: FetchBaseQueryError | SerializedError;
+  fetchingError?: FetchBaseQueryError | SerializedError | null;
 }) {
   let displayMessage = message;
   const err: any = fetchingError;

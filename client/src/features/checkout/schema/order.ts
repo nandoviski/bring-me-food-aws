@@ -28,6 +28,41 @@ export type OrderShape = {
   meals: Meal[];
 };
 
+export type ChefOrderWithDetails = {
+  id: string;
+  status: string;
+  chefId: string;
+  customerId: string;
+  total: number;
+  deliveryFee: number;
+  deliveryAddress: string;
+  notes: string | null;
+  createdAt: string;
+  customer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  };
+  mealsOnOrders: Array<{
+    quantity: number;
+    priceAtPurchase: number;
+    meal: {
+      id: string;
+      name: string;
+      description: string;
+      price: number;
+      image: string | null;
+    };
+  }>;
+  grandTotal: number;
+};
+
 export type CreateOrderSchema = z.infer<typeof createOrderSchema>;
 const createOrderSchema = z.object({
   chefId: z.string().optional(),

@@ -9,6 +9,7 @@ import type { CreateEditMenu, Menu } from "@/features/menu/schema/menu";
 import {
   CreateOrderSchema,
   OrderShape,
+  ChefOrderWithDetails,
 } from "@/features/checkout/schema/order";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
@@ -25,6 +26,7 @@ export const api = createApi({
     "ChefsWeeklyMenu",
     "ChefByUserId",
     "Customers",
+    "OrdersByChef",
   ],
   endpoints: (build) => ({
     // Meals
@@ -187,6 +189,10 @@ export const api = createApi({
         body,
       }),
     }),
+    getOrdersByChefId: build.query<ChefOrderWithDetails[], { chefId: string }>({
+      query: ({ chefId }) => `orders/chef/${chefId}`,
+      providesTags: ["OrdersByChef"],
+    }),
   }),
 });
 
@@ -210,4 +216,5 @@ export const {
   useUploadFileMutation,
   useCreateOrderMutation,
   useGetCustomerOrdersQuery,
+  useGetOrdersByChefIdQuery,
 } = api;
