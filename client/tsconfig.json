@@ -19,7 +19,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/features/*": ["./src/features/*"],
-      "@/state/*": ["./src/state/*"]
+      "@/state/*": ["./src/state/*"],
+      "@/schema": ["./src/schema"]
     }
   },
   "include": [

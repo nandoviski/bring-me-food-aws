@@ -4,7 +4,7 @@ import NotFound from "@/components/notFound";
 import Error from "@/components/error";
 import Loading from "@/components/loading";
 import EditChefForm from "@/features/chef/components/edit-chef-form";
-import { EditChefSchema } from "@/features/chef/schema/chef";
+import { EditChefSchema } from "@/schema";
 import { useGetChefByUserIdQuery } from "@/state/api";
 import { useAuth } from "@/lib/auth";
 

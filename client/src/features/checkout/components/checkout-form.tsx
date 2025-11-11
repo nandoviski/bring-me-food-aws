@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateOrderMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
-import type { Customer } from "@/features/customer/schema/customer";
+import type { Customer, CreateOrderSchema } from "@/schema";
 import { ChevronDownIcon, TrashIcon } from "lucide-react";
-import { CreateOrderSchema } from "../schema/order";
 
 type Props = {
   customer: Customer;

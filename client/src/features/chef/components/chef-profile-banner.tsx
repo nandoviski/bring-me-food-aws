@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import type { Chef } from "@/features/chef/schema/chef";
+import type { Chef } from "@/schema";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 // import { FavoriteButton } from "./favorite-button";

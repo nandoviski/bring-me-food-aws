@@ -10,22 +10,19 @@ export interface Meal {
   image?: string;
   ingredients: string[];
   allergens: string[];
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export type EditMealType = z.infer<typeof EditMealSchema>;
-export const EditMealSchema = z.object({
+export const mealSchema = z.object({
   name: z.string().min(2, "Meal name must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  price: z
-    .string()
-    .refine(
-      (val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) > 0,
-      {
-        message: "Price must be a positive number",
-      },
-    ),
+  price: z.string().refine(
+    (val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) > 0,
+    {
+      message: "Price must be a positive number",
+    },
+  ),
   size: z.string().optional(),
   ingredients: z.array(
     z.object({
@@ -39,3 +36,9 @@ export const EditMealSchema = z.object({
   ),
   image: z.string().optional(),
 });
+
+export type MealCreate = z.infer<typeof mealSchema>;
+
+// Backwards compatibility alias
+export const EditMealSchema = mealSchema;
+export type EditMealType = MealCreate;

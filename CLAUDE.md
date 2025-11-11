@@ -51,6 +51,11 @@ bring-me-food-aws/
 - `auth/` - Authentication components
 - Global navbar, loading states, error boundaries
 
+**Schemas** (`src/schema/`):
+- Centralized Zod schemas and TypeScript interfaces
+- `meal.ts`, `chef.ts`, `customer.ts`, `menu.ts`, `order.ts`, `cart.ts`, `types.ts`
+- All types imported via `@/schema` path alias
+
 **State** (`src/state/`):
 - `api.ts` - RTK Query endpoints for all CRUD operations
 - Redux store configuration with theme and sidebar state
@@ -61,6 +66,11 @@ bring-me-food-aws/
 - Meals, Menus, Chefs, Customers, Orders, Uploads
 
 **Controllers** (`src/controllers/`): Business logic for each route
+
+**Schemas** (`src/schemas/`):
+- Mirrored Zod schemas from client for server-side validation
+- `meal.ts`, `chef.ts`, `customer.ts`, `menu.ts`, `order.ts`
+- Ensures client/server type consistency
 
 **Database** (`prisma/schema.prisma`):
 - Models: User, Chef, Customer, Meal, Menu, Order, MealsOnOrders
@@ -124,16 +134,43 @@ npx prisma reset                              # Reset database (dev only)
 - Always use `.unwrap()` on mutations for straightforward error handling
 - Pattern: `try { await mutation(payload).unwrap(); } catch(err) { /* handle */ }`
 
-### Component Naming
+### Component Naming & Props
 - Files: kebab-case (e.g., `meal-item.tsx`)
 - Exports: Named exports only
+- **Props Type**: Use consistent `type Props = { ... }` naming
 - Placement:
   - Feature-specific: `src/features/[feature]/components/`
   - Global shared: `src/components/`
+- **Type Imports**: Always import from `@/schema`, never define local duplicates
+  ```typescript
+  // ✅ CORRECT
+  import type { Meal } from "@/schema";
+  type Props = { meal: Meal };
 
-### Validation
-- Frontend and backend: Zod schemas in feature folders
-- All API inputs validated with Zod
+  // ❌ WRONG - Don't duplicate types
+  interface Meal { /* ... */ }
+  type Props = { meal: Meal };
+  ```
+
+### Validation & Type Reuse
+- **Single Source of Truth**: All schemas centralized in `src/schema/` (client) and `src/schemas/` (server)
+- **Type Reuse Pattern**: One interface per database table, extended as needed for operations
+- Example:
+  ```typescript
+  // Base interface mirrors database
+  export interface Meal {
+    id: string;
+    name: string;
+    chefId: string;
+    // ... all fields
+  }
+
+  // Operation-specific schemas derived from base
+  export const EditMealSchema = z.object({ /* fields */ });
+  export type EditMealType = z.infer<typeof EditMealSchema>;
+  ```
+- **Component Usage**: Import types directly from `@/schema`, no local duplication
+- All API inputs validated with Zod on both client and server
 
 ### Database Changes
 1. Edit `server/prisma/schema.prisma`
@@ -157,7 +194,7 @@ npx prisma reset                              # Reset database (dev only)
 **TypeScript:**
 - Strict mode enabled
 - tsconfig path aliases:
-  - Frontend: `@/*` → `src/`, `@/features/*`, `@/state/*`
+  - Frontend: `@/*` → `src/`, `@/features/*`, `@/state/*`, `@/schema` → `src/schema`
   - Backend: Default paths
 
 ## Important Notes
@@ -186,12 +223,20 @@ npx prisma reset                              # Reset database (dev only)
 ### Adding a New Feature
 
 1. **Create feature folder** in `src/features/[feature]/`
-2. **Add Zod schema** in `src/features/[feature]/schema/`
+2. **Add Zod schema** in `src/schema/[feature].ts` (NOT in feature folder)
+   - Define base interface
+   - Create operation-specific Zod schemas (Create, Update, etc.)
+   - Export types derived from schemas
 3. **Create components** in `src/features/[feature]/components/`
-4. **Add RTK Query endpoints** if needed in `client/src/state/api.ts`
-5. **Create backend routes** in `server/src/routes/`
-6. **Implement controllers** in `server/src/controllers/`
-7. **Add/update Prisma models** if needed and run migration
+   - Import types from `@/schema`, never define local types
+   - Use consistent `type Props = { ... }` naming
+4. **Add server schema** in `server/src/schemas/[feature].ts`
+   - Mirror client schema structure
+   - Add server-specific validation rules
+5. **Add RTK Query endpoints** in `client/src/state/api.ts` (import types from `@/schema`)
+6. **Create backend routes** in `server/src/routes/`
+7. **Implement controllers** in `server/src/controllers/` (import validation from `src/schemas/`)
+8. **Add/update Prisma models** if needed and run migration
 
 ### Adding a Database Model
 
@@ -227,6 +272,50 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
 Testing infrastructure not yet implemented. Recommendations:
 - Frontend: React Testing Library + Jest
 - Backend: Jest or Vitest
+
+## Type Management Best Practices
+
+### Golden Rule: Reuse Types, Don't Duplicate
+
+✅ **DO THIS:**
+```typescript
+// client/src/schema/meal.ts
+export interface Meal { /* database fields */ }
+export const EditMealSchema = z.object({ /* form fields */ });
+export type EditMealType = z.infer<typeof EditMealSchema>;
+
+// client/src/features/meal/components/add-meal-form.tsx
+import type { Meal, EditMealType } from "@/schema";
+
+type Props = {
+  meal?: Meal;
+  onSave: (data: EditMealType) => void;
+};
+```
+
+❌ **DON'T DO THIS:**
+```typescript
+// DON'T create interfaces in components
+interface LocalMeal { /* ... */ }
+
+// DON'T duplicate types from schema
+type FormMeal = {
+  name: string;
+  price: number;
+  // ... repeating fields from schema
+};
+```
+
+### Schema Organization
+- **One schema file per entity** (meal.ts, chef.ts, etc.)
+- **One base interface** that mirrors the database model
+- **Multiple Zod schemas** for different operations (Create, Update, Edit)
+- **Derived types** from Zod schemas using `z.infer<typeof Schema>`
+- **Transformation functions** in schema files when needed (e.g., `transformOrder()`)
+
+### Import Path
+- Always use `@/schema` path alias for cleaner, consistent imports
+- Never use relative paths like `../schema/meal`
 
 ## Resources
 

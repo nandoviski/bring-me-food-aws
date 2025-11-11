@@ -18,34 +18,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import type { Order } from "@/schema/order";
+import { getOrderCustomerName, getOrderDate } from "@/schema/order";
 
-interface Meal {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  available: boolean;
-  orderCount: number;
-  ingredients: string[];
-  allergens: string[];
-}
-
-interface Order {
-  id: string;
-  customer: string;
-  date: string;
-  items: Meal[];
-  status: string; //"preparing" | "ready" | "completed"
-  total: number;
-}
-
-interface OrdersListProps {
+type Props = {
   orders: Order[];
-}
+};
 
-export function OrdersList({ orders }: OrdersListProps) {
+export function OrdersList({ orders }: Props) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -63,8 +43,8 @@ export function OrdersList({ orders }: OrdersListProps) {
           {orders.map((order) => (
             <TableRow key={order.id}>
               <TableCell className="font-medium">{order.id}</TableCell>
-              <TableCell>{order.customer}</TableCell>
-              <TableCell>{formatDate(order.date)}</TableCell>
+              <TableCell>{getOrderCustomerName(order)}</TableCell>
+              <TableCell>{formatDate(getOrderDate(order))}</TableCell>
               <TableCell>
                 {order.status === "preparing" && (
                   <Badge

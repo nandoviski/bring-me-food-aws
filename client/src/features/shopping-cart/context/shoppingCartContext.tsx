@@ -1,33 +1,12 @@
 "use client";
 
-import type { Meal } from "@/features/meal/schema/meal";
-import { useState, type ReactNode, useContext, createContext } from "react";
-
-type CartItem = {
-  id: string;
-  quantity: number;
-  image: string | null;
-  name: string;
-  price: number;
-};
-
-type ShoppingCartProviderProps = {
-  children: ReactNode;
-};
-
-type ShoppingCartContextType = {
-  cartItems: CartItem[];
-  cartQuantity: number;
-  // isOpen: boolean;
-  // openCart: () => void;
-  // closeCart: () => void;
-  increaseItemQuantityByMeal: (meal: Meal) => void;
-  increaseItemQuantity: (cartItem: CartItem) => void;
-  decreaseItemQuantity: (id: string) => void;
-  removeItem: (id: string) => void;
-  getItemQuantity: (id: string) => number;
-  clearCart: () => void;
-};
+import type {
+  Meal,
+  CartItem,
+  ShoppingCartProviderProps,
+  ShoppingCartContextType,
+} from "@/schema";
+import { useState, useContext, createContext } from "react";
 
 const ShoppingCartContext = createContext({} as ShoppingCartContextType);
 

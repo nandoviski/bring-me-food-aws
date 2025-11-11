@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EditCustomerSchema, type EditCustomerType } from "../schema/customer";
+import { EditCustomerSchema, type EditCustomerType } from "@/schema";
 import { useUpdateCustomerMutation } from "@/state/api";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";

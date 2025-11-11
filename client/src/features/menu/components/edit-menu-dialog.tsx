@@ -8,21 +8,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AddMenuForm from "./add-menu-form";
-import type { Menu } from "@/features/menu/schema/menu";
+import type { Menu } from "@/schema";
 
-interface EditMenuDialogProps {
+type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMenuUpdated?: () => void;
   menu: Menu;
-}
+};
 
 export default function EditMenuDialog({
   open,
   onOpenChange,
   onMenuUpdated,
   menu,
-}: EditMenuDialogProps) {
+}: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">

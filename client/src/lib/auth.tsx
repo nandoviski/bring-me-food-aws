@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { User } from "@/state/apiTypes";
-import { Chef } from "@/features/chef/schema/chef";
+import type { User, Chef } from "@/schema";
 
 type UserComplete = User & { customer?: any; chef?: any; isChef?: boolean };
 

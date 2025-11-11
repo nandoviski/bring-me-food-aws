@@ -1,9 +1,13 @@
 "use client";
 
-import { OrderShape } from "@/features/checkout/schema/order";
+import type { OrderShape } from "@/schema";
 import OrderCard from "./order-card";
 
-export default function OrdersList({ orders }: { orders: OrderShape[] }) {
+type Props = {
+  orders: OrderShape[];
+};
+
+export default function OrdersList({ orders }: Props) {
   return (
     <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
       {orders.map((o) => (

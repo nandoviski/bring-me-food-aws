@@ -7,22 +7,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type Meal } from "@/features/meal/schema/meal";
+import type { Meal } from "@/schema";
 import AddMealForm from "./add-meal-form";
 
-interface EditMealDialogProps {
+type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMealUpdated?: () => void;
   meal: Meal;
-}
+};
 
 export default function EditMealDialog({
   open,
   onOpenChange,
   onMealUpdated,
   meal,
-}: EditMealDialogProps) {
+}: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">

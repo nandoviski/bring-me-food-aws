@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Meal } from "@/features/meal/schema/meal";
+import type { Meal } from "@/schema";
 import { Utensils } from "lucide-react";
 import Image from "next/image";
 import MealViewModeDialog from "./meal-view-mode-dialog";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 
-export default function MealItem({ meal }: { meal: Meal }) {
+type Props = {
+  meal: Meal;
+};
+
+export default function MealItem({ meal }: Props) {
   const { increaseItemQuantityByMeal } = useShoppingCart();
 
   const formatPrice = (price: number | undefined) => {

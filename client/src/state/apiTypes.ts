@@ -1,14 +1,5 @@
-import { Chef } from "@/features/chef/schema/chef";
-import { Customer } from "@/features/customer/schema/customer";
-import { Meal } from "@/features/meal/schema/meal";
-
-export interface User {
-  id: string;
-  email: string;
-  status: "CREATED" | "ACTIVE" | "INACTIVE";
-  deletedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  customer?: Customer;
-  chef?: Chef;
-}
+// Re-export types from centralized schema folder
+export type { User } from "@/schema/types";
+export type { Chef } from "@/schema/chef";
+export type { Customer } from "@/schema/customer";
+export type { Meal } from "@/schema/meal";

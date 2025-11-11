@@ -26,7 +26,7 @@ import AddMenuDialog from "./add-menu-dialog";
 import EditMenuDialog from "./edit-menu-dialog";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import type { Menu } from "@/features/menu/schema/menu";
+import type { Menu } from "@/schema";
 
 export function MenusList() {
   const [addMenuOpen, setAddMenuOpen] = useState(false);

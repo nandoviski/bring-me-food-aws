@@ -1,13 +1,13 @@
 "use client";
 
-import { type Meal } from "@/features/meal/schema/meal";
+import type { Meal } from "@/schema";
 import MealItem from "./meal-item";
 
-type WeeklyMenuProps = {
+type Props = {
   meals: Meal[];
 };
 
-export function WeeklyMenu({ meals }: WeeklyMenuProps) {
+export function WeeklyMenu({ meals }: Props) {
   // const [quantities, setQuantities] = useState<Record<string, number>>({});
   // const user = { name: "GET from clerk", email: "" };
   // const { toast } = useToast();

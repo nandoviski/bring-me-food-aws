@@ -1,14 +1,19 @@
 "use client";
 
-import { OrderShape } from "@/features/checkout/schema/order";
+import type { OrderShape } from "@/schema";
 import { useRouter } from "next/navigation";
 
 function formatCurrency(v: number) {
   return `$${v.toFixed(2)}`;
 }
 
-export default function OrderCard({ order }: { order: OrderShape }) {
-  const total = (order.meals || []).reduce((s, m) => s + (m.price || 0), 0);
+type Props = {
+  order: OrderShape;
+};
+
+export default function OrderCard({ order }: Props) {
+  const total =
+    (order.meals ?? []).reduce((s, m) => s + (m.price || 0), 0) || order.total || 0;
   const router = useRouter();
 
   function viewMore() {
@@ -45,7 +50,7 @@ export default function OrderCard({ order }: { order: OrderShape }) {
 
           <div className="mt-3 text-xs text-slate-500">Meals</div>
           <ul className="mt-2 list-inside list-disc text-sm">
-            {order.meals.map((m) => (
+            {(order.meals ?? []).map((m) => (
               <li key={m.id} className="flex items-center justify-between">
                 <span>{m.name}</span>
                 <span className="ml-4 text-slate-700">

@@ -13,8 +13,8 @@ export interface Customer {
   company?: string | null;
   userId: string;
   deletedAt?: Date | null;
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type EditCustomerType = z.infer<typeof EditCustomerSchema>;

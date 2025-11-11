@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { EditMealSchema, Meal, type EditMealType } from "../schema/meal";
+import { EditMealSchema, type EditMealType, type Meal } from "@/schema";
 import Image from "next/image";
 import { toast } from "sonner";
 import {

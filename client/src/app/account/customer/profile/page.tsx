@@ -3,7 +3,7 @@
 import Loading from "@/components/loading";
 import Error from "@/components/error";
 import EditCustomerForm from "@/features/customer/components/edit-customer-form";
-import { EditCustomerSchema } from "@/features/customer/schema/customer";
+import { EditCustomerSchema } from "@/schema";
 import { useAuth } from "@/lib/auth";
 import { useGetCustomerQuery } from "@/state/api";
 import NotFound from "@/components/notFound";

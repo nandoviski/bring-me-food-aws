@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { EditMenuSchema, type EditMenuType } from "../schema/menu";
+import { EditMenuSchema, type EditMenuType } from "@/schema";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
