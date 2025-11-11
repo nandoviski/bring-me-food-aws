@@ -20,7 +20,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
   const [confirmation, setConfirmation] = useState<null | { orderId: string }>(
     null,
   );
-  const [deliveryCost, setDeliveryCost] = useState<number>(0);
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,6 +44,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
       notes,
       deliveryAddress: address,
       chefId: "",
+      deliveryFee,
     };
 
     try {
@@ -367,7 +368,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                           value="pickup"
                           defaultChecked
                           className="mt-1 h-4 w-4 text-indigo-600"
-                          onChange={() => setDeliveryCost(0)}
+                          onChange={() => setDeliveryFee(0)}
                         />
                         <div>
                           <div className="flex items-baseline gap-2">
@@ -392,7 +393,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                           type="radio"
                           value="delivery"
                           className="mt-1 h-4 w-4 text-indigo-600"
-                          onChange={() => setDeliveryCost(10)}
+                          onChange={() => setDeliveryFee(10)}
                         />
                         <div>
                           <div className="flex items-baseline gap-2">
@@ -501,7 +502,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                     <div className="flex items-center justify-between">
                       <dt className="text-sm">Shipping</dt>
                       <dd className="text-sm font-medium text-gray-900">
-                        ${deliveryCost.toFixed(2)}
+                        ${deliveryFee.toFixed(2)}
                       </dd>
                     </div>
                     <div className="flex items-center justify-between border-t border-gray-200 pt-6">
@@ -512,7 +513,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                           cartItems.reduce(
                             (s, it) => s + it.price * it.quantity,
                             0,
-                          ) + deliveryCost
+                          ) + deliveryFee
                         ).toFixed(2)}
                       </dd>
                     </div>

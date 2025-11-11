@@ -104,17 +104,21 @@ model Meal {
 
 //https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations
 model MealsOnOrders {
-  id      String @id @default(uuid()) @db.VarChar(50)
-  mealId  String @db.VarChar(50)
-  meal    Meal   @relation(fields: [mealId], references: [id])
-  orderId String @db.VarChar(50)
-  order   Order  @relation(fields: [orderId], references: [id])
+  id             String @id @default(uuid()) @db.VarChar(50)
+  mealId         String @db.VarChar(50)
+  meal           Meal   @relation(fields: [mealId], references: [id])
+  orderId        String @db.VarChar(50)
+  order          Order  @relation(fields: [orderId], references: [id])
+  quantity       Int    @default(1)
+  priceAtPurchase Float
 }
 
 model Order {
   id              String          @id @default(uuid()) @db.VarChar(50)
   status          OrderStatus     @default(PENDING)
   paymentStatus   PaymentStatus   @default(PENDING)
+  total           Float
+  deliveryFee     Float           @default(0)
   deliveryAddress String          @db.VarChar(250)
   notes           String?         @db.VarChar(300)
   createdAt       DateTime        @default(now())

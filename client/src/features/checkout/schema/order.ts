@@ -6,6 +6,7 @@ export interface Order {
   chefId: string;
   paymentStatus: string;
   deliveryAddress: string;
+  deliveryFee?: number;
   notes?: string;
   customerId: string;
   meals: {
@@ -20,6 +21,7 @@ export type OrderShape = {
   status: string;
   paymentStatus?: string;
   deliveryAddress?: string;
+  deliveryFee?: number;
   notes?: string | null;
   createdAt: string;
   chef?: { id?: string; name?: string; username?: string };
@@ -37,4 +39,5 @@ const createOrderSchema = z.object({
     .min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
+  deliveryFee: z.number().nonnegative().optional(),
 });

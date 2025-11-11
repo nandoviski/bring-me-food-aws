@@ -10,6 +10,7 @@ const createOrderSchema = z.object({
   meals: z.array(z.object({ mealId: z.string(), quantity: z.number().int().positive() })).min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
+  deliveryFee: z.number().nonnegative().optional(),
 });
 
 const ChefIdParamSchema = z.object({
@@ -59,16 +60,24 @@ export async function createOrder(req: Request, res: Response) {
           chefId,
           customerId,
           status: "PENDING",
+          total,
+          deliveryFee: payload.deliveryFee || 0,
           deliveryAddress,
           notes: payload.notes,
         },
       });
 
-      const mData = payload.meals.map((it) => ({ mealId: it.mealId, orderId: order.id }));
-
-      // createMany doesn't return rows; use create for each to be safe with relations
-      for (const md of mData) {
-        await tx.mealsOnOrders.create({ data: md });
+      // Create meal entries with quantity and priceAtPurchase
+      for (const mealItem of payload.meals) {
+        const meal = meals.find((m) => m.id === mealItem.mealId)!;
+        await tx.mealsOnOrders.create({
+          data: {
+            mealId: mealItem.mealId,
+            orderId: order.id,
+            quantity: mealItem.quantity,
+            priceAtPurchase: meal.price,
+          },
+        });
       }
 
       return order;
@@ -76,7 +85,14 @@ export async function createOrder(req: Request, res: Response) {
 
     return res
       .status(201)
-      .json({ orderId: created.id, status: created.status, createdAt: created.createdAt, total });
+      .json({
+        orderId: created.id,
+        status: created.status,
+        createdAt: created.createdAt,
+        total: created.total,
+        deliveryFee: created.deliveryFee,
+        grandTotal: created.total + created.deliveryFee
+      });
   } catch (err: any) {
     console.error("createOrder error", err);
     if (err instanceof z.ZodError) {
@@ -136,19 +152,13 @@ export async function getOrdersByChefId(req: Request, res: Response) {
       },
     });
 
-    // Calculate totals for each order
-    const ordersWithTotals = orders.map((order) => {
-      const total = order.mealsOnOrders.reduce((sum, mealOnOrder) => {
-        return sum + mealOnOrder.meal.price;
-      }, 0);
+    // Return orders with totals and delivery fees
+    const ordersWithDetails = orders.map((order) => ({
+      ...order,
+      grandTotal: order.total + order.deliveryFee,
+    }));
 
-      return {
-        ...order,
-        total,
-      };
-    });
-
-    return res.status(200).json(ordersWithTotals);
+    return res.status(200).json(ordersWithDetails);
   } catch (err: any) {
     console.error("getOrdersByChefId error", err);
     if (err instanceof z.ZodError) {
