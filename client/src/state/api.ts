@@ -8,9 +8,8 @@ import type {
   Meal,
   Menu,
   CreateEditMenu,
-  CreateOrderSchema,
-  OrderShape,
-  ChefOrderWithDetails,
+  OrderCreate,
+  Order,
 } from "@/schema";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
@@ -175,14 +174,14 @@ export const api = createApi({
         }
       },
     }),
-    getCustomerOrders: build.query<Array<OrderShape>, { userId: string }>({
+    getCustomerOrders: build.query<Array<Order>, { userId: string }>({
       query: ({ userId }) => `customers/${userId}/orders`,
       providesTags: ["Customers"],
     }),
     // Orders
     createOrder: build.mutation<
       { orderId: string; status: string },
-      CreateOrderSchema
+      OrderCreate
     >({
       query: (body) => ({
         url: "orders",
@@ -190,7 +189,7 @@ export const api = createApi({
         body,
       }),
     }),
-    getOrdersByChefId: build.query<ChefOrderWithDetails[], { chefId: string }>({
+    getOrdersByChefId: build.query<Order[], { chefId: string }>({
       query: ({ chefId }) => `orders/chef/${chefId}`,
       providesTags: ["OrdersByChef"],
     }),

@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/schema/order";
-import { getOrderCustomerName, getOrderDate } from "@/schema/order";
 
 type Props = {
   orders: Order[];
@@ -43,8 +42,11 @@ export function OrdersList({ orders }: Props) {
           {orders.map((order) => (
             <TableRow key={order.id}>
               <TableCell className="font-medium">{order.id}</TableCell>
-              <TableCell>{getOrderCustomerName(order)}</TableCell>
-              <TableCell>{formatDate(getOrderDate(order))}</TableCell>
+              <TableCell>
+                {order.customer &&
+                  `${order.customer.firstName} ${order.customer.lastName}`}
+              </TableCell>
+              <TableCell>{formatDate(order.createdAt)}</TableCell>
               <TableCell>
                 {order.status === "preparing" && (
                   <Badge

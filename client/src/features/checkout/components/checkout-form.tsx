@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateOrderMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
-import type { Customer, CreateOrderSchema } from "@/schema";
+import type { Customer, OrderCreate } from "@/schema";
 import { ChevronDownIcon, TrashIcon } from "lucide-react";
 
 type Props = {
@@ -34,7 +34,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
     const address = (formData.get("address") as string) || "";
     const notes = (formData.get("notes") as string) || "";
 
-    const payload: CreateOrderSchema = {
+    const payload: OrderCreate = {
       customerId: customer.id,
       meals: cartItems.map((c) => ({
         mealId: c.id,

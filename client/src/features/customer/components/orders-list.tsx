@@ -1,10 +1,10 @@
 "use client";
 
-import type { OrderShape } from "@/schema";
+import type { Order } from "@/schema";
 import OrderCard from "./order-card";
 
 type Props = {
-  orders: OrderShape[];
+  orders: Order[];
 };
 
 export default function OrdersList({ orders }: Props) {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrderShape } from "@/schema";
+import type { Order } from "@/schema";
 import { useRouter } from "next/navigation";
 
 function formatCurrency(v: number) {
@@ -8,12 +8,14 @@ function formatCurrency(v: number) {
 }
 
 type Props = {
-  order: OrderShape;
+  order: Order;
 };
 
 export default function OrderCard({ order }: Props) {
   const total =
-    (order.meals ?? []).reduce((s, m) => s + (m.price || 0), 0) || order.total || 0;
+    (order.meals ?? []).reduce((s, m) => s + (m.price || 0), 0) ||
+    order.total ||
+    0;
   const router = useRouter();
 
   function viewMore() {
