@@ -24,7 +24,7 @@ type Props = {
   orders: Order[];
 };
 
-export function OrdersList({ orders }: Props) {
+export function OrdersTable({ orders }: Props) {
   return (
     <div className="rounded-md border">
       <Table>

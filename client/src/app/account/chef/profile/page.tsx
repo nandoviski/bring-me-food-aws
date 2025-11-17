@@ -43,7 +43,7 @@ export default function ChefProfilePage() {
   }
 
   return (
-    <div className="container mx-auto mt-4 overflow-hidden rounded-lg bg-white px-4 shadow-sm">
+    <div className="container mx-auto overflow-hidden rounded-lg bg-white px-4 shadow-sm">
       <EditChefForm chef={parsed.data} />
     </div>
   );

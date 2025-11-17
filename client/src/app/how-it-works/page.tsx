@@ -21,7 +21,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-primary-dark py-20 text-white">
+      <section className="bg-primary py-20 text-white">
         <div className="container mx-auto px-4 text-center">
           <h1 className="mb-6 text-4xl font-bold md:text-5xl">
             How Bring me Food Works

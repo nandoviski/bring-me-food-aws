@@ -68,21 +68,21 @@ export function Navbar() {
   // Navbar background and text colors based on scroll state
   const navBackground =
     isHomePage && !isScrolled
-      ? "bg-primary-dark backdrop-blur-md top-0 "
+      ? "bg-primary backdrop-blur-md top-0 "
       : "bg-white top-2 container-custom";
 
   const navTextColor =
-    isHomePage && !isScrolled ? "text-white" : "text-primary-dark";
+    isHomePage && !isScrolled ? "text-white" : "text-primary";
 
   const navBorder =
     isHomePage && !isScrolled
-      ? "border-primary-dark/20  border-y"
-      : "border-primary-dark/20  border rounded-lg";
+      ? "border-primary/20  border-y"
+      : "border-primary/20  border rounded-lg";
 
   const navLinkClass =
     isHomePage && !isScrolled
-      ? "text-white/90 hover:text-accent-orange"
-      : "primary-dark/90 hover:text-accent-orange";
+      ? "text-white/90 hover:text-secondary"
+      : "primary/90 hover:text-secondary";
 
   return (
     <nav
@@ -120,11 +120,11 @@ export function Navbar() {
                   <Button
                     variant="green"
                     size="icon"
-                    className={`relative border-0 ${isScrolled && "text-primary-dark hover:text-accent-orange bg-white"} hover:bg-white/10`}
+                    className={`relative border-0 ${isScrolled && "text-primary hover:text-secondary bg-white"} hover:bg-white/10`}
                   >
                     <ShoppingBag className="h-5 w-5" />
                     {cartQuantity > 0 && (
-                      <span className="bg-accent-orange absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold text-white">
+                      <span className="bg-secondary absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold text-white">
                         {cartQuantity}
                       </span>
                     )}
@@ -283,7 +283,7 @@ export function Navbar() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div
-            className={`border-t py-4 md:hidden ${isHomePage && !isScrolled ? "border-white/20" : "border-primary-dark/20"}`}
+            className={`border-t py-4 md:hidden ${isHomePage && !isScrolled ? "border-white/20" : "border-primary/20"}`}
           >
             <div className="flex flex-col space-y-4">
               <Link
@@ -311,7 +311,7 @@ export function Navbar() {
                       <ShoppingBag className="mr-2 h-4 w-4" />
                       Cart
                       {cartQuantity > 0 && (
-                        <span className="bg-accent-orange ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                        <span className="bg-secondary ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
                           {cartQuantity}
                         </span>
                       )}

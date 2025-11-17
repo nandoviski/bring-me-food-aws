@@ -22,9 +22,9 @@ const buttonVariants = cva(
 
         // New design variants
         orange:
-          "bg-accent-orange hover:bg-accent-orange/70 rounded-full text-white transition-colors",
+          "bg-secondary hover:bg-secondary/70 rounded-full text-white transition-colors",
         green:
-          "bg-primary-dark hover:bg-accent-orange rounded-full border-2 border-white text-white transition-colors hover:text-white",
+          "bg-primary hover:bg-secondary rounded-full border-2 border-white text-white transition-colors hover:text-white",
       },
       size: {
         default: "h-9 px-4 py-2",

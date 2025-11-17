@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useGetOrdersByChefIdQuery } from "@/state/api";
 import Loading from "@/components/loading";
 import Error from "@/components/error";
-import { OrdersList } from "./orders-list";
+import { OrdersTable } from "./orders-table";
 
 export function ChefOrdersSection() {
   const { user: loggedUser } = useAuth();
@@ -39,5 +39,5 @@ export function ChefOrdersSection() {
     );
   }
 
-  return <OrdersList orders={orders} />;
+  return <OrdersTable orders={orders} />;
 }

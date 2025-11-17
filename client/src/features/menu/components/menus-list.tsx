@@ -27,6 +27,7 @@ import EditMenuDialog from "./edit-menu-dialog";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import type { Menu } from "@/schema";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export function MenusList() {
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -37,16 +38,9 @@ export function MenusList() {
 
   if (!loggedUser || !loggedUser.chef) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Menus</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            You must be logged in as a chef to view menus.
-          </p>
-        </CardContent>
-      </Card>
+      <p className="text-muted-foreground">
+        You must be logged in as a chef to view menus.
+      </p>
     );
   }
 
@@ -67,7 +61,7 @@ export function MenusList() {
   }
 
   return (
-    <>
+    <MainPageWithHeader title="Menus" description="Manage your menus">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -198,6 +192,6 @@ export function MenusList() {
           menu={editingMenu}
         />
       )}
-    </>
+    </MainPageWithHeader>
   );
 }

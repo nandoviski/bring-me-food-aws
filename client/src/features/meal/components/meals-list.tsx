@@ -33,6 +33,7 @@ import { useState } from "react";
 import type { Meal } from "@/schema";
 import { useAuth } from "@/lib/auth";
 import AddMealDialog from "./add-meal-dialog";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export function MealsList() {
   const { user: loggedUser } = useAuth();
@@ -45,7 +46,7 @@ export function MealsList() {
   });
 
   return (
-    <div className="rounded-md border">
+    <MainPageWithHeader title="Meals" description="Manage your meals">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -150,6 +151,6 @@ export function MealsList() {
           meal={editingMeal}
         />
       )}
-    </div>
+    </MainPageWithHeader>
   );
 }

@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="section-padding bg-primary-dark text-white">
+      <section className="section-padding bg-primary text-white">
         <div className="container-custom">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left side - Content */}
@@ -15,7 +15,7 @@ export default function HomePage() {
               <h1 className="text-4xl leading-tight font-bold text-white md:text-5xl lg:text-6xl xl:text-7xl">
                 Make a Moment with
                 <br />
-                <span className="text-accent-orange">Home-Cooked Meals</span>
+                <span className="text-secondary">Home-Cooked Meals</span>
               </h1>
               <p className="text-body-large max-w-xl">
                 Embark on a gastronomic journey with Bring Me Food. Our curated
@@ -83,7 +83,7 @@ export default function HomePage() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className="fill-accent-orange text-accent-orange h-4 w-4"
+                        className="fill-secondary text-secondary h-4 w-4"
                       />
                     ))}
                   </div>
@@ -106,7 +106,7 @@ export default function HomePage() {
       <section className="section-padding bg-white">
         <div className="container-custom">
           <div className="mb-16 text-center">
-            <h2 className="heading-section text-primary-dark mb-4">
+            <h2 className="heading-section text-primary mb-4">
               Benefits of Bring Me Food
             </h2>
             <p className="text-body-large mx-auto max-w-2xl">
@@ -143,14 +143,14 @@ export default function HomePage() {
                 key={index}
                 className="relative rounded-2xl bg-gray-50 p-8 transition-colors hover:bg-gray-100"
               >
-                <div className="text-accent-orange/20 absolute top-6 right-6 text-6xl font-bold">
+                <div className="text-secondary/20 absolute top-6 right-6 text-6xl font-bold">
                   {benefit.number}
                 </div>
                 <div className="mb-6">
-                  <div className="bg-accent-orange/10 mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                    <benefit.icon className="text-accent-orange h-8 w-8" />
+                  <div className="bg-secondary/10 mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                    <benefit.icon className="text-secondary h-8 w-8" />
                   </div>
-                  <h3 className="text-primary-dark mb-3 text-2xl font-semibold md:text-3xl">
+                  <h3 className="text-primary mb-3 text-2xl font-semibold md:text-3xl">
                     {benefit.title}
                   </h3>
                   <p className="text-body text-gray-600">
@@ -170,7 +170,7 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="section-padding bg-primary-dark text-white">
+      <section className="section-padding bg-primary text-white">
         <div className="container-custom">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="relative h-[400px] overflow-hidden rounded-2xl md:h-[500px]">
@@ -204,7 +204,7 @@ export default function HomePage() {
       <section className="section-padding bg-gray-50">
         <div className="container-custom">
           <div className="mb-16 text-center">
-            <h2 className="heading-section text-primary-dark mb-4">
+            <h2 className="heading-section text-primary mb-4">
               What Our Customers Say
             </h2>
             <p className="text-body-large mx-auto max-w-2xl">
@@ -257,7 +257,7 @@ export default function HomePage() {
                 className="rounded-2xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="mb-4 flex items-center gap-1">
-                  <span className="text-primary-dark text-2xl font-bold">
+                  <span className="text-primary text-2xl font-bold">
                     {testimonial.rating}
                   </span>
                   <div className="flex gap-0.5">
@@ -266,7 +266,7 @@ export default function HomePage() {
                         key={i}
                         className={`h-4 w-4 ${
                           i < Math.floor(testimonial.rating)
-                            ? "fill-accent-orange text-accent-orange"
+                            ? "fill-secondary text-secondary"
                             : "fill-gray-200 text-gray-200"
                         }`}
                       />
@@ -277,13 +277,13 @@ export default function HomePage() {
                   "{testimonial.text}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary-dark/10 flex h-10 w-10 items-center justify-center rounded-full">
-                    <span className="text-primary-dark font-semibold">
+                  <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                    <span className="text-primary font-semibold">
                       {testimonial.author.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <p className="text-primary-dark font-semibold">
+                    <p className="text-primary font-semibold">
                       {testimonial.author}
                     </p>
                     <p className="text-sm text-gray-500">{testimonial.role}</p>
@@ -299,7 +299,7 @@ export default function HomePage() {
       <section className="bg-white py-12 md:py-16 lg:py-20">
         <div className="container-custom">
           <div className="mb-12 text-center">
-            <h2 className="heading-section text-primary-dark mb-4">
+            <h2 className="heading-section text-primary mb-4">
               Our Food Gallery
             </h2>
             <p className="text-body-large mx-auto max-w-2xl">
@@ -336,7 +336,7 @@ export default function HomePage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="section-padding bg-primary-dark text-white">
+      <section className="section-padding bg-primary text-white">
         <div className="container-custom">
           <div className="mx-auto max-w-4xl space-y-8 text-center">
             <h2 className="heading-section text-white">Hungry? Order Now!</h2>
