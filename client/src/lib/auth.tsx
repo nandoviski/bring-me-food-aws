@@ -11,6 +11,7 @@ type AuthContextType = {
   login: (userId: string) => void;
   logout: () => void;
   availableUsers: UserComplete[];
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -95,7 +96,9 @@ const SESSION_KEY = "bmf_user";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserComplete | null>(null);
   const [availableUsers] = useState<UserComplete[]>(() => buildUsers());
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load user from sessionStorage on mount (client-side hydration)
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
@@ -103,16 +106,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(JSON.parse(raw));
       }
     } catch (e) {
-      // ignore
+      console.error("Failed to parse session:", e);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
+  // Sync user state to both sessionStorage and cookie
   useEffect(() => {
     try {
-      if (user) sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      else sessionStorage.removeItem(SESSION_KEY);
+      if (user) {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        // Set cookie for middleware to read (expires in 24 hours)
+        const expiresIn = new Date();
+        expiresIn.setHours(expiresIn.getHours() + 24);
+        document.cookie = `session=${encodeURIComponent(JSON.stringify(user))}; path=/; expires=${expiresIn.toUTCString()}; SameSite=Strict`;
+      } else {
+        sessionStorage.removeItem(SESSION_KEY);
+        // Clear cookie
+        document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+      }
     } catch (e) {
-      // ignore
+      console.error("Failed to update session:", e);
     }
   }, [user]);
 
@@ -130,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     availableUsers,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

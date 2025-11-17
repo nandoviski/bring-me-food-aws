@@ -1,13 +1,18 @@
 "use client";
 
 import CheckoutForm from "@/features/checkout/components/checkout-form";
-import { useAuth } from "@/lib/auth";
+import Loading from "@/components/loading";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function CheckoutPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuthGuard({ requireCustomer: true });
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   if (!user) {
-    return <div>Redirect to login</div>;
+    return <div>You must be logged in as a customer to checkout.</div>;
   }
 
   if (!user.customer) {

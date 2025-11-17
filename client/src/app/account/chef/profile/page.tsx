@@ -6,13 +6,19 @@ import Loading from "@/components/loading";
 import EditChefForm from "@/features/chef/components/edit-chef-form";
 import { EditChefSchema } from "@/schema";
 import { useGetChefByUserIdQuery } from "@/state/api";
-import { useAuth } from "@/lib/auth";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function ChefProfilePage() {
-  const { user: loggedUser } = useAuth();
+  const { user: loggedUser, isLoading: authLoading } = useAuthGuard({
+    requireChef: true,
+  });
+
+  if (authLoading) {
+    return <Loading message="Loading..." />;
+  }
 
   if (!loggedUser) {
-    return <div>You must be logged in to access this page.</div>;
+    return <div>You must be logged in as a chef to access this page.</div>;
   }
 
   const {

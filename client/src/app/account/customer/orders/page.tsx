@@ -1,14 +1,21 @@
 "use client";
 
-import { useAuth } from "@/lib/auth";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import Loading from "@/components/loading";
 import { useGetCustomerOrdersQuery } from "@/state/api";
 import OrdersList from "@/features/customer/components/orders-list";
 
 export default function CustomerOrdersPage() {
-  const { user: loggedUser } = useAuth();
+  const { user: loggedUser, isLoading: authLoading } = useAuthGuard({
+    requireCustomer: true,
+  });
+
+  if (authLoading) {
+    return <Loading />;
+  }
 
   if (!loggedUser) {
-    return <div>You must be logged in to access this page.</div>;
+    return <div>You must be logged in as a customer to access this page.</div>;
   }
 
   const {

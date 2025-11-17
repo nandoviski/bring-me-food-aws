@@ -4,15 +4,21 @@ import Loading from "@/components/loading";
 import Error from "@/components/error";
 import EditCustomerForm from "@/features/customer/components/edit-customer-form";
 import { EditCustomerSchema } from "@/schema";
-import { useAuth } from "@/lib/auth";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useGetCustomerQuery } from "@/state/api";
 import NotFound from "@/components/notFound";
 
 export default function CustomerProfilePage() {
-  const { user: loggedUser } = useAuth();
+  const { user: loggedUser, isLoading: authLoading } = useAuthGuard({
+    requireCustomer: true,
+  });
+
+  if (authLoading) {
+    return <Loading message="Loading..." />;
+  }
 
   if (!loggedUser) {
-    return <div>You must be logged in to access this page.</div>;
+    return <div>You must be logged in as a customer to access this page.</div>;
   }
 
   const {

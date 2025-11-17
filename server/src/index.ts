@@ -5,6 +5,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 
+/* MIDDLEWARE IMPORTS */
+import { authMiddleware } from "./middleware/auth";
+
 /* ROUTE IMPORTS */
 import mealRoutes from "./routes/mealRoutes";
 import menuRoutes from "./routes/menuRoutes";
@@ -27,8 +30,12 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   }),
 );
+
+/* AUTHENTICATION MIDDLEWARE */
+app.use(authMiddleware);
 
 /* ROUTES */
 const apiRouter = express.Router();
