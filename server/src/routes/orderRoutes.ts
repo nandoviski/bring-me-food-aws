@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { requireAuth, requireChef, requireCustomer } from "../middleware/auth";
 import { createOrder, getOrdersByChefId } from "../controllers/orderController";
 
 const router = Router();
 
-router.post("/", createOrder);
-router.get("/chef/:chefId", getOrdersByChefId);
+router.post("/", requireAuth, requireCustomer, createOrder);
+router.get("/chef/:chefId", requireAuth, requireChef, getOrdersByChefId);
 
 export default router;

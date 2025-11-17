@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAuth, requireChef } from "../middleware/auth";
 import {
   getChefByUsername,
   getChefsWeeklyMenu,
@@ -9,7 +10,7 @@ import {
 
 const router = Router();
 
-router.put("/:chefId", updateChef);
+router.put("/:chefId", requireAuth, requireChef, updateChef);
 router.get("/:username/profile", getChefByUsername);
 router.get("/:username/exists", checkChefUsernameExists);
 router.get("/:chefId/menu", getChefsWeeklyMenu);
