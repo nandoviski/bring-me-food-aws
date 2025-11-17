@@ -27,7 +27,7 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(newMenu);
   } catch (error: any) {
-    res.status(500).json({ error: `Error creating a menu: ${error.message}` });
+    res.status(500).json({ message: `Error creating a menu: ${error.message}` });
   }
 };
 
@@ -54,7 +54,7 @@ export const updateMenu = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json(updatedMenu);
   } catch (error: any) {
-    res.status(500).json({ error: `Error updating menu: ${error.message}` });
+    res.status(500).json({ message: `Error updating menu: ${error.message}` });
   }
 };
 
@@ -68,7 +68,7 @@ export const deleteMenu = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json(deletedMenu != null);
   } catch (error: any) {
-    res.status(500).json({ error: `Error deleting menu: ${error.message}` });
+    res.status(500).json({ message: `Error deleting menu: ${error.message}` });
   }
 };
 
@@ -103,6 +103,6 @@ export const getMenusByChef = async (req: Request, res: Response): Promise<void>
       res.status(200).json(menus);
     }
   } catch (error: any) {
-    res.status(500).json({ error: `Error fetching chef's menus: ${error.message}` });
+    res.status(500).json({ message: `Error fetching chef's menus: ${error.message}` });
   }
 };

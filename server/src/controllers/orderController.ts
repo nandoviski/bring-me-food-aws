@@ -83,23 +83,21 @@ export async function createOrder(req: Request, res: Response) {
       return order;
     });
 
-    return res
-      .status(201)
-      .json({
-        orderId: created.id,
-        status: created.status,
-        createdAt: created.createdAt,
-        total: created.total,
-        deliveryFee: created.deliveryFee,
-        grandTotal: created.total + created.deliveryFee
-      });
+    return res.status(201).json({
+      orderId: created.id,
+      status: created.status,
+      createdAt: created.createdAt,
+      total: created.total,
+      deliveryFee: created.deliveryFee,
+      grandTotal: created.total + created.deliveryFee,
+    });
   } catch (err: any) {
     console.error("createOrder error", err);
     if (err instanceof z.ZodError) {
       return res.status(400).json({ message: "Invalid payload", errors: err.issues });
     }
     console.error("createOrder error", err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Error fetching orders" });
   }
 }
 
@@ -111,7 +109,7 @@ export async function getOrdersByChefId(req: Request, res: Response) {
     // Verify chef exists
     const chef = await prisma.chef.findUnique({ where: { id: chefId } });
     if (!chef) {
-      return res.status(404).json({ error: "Chef not found", success: false });
+      return res.status(404).json({ message: "Chef not found", success: false });
     }
 
     // Fetch orders with related data
@@ -165,9 +163,9 @@ export async function getOrdersByChefId(req: Request, res: Response) {
       return res.status(400).json({
         error: "Invalid chef ID",
         details: err.issues,
-        success: false
+        success: false,
       });
     }
-    return res.status(500).json({ error: "Internal server error", success: false });
+    return res.status(500).json({ message: "Error fetching orders", success: false });
   }
 }

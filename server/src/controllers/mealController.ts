@@ -21,7 +21,7 @@ export const createMeal = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(newMeal);
   } catch (error: any) {
-    res.status(500).json({ error: `Error creating a meal: ${error.message}` });
+    res.status(500).json({ message: `Error creating a meal: ${error.message}` });
   }
 };
 
@@ -43,7 +43,7 @@ export const updateMeal = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json(updatedMeal);
   } catch (error: any) {
-    res.status(500).json({ error: `Error updating meal: ${error.message}` });
+    res.status(500).json({ message: `Error updating meal: ${error.message}` });
   }
 };
 
@@ -56,6 +56,6 @@ export const getMealsByChef = async (req: Request, res: Response): Promise<void>
     });
     res.status(200).json(meals);
   } catch (error: any) {
-    res.status(500).json({ error: `Error fetching chef's meals: ${error.message}` });
+    res.status(500).json({ message: `Error fetching chef's meals: ${error.message}` });
   }
 };

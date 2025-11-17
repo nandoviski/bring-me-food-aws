@@ -14,10 +14,10 @@ export const getCustomer = async (req: Request, res: Response): Promise<void> =>
     if (customer) {
       res.status(200).json(customer);
     } else {
-      res.status(404).json({ error: "Customer not found" });
+      res.status(404).json({ message: "Customer not found" });
     }
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
 
@@ -33,7 +33,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json(costumerUpdated !== null);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
 
@@ -44,7 +44,7 @@ export const getCustomerOrders = async (req: Request, res: Response): Promise<vo
     // Find customer by userId
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) {
-      res.status(404).json({ error: "Customer not found" });
+      res.status(404).json({ message: "Customer not found" });
       return;
     }
 
@@ -75,6 +75,6 @@ export const getCustomerOrders = async (req: Request, res: Response): Promise<vo
 
     res.status(200).json(mapped);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving orders: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving orders: ${error.message}` });
   }
 };

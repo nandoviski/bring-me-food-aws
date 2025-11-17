@@ -23,7 +23,7 @@ export const getChefByUsername = async (req: Request, res: Response): Promise<vo
     });
     res.status(200).json(chef);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
 
@@ -36,7 +36,7 @@ export const checkChefUsernameExists = async (req: Request, res: Response): Prom
 
     res.status(200).json({ exists: !!chef });
   } catch (error: any) {
-    res.status(500).json({ error: `Error checking username: ${error.message}` });
+    res.status(500).json({ message: `Error checking username: ${error.message}` });
   }
 };
 
@@ -63,7 +63,7 @@ export const getChefsWeeklyMenu = async (req: Request, res: Response): Promise<v
 
     res.status(200).json(menu);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving weekly menu: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving weekly menu: ${error.message}` });
   }
 };
 
@@ -85,7 +85,7 @@ export const updateChef = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json(chef !== null);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
 
@@ -98,6 +98,6 @@ export const getChefByUserId = async (req: Request, res: Response): Promise<void
 
     res.status(200).json(chef);
   } catch (error: any) {
-    res.status(500).json({ error: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
