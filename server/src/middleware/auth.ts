@@ -21,17 +21,11 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
     const cookies = parseCookies(req.headers.cookie || "");
     const sessionStr = cookies.session;
 
-    console.log("sessionStr1", sessionStr);
-
     if (!sessionStr) {
       return next(); // Continue without user (public endpoint)
     }
 
-    console.log("sessionStr2", sessionStr);
-
     const session = JSON.parse(decodeURIComponent(sessionStr));
-
-    console.log("session", session);
 
     if (session && session.id && session.email) {
       req.user = {
@@ -55,8 +49,6 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
  * Usage: router.post("/meals", requireAuth, createMeal);
  */
 export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  console.log("nando2", req?.user);
-
   if (!req.user) {
     return res.status(401).json({
       success: false,
