@@ -7,9 +7,9 @@ type Props = {
 
 export default function ChefLayout({ children }: Props) {
   return (
-    <div className="container-custom flex h-[calc(100vh-67px)]">
+    <div className="container-custom flex flex-1">
       <ChefSidebar />
-      <main className="mt-3 ml-3 flex-1 overflow-auto">{children}</main>
+      <main className="mt-3 ml-3 flex-1">{children}</main>
     </div>
   );
 }

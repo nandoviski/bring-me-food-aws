@@ -1,5 +1,6 @@
 "use client";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { ShoppingCartProvider } from "@/features/shopping-cart/context/shoppingCartContext";
 import StoreProvider, { useAppSelector } from "./redux";
@@ -23,9 +24,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ShoppingCartProvider>
-      <Toaster richColors position="top-right" />
-      <Navbar />
-      <main>{children}</main>
+      <div className="flex min-h-screen flex-col">
+        <Toaster richColors position="top-right" />
+        <Navbar />
+        <main className="flex-grow flex flex-col">{children}</main>
+        <Footer />
+      </div>
     </ShoppingCartProvider>
   );
 };

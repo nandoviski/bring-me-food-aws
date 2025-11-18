@@ -53,7 +53,7 @@ export function ChefSidebar() {
       {/* Mobile Menu Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-primary fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-colors hover:bg-green-800 md:hidden"
+        className="bg-primary fixed right-1 top-17 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-colors hover:bg-green-800 md:hidden"
         aria-label="Toggle menu"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -69,7 +69,7 @@ export function ChefSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`bg-primary fixed z-40 flex h-full w-64 transform flex-col text-white shadow-lg transition-transform duration-300 ease-in-out md:relative md:h-full ${
+        className={`bg-primary fixed z-40 flex h-full w-64 transform flex-col text-white shadow-lg transition-transform duration-300 ease-in-out md:relative md:h-auto ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
