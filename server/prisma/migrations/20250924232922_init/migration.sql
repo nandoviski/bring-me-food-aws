@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "public"."UserStatus" AS ENUM ('CREATED', 'PENDING_VERIFICATION', 'ACTIVE', 'INACTIVE', 'BLOCKED');
+CREATE TYPE "public"."UserStatus" AS ENUM ('CREATED', 'PENDING', 'ACTIVE', 'INACTIVE', 'BLOCKED');
 
 -- CreateEnum
 CREATE TYPE "public"."OrderStatus" AS ENUM ('PENDING', 'CONFIRMED', 'DELIVERED', 'CANCELLED');

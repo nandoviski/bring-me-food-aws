@@ -78,26 +78,37 @@ type OrderStatusBadgeProps = {
 };
 
 function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
-  const statusConfig = {
-    preparing: {
-      label: "Preparing",
-      className: "border-yellow-200 bg-yellow-50 text-yellow-700",
+  const statusConfig: Record<
+    Order["status"],
+    { label: string; className: string }
+  > = {
+    CREATED: {
+      label: "Created",
+      className: "border-indigo-200 bg-indigo-50 text-indigo-700",
     },
-    ready: {
-      label: "Ready for Pickup",
-      className: "border-blue-200 bg-blue-50 text-blue-700",
+    PENDING: {
+      label: "Pending",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
     },
-    completed: {
-      label: "Completed",
-      className: "border-green-200 bg-green-50 text-green-700",
+    ACTIVE: {
+      label: "Active",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    },
+    INACTIVE: {
+      label: "Inactive",
+      className: "border-slate-200 bg-slate-50 text-slate-700",
+    },
+    BLOCKED: {
+      label: "Blocked",
+      className: "border-red-200 bg-red-50 text-red-700",
     },
   };
 
   const config = statusConfig[status];
 
   return (
-    <Badge variant="outline" className={config.className}>
-      {config.label}
+    <Badge variant="outline" className={config?.className}>
+      {config?.label}
     </Badge>
   );
 }

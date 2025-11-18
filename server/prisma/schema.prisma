@@ -132,7 +132,7 @@ model Order {
 
 enum UserStatus {
   CREATED
-  PENDING_VERIFICATION
+  PENDING
   ACTIVE
   INACTIVE
   BLOCKED
