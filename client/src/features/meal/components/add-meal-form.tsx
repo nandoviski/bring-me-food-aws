@@ -180,216 +180,262 @@ export default function AddMealForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meal Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Homemade Lasagna" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price ($)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="12.99"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Size</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Basic Info Section */}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            Basic Information
+          </h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meal Name</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
+                      <Input placeholder="Homemade Lasagna" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="300">300g</SelectItem>
-                      <SelectItem value="500" defaultChecked>
-                        500g
-                      </SelectItem>
-                      <SelectItem value="750">750g</SelectItem>
-                      <SelectItem value="1000">1kg</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="space-y-2">
-            <Label>Meal Image</Label>
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative aspect-square">
-                  <Image
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="Meal preview"
-                    className="h-full w-full object-cover"
-                    unoptimized
-                    width={200}
-                    height={200}
-                  />
-                </div>
-                <div className="p-2">
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="text-sm"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price ($)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="12.99"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Describe your meal..."
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="space-y-2">
-          <Label>Ingredients</Label>
-          <div className="space-y-2">
-            {ingredientFields.map((field, index) => (
-              <div key={field.id} className="flex gap-2">
-                <FormField
-                  control={form.control}
-                  name={`ingredients.${index}.value`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
+              <FormField
+                control={form.control}
+                name="size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Size</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <Input placeholder="Ingredient" {...field} />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
                       </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => removeIngredient(index)}
-                  disabled={ingredientFields.length === 0}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={() => appendIngredient({ value: "" })}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Ingredient
-            </Button>
+                      <SelectContent>
+                        <SelectItem value="300">300g</SelectItem>
+                        <SelectItem value="500" defaultChecked>
+                          500g
+                        </SelectItem>
+                        <SelectItem value="750">750g</SelectItem>
+                        <SelectItem value="1000">1kg</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Meal Image</Label>
+              <Card className="overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-0">
+                  <div className="relative aspect-square bg-slate-100">
+                    <Image
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Meal preview"
+                      className="h-full w-full object-cover"
+                      unoptimized
+                      width={200}
+                      height={200}
+                    />
+                  </div>
+                  <div className="border-t border-slate-200 bg-white p-3">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="cursor-pointer text-sm"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>Allergens</Label>
-          <div className="space-y-2">
-            {allergenFields.map((field, index) => (
-              <div key={field.id} className="flex gap-2">
-                <FormField
-                  control={form.control}
-                  name={`allergens.${index}.value`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input
-                          placeholder="Allergen (e.g., Dairy, Gluten, Nuts)"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => removeAllergen(index)}
-                  disabled={allergenFields.length === 0}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={() => appendAllergen({ value: "" })}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Allergen
-            </Button>
-          </div>
+        {/* Description Section */}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            Description
+          </h2>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tell customers about your meal</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe your meal, its flavors, cooking method, and any special touches..."
+                    className="min-h-[120px] resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          className="bg-orange-500 hover:bg-orange-600"
-          disabled={isCreating || isUpdating}
-        >
-          {mealId ? "Update Meal" : "Add Meal"}
-        </Button>
+        {/* Ingredients Section */}
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Ingredients
+            </h2>
+            <span className="text-sm text-muted-foreground">
+              {ingredientFields.length} ingredient{ingredientFields.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <Card className="border border-slate-200 bg-slate-50 p-4">
+            <div className="space-y-3">
+              {ingredientFields.map((field, index) => (
+                <div key={field.id} className="flex gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`ingredients.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Fresh tomatoes, Extra virgin olive oil"
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeIngredient(index)}
+                    className="hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => appendIngredient({ value: "" })}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Ingredient
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Allergens Section */}
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Allergens
+            </h2>
+            <span className="text-sm text-muted-foreground">
+              {allergenFields.length} allergen{allergenFields.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <Card className="border border-yellow-200 bg-yellow-50 p-4">
+            <div className="space-y-3">
+              {allergenFields.map((field, index) => (
+                <div key={field.id} className="flex gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`allergens.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Dairy, Gluten, Tree Nuts"
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeAllergen(index)}
+                    className="hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => appendAllergen({ value: "" })}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Allergen
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex gap-3 border-t border-slate-200 pt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="flex-1 bg-orange-500 hover:bg-orange-600"
+            disabled={isCreating || isUpdating}
+          >
+            {isCreating || isUpdating ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                {mealId ? "Updating..." : "Adding..."}
+              </>
+            ) : (
+              mealId ? "Update Meal" : "Add Meal"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

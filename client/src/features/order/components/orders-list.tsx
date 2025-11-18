@@ -1,38 +1,27 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import { Clock } from "lucide-react";
-import { ChefOrdersSection } from "./chef-orders-section";
-import MainPageWithHeader from "@/components/chef/main-page-with-header";
+"use client";
 
-export default function OrderList() {
+import { Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChefOrdersSection } from "./chef-orders-section";
+
+type OrderListProps = Record<string, never>;
+
+export default function OrderList({}: OrderListProps) {
   return (
-    <MainPageWithHeader
-      title="Orders"
-      description="Manage your customer orders"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <div className="flex items-center justify-between">
-              <span>Orders</span>
-              <Button variant="outline" size="sm" className="h-8 gap-1">
-                <Clock className="h-4 w-4" />
-                <span>Last 7 days</span>
-              </Button>
-            </div>
-          </CardTitle>
-          <CardDescription>Manage your customer orders</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChefOrdersSection />
-        </CardContent>
-      </Card>
-    </MainPageWithHeader>
+    <div className="flex flex-col space-y-4">
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-600">
+          Showing orders from the last 7 days
+        </p>
+        <Button variant="outline" size="sm" className="h-8 gap-1">
+          <Clock className="h-4 w-4" />
+          <span>Last 7 days</span>
+        </Button>
+      </div>
+
+      {/* Content Section */}
+      <ChefOrdersSection />
+    </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import Loading from "@/components/loading";
 import OrderList from "@/features/order/components/orders-list";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export default function ChefOrdersPage() {
   const { isLoading } = useAuthGuard({ requireChef: true });
@@ -12,8 +13,11 @@ export default function ChefOrdersPage() {
   }
 
   return (
-    <div className="container mx-auto overflow-hidden rounded-lg bg-white px-4 shadow-sm">
+    <MainPageWithHeader
+      title="Orders"
+      description="Manage your customer orders"
+    >
       <OrderList />
-    </div>
+    </MainPageWithHeader>
   );
 }

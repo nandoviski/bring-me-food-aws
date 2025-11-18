@@ -193,7 +193,10 @@ export function Navbar() {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem asChild>
-                      <Link href="/orders" className="flex items-center">
+                      <Link
+                        href="/account/customer/orders"
+                        className="flex items-center"
+                      >
                         <ClipboardList className="mr-2 h-4 w-4" />
                         My Orders
                       </Link>
@@ -318,7 +321,7 @@ export function Navbar() {
                     </Button>
                   </ShoppingCartSheet>
                   <Link
-                    href="/orders"
+                    href="/account/customer/orders"
                     className={`font-medium transition-colors ${navLinkClass}`}
                     onClick={() => setIsMenuOpen(false)}
                   >

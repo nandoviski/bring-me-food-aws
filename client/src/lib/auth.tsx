@@ -93,6 +93,38 @@ function buildUsers(): UserComplete[] {
 
 const SESSION_KEY = "bmf_user";
 
+/**
+ * Extract domain from API URL for cookie domain setting
+ * This allows cookies to be shared between client and server on different domains
+ * Examples:
+ * - localhost:8000 → localhost (for local development)
+ * - api.example.com → .example.com (for cross-subdomain setup)
+ * - https://api.example.com → .example.com
+ */
+function extractCookieDomain(): string {
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  try {
+    const url = new URL(apiUrl);
+    const hostname = url.hostname;
+
+    // For localhost, don't set domain (stays on localhost)
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "";
+    }
+
+    // For production domains, use parent domain (.example.com)
+    // This allows sharing cookies across subdomains
+    const parts = hostname.split(".");
+    if (parts.length >= 2) {
+      return "." + parts.slice(-2).join(".");
+    }
+
+    return "";
+  } catch {
+    return "";
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserComplete | null>(null);
   const [availableUsers] = useState<UserComplete[]>(() => buildUsers());
@@ -120,11 +152,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set cookie for middleware to read (expires in 24 hours)
         const expiresIn = new Date();
         expiresIn.setHours(expiresIn.getHours() + 24);
-        document.cookie = `session=${encodeURIComponent(JSON.stringify(user))}; path=/; expires=${expiresIn.toUTCString()}; SameSite=Strict`;
+
+        const domain = extractCookieDomain();
+        const domainAttr = domain ? `; domain=${domain}` : "";
+        const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
+
+        document.cookie = `session=${encodeURIComponent(JSON.stringify(user))}; path=/${domainAttr}; expires=${expiresIn.toUTCString()}; SameSite=Lax${secureAttr}`;
       } else {
         sessionStorage.removeItem(SESSION_KEY);
         // Clear cookie
-        document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+        const domain = extractCookieDomain();
+        const domainAttr = domain ? `; domain=${domain}` : "";
+        const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
+
+        document.cookie = `session=; path=/${domainAttr}; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax${secureAttr}`;
       }
     } catch (e) {
       console.error("Failed to update session:", e);

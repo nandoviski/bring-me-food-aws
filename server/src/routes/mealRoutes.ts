@@ -6,6 +6,6 @@ const router = Router();
 
 router.post("/", requireAuth, requireChef, createMeal);
 router.put("/:mealId", requireAuth, requireChef, updateMeal);
-router.get("/:chefId/byChef", getMealsByChef);
+router.get("/:chefId/byChef", requireAuth, requireChef, getMealsByChef);
 
 export default router;

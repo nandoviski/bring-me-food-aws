@@ -15,21 +15,23 @@ export interface AuthenticatedRequest extends Request {
  *
  * Usage: app.use(authMiddleware);
  */
-export function authMiddleware(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     // Get session from cookie
     const cookies = parseCookies(req.headers.cookie || "");
     const sessionStr = cookies.session;
 
+    console.log("sessionStr1", sessionStr);
+
     if (!sessionStr) {
       return next(); // Continue without user (public endpoint)
     }
 
+    console.log("sessionStr2", sessionStr);
+
     const session = JSON.parse(decodeURIComponent(sessionStr));
+
+    console.log("session", session);
 
     if (session && session.id && session.email) {
       req.user = {
@@ -52,11 +54,9 @@ export function authMiddleware(
  *
  * Usage: router.post("/meals", requireAuth, createMeal);
  */
-export function requireAuth(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  console.log("nando2", req?.user);
+
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -72,11 +72,7 @@ export function requireAuth(
  *
  * Usage: router.post("/meals", requireAuth, requireChef, createMeal);
  */
-export function requireChef(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export function requireChef(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   if (!req.user?.isChef) {
     return res.status(403).json({
       success: false,
@@ -92,11 +88,7 @@ export function requireChef(
  *
  * Usage: router.post("/orders", requireAuth, requireCustomer, createOrder);
  */
-export function requireCustomer(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export function requireCustomer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   if (!req.user || req.user.isChef) {
     return res.status(403).json({
       success: false,

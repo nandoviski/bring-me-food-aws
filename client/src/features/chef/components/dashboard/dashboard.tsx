@@ -11,14 +11,10 @@ import {
 
 import { ChefOrdersSection } from "../../../order/components/chef-orders-section";
 import { StatsCards } from "./stats-cards";
-import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export function ChefDashboard() {
   return (
-    <MainPageWithHeader
-      title="Dashboard"
-      description="Overview of your chef account"
-    >
+    <div className="flex-1 space-y-4 overflow-auto p-4 md:p-6">
       <Button variant="outline" size="sm" className="h-8 gap-1">
         <Clock className="h-4 w-4" />
         <span>Last 7 days</span>
@@ -56,6 +52,6 @@ export function ChefDashboard() {
           </CardFooter>
         </Card>
       </div>
-    </MainPageWithHeader>
+    </div>
   );
 }

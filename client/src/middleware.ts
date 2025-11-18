@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Protected routes - require login
 const protectedRoutes = ["/account"];
-
-// Chef-only routes
 const chefOnlyRoutes = ["/account/chef"];
-
-// Customer-only routes
 const customerOnlyRoutes = ["/account/customer", "/checkout"];
-
-// Public routes - accessible without login (all other routes require login by default)
 const publicRoutes = ["/", "/how-it-works", "/search", "/chef"];
 
 /**
@@ -34,8 +27,9 @@ export function middleware(request: NextRequest) {
 
   // Check if route is in public routes list (or is a public chef profile page)
   const isPublicRoute =
-    publicRoutes.some((route) => path === route || path.startsWith(route + "/")) &&
-    !path.startsWith("/account");
+    publicRoutes.some(
+      (route) => path === route || path.startsWith(route + "/"),
+    ) && !path.startsWith("/account");
 
   // If route is public, allow access regardless of auth
   if (isPublicRoute) {
@@ -49,11 +43,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Check role-based access
-  const isChefRoute = chefOnlyRoutes.some((route) =>
-    path.startsWith(route)
-  );
+  const isChefRoute = chefOnlyRoutes.some((route) => path.startsWith(route));
   const isCustomerRoute = customerOnlyRoutes.some((route) =>
-    path.startsWith(route)
+    path.startsWith(route),
   );
 
   // Prevent non-chefs from accessing chef routes

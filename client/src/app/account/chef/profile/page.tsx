@@ -7,6 +7,7 @@ import EditChefForm from "@/features/chef/components/edit-chef-form";
 import { EditChefSchema } from "@/schema";
 import { useGetChefByUserIdQuery } from "@/state/api";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export default function ChefProfilePage() {
   const { user: loggedUser, isLoading: authLoading } = useAuthGuard({
@@ -49,8 +50,11 @@ export default function ChefProfilePage() {
   }
 
   return (
-    <div className="container mx-auto overflow-hidden rounded-lg bg-white px-4 shadow-sm">
+    <MainPageWithHeader
+      title="Edit Chef Profile"
+      description="Update your chef details"
+    >
       <EditChefForm chef={parsed.data} />
-    </div>
+    </MainPageWithHeader>
   );
 }

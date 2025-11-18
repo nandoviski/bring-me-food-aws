@@ -3,6 +3,7 @@
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import Loading from "@/components/loading";
 import { ChefDashboard } from "@/features/chef/components/dashboard/dashboard";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export default function ChefDashboardPage() {
   const { isLoading } = useAuthGuard({ requireChef: true });
@@ -12,8 +13,11 @@ export default function ChefDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto overflow-hidden rounded-lg bg-white px-4 shadow-sm">
+    <MainPageWithHeader
+      title="Dashboard"
+      description="Overview of your chef account"
+    >
       <ChefDashboard />
-    </div>
+    </MainPageWithHeader>
   );
 }

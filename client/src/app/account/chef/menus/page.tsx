@@ -3,6 +3,7 @@
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import Loading from "@/components/loading";
 import { MenusList } from "@/features/menu/components/menus-list";
+import MainPageWithHeader from "@/components/chef/main-page-with-header";
 
 export default function ChefMenusPage() {
   const { isLoading } = useAuthGuard({ requireChef: true });
@@ -12,8 +13,8 @@ export default function ChefMenusPage() {
   }
 
   return (
-    <div className="container mx-auto overflow-hidden rounded-lg bg-white px-4 shadow-sm">
+    <MainPageWithHeader title="Menus" description="Manage your menus">
       <MenusList />
-    </div>
+    </MainPageWithHeader>
   );
 }
