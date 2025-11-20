@@ -1,43 +1,75 @@
 import type { Request, Response, NextFunction } from "express";
+import { PrismaClient } from "@prisma/client";
+import { verifyCognitoToken, extractUserFromToken } from "../utils/cognito-verify";
+
+const prisma = new PrismaClient();
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
+    id: string; // Database user ID
     email: string;
     isChef: boolean;
+    cognitoId?: string; // Cognito user sub
   };
 }
 
 /**
- * Middleware to verify session from cookie
+ * Middleware to verify Cognito JWT token from Authorization header
  * Attaches user info to req.user if valid
- * This is permissive - it doesn't fail if there's no session
+ * This is permissive - it doesn't fail if there's no token
  *
+ * Token format: Authorization: Bearer <jwt_token>
  * Usage: app.use(authMiddleware);
  */
-export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    // Get session from cookie
-    const cookies = parseCookies(req.headers.cookie || "");
-    const sessionStr = cookies.session;
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization || "";
+    const tokenMatch = authHeader.match(/^Bearer\s+(.+)$/);
 
-    if (!sessionStr) {
+    if (!tokenMatch) {
       return next(); // Continue without user (public endpoint)
     }
 
-    const session = JSON.parse(decodeURIComponent(sessionStr));
+    const token = tokenMatch[1];
 
-    if (session && session.id && session.email) {
+    // Verify Cognito token
+    const payload = await verifyCognitoToken(token);
+    const userInfo = extractUserFromToken(payload);
+
+    // Look up user in database by email
+    const user = await prisma.user.findUnique({
+      where: { email: userInfo.email },
+      include: {
+        chef: true,
+        customer: true,
+      },
+    });
+
+    if (user) {
       req.user = {
-        id: session.id,
-        email: session.email,
-        isChef: session.isChef || false,
+        id: user.id,
+        email: user.email,
+        isChef: !!user.chef,
+        cognitoId: user.cognitoId || undefined,
+      };
+    } else {
+      // User exists in Cognito but not in database yet
+      // Store minimal info for sync-user endpoint to use
+      req.user = {
+        id: userInfo.cognitoId, // Use cognito ID as temporary ID
+        email: userInfo.email,
+        isChef: false,
+        cognitoId: userInfo.cognitoId,
       };
     }
 
     next();
-  } catch (err) {
-    // Invalid session, continue without user
+  } catch (err: any) {
+    // Invalid token, continue without user
+    // This allows public endpoints to work
+    console.warn("Auth middleware error:", err.message);
+    console.warn("Auth middleware - Failed to verify token, continuing as public request");
     next();
   }
 }
@@ -50,11 +82,14 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
  */
 export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   if (!req.user) {
+    console.warn("requireAuth - Authentication required but user is undefined");
+    console.warn("Authorization header:", req.headers.authorization);
     return res.status(401).json({
       success: false,
       message: "Authentication required",
     });
   }
+
   next();
 }
 
@@ -88,16 +123,4 @@ export function requireCustomer(req: AuthenticatedRequest, res: Response, next: 
     });
   }
   next();
-}
-
-/**
- * Helper function to parse cookies from header
- */
-function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
-  cookieHeader.split(";").forEach((cookie) => {
-    const [name, ...rest] = cookie.split("=");
-    cookies[name.trim()] = rest.join("=").trim();
-  });
-  return cookies;
 }

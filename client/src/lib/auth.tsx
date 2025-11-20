@@ -1,192 +1,324 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import type { ReactNode } from "react";
-import type { User, Chef } from "@/schema";
+import type { User } from "@/schema";
+import {
+  getIdToken,
+  handleGetCurrentUser,
+  handleSignUp,
+  handleConfirmSignUp,
+  handleSignIn,
+  handleSignOut,
+} from "./amplify-config";
+// Amplify is configured at module load time in amplify-config.ts
+import "./amplify-config";
 
 type UserComplete = User & { customer?: any; chef?: any; isChef?: boolean };
 
-type AuthContextType = {
+export type AuthContextType = {
   user: UserComplete | null;
-  login: (userId: string) => void;
-  logout: () => void;
-  availableUsers: UserComplete[];
+  signUp: (
+    email: string,
+    username: string,
+    password: string,
+    fullName: string,
+  ) => Promise<void>;
+  confirmEmail: (email: string, code: string) => Promise<void>;
+  login: (emailOrUsername: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
+  isAuthenticated: boolean;
+  accessToken: string | null;
+  error: string | null;
+  clearError: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function buildUsers(): UserComplete[] {
-  const chefUser: UserComplete = {
-    id: "879c31a3-5354-49ed-be60-8ab4b00c9537",
-    email: "sarah@example.com",
-    status: "CREATED",
-    deletedAt: undefined,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    isChef: true, // chef !== null
-    chef: {
-      id: "d6a8e654-a4ee-4c45-8f3b-11f037981496",
-      username: "sarah_kitchen",
-      name: "My Home Kitchen",
-      location: "Burwood, NSW",
-      bio: "I am a chef with 10 years of experience in the kitchen. I love to cook and share my passion for food with others.",
-      specialties: "Italian, French, Asian",
-      phoneNumber: "0466666666",
-      userId: "879c31a3-5354-49ed-be60-8ab4b00c9537",
-      deletedAt: undefined,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  };
-
-  const customerUser: UserComplete = {
-    id: "eacc7be0-860d-450e-a4d4-4b069fb9cd47",
-    email: "fmarostega@gmail.com",
-    status: "CREATED",
-    deletedAt: undefined,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    isChef: false, // chef === null
-    customer: {
-      id: "873d1e0e-16e0-49f9-a0a5-c1947cf0e272",
-      firstName: "Fernando",
-      lastName: "Marostega",
-      address: "123 Main St",
-      city: "Rhodes",
-      state: "NSW",
-      country: "AU",
-      postalCode: "2000",
-      phoneNumber: "0455555555",
-      company: null,
-      userId: "eacc7be0-860d-450e-a4d4-4b069fb9cd47",
-      deletedAt: undefined,
-    },
-  };
-
-  //   firstName: z.string({ message: "First name is required" }).max(150),
-  //     lastName: z.string({ message: "Last name is required" }).max(150),
-  //     phoneNumber: z.string().min(10).max(10),
-  //     address: z.string({ message: "Address is required" }).max(250),
-  //     city: z.string({ message: "City is required" }).max(100),
-  //     state: z.string().min(2).max(3),
-  //     country: z.string().max(3),
-  //     postalCode: z.string().min(4).max(4),
-  //     company: z.string().max(150).optional().nullable(),
-
-  const guestUser: UserComplete = {
-    id: "guest-1",
-    email: "guest@example.com",
-    status: "INACTIVE",
-    deletedAt: undefined,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    isChef: false, // chef === null
-  };
-
-  const users: UserComplete[] = [];
-  users.push(chefUser);
-  users.push(customerUser);
-  users.push(guestUser);
-  return users;
-}
-
 const SESSION_KEY = "bmf_user";
+const ACCESS_TOKEN_KEY = "bmf_access_token";
 
 /**
- * Extract domain from API URL for cookie domain setting
- * This allows cookies to be shared between client and server on different domains
- * Examples:
- * - localhost:8000 → localhost (for local development)
- * - api.example.com → .example.com (for cross-subdomain setup)
- * - https://api.example.com → .example.com
+ * Sync user data with backend and retrieve complete user profile
  */
-function extractCookieDomain(): string {
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+async function syncUserWithBackend(
+  cognitoEmail: string,
+  accessToken: string,
+): Promise<UserComplete | null> {
   try {
-    const url = new URL(apiUrl);
-    const hostname = url.hostname;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const response = await fetch(`${apiBaseUrl}/auth/sync-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ email: cognitoEmail }),
+    });
 
-    // For localhost, don't set domain (stays on localhost)
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return "";
+    if (!response.ok) {
+      throw new Error(`Sync failed: ${response.statusText}`);
     }
 
-    // For production domains, use parent domain (.example.com)
-    // This allows sharing cookies across subdomains
-    const parts = hostname.split(".");
-    if (parts.length >= 2) {
-      return "." + parts.slice(-2).join(".");
-    }
-
-    return "";
-  } catch {
-    return "";
+    const userData = await response.json();
+    return userData.user || userData;
+  } catch (error) {
+    console.error("Failed to sync user with backend:", error);
+    return null;
   }
+}
+
+/**
+ * Save access token to localStorage for API requests
+ */
+function saveAccessToken(token: string | null) {
+  if (token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
+}
+
+/**
+ * Retrieve access token from localStorage
+ */
+function getStoredAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserComplete | null>(null);
-  const [availableUsers] = useState<UserComplete[]>(() => buildUsers());
   const [isLoading, setIsLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load user from sessionStorage on mount (client-side hydration)
+  // Restore session on mount
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      if (raw) {
-        setUser(JSON.parse(raw));
+    const restoreSession = async () => {
+      try {
+        setIsLoading(true);
+
+        // Amplify is already configured at module load time
+        // Try to get stored token first
+        const storedToken = getStoredAccessToken();
+        if (storedToken) {
+          setAccessToken(storedToken);
+        }
+
+        // Try to restore user from Cognito
+        const cognitoUser = await handleGetCurrentUser();
+        if (cognitoUser) {
+          // User is authenticated with Cognito
+          // Sync with backend to get full user profile
+          const token = storedToken || (await getIdToken());
+          if (token) {
+            setAccessToken(token);
+            saveAccessToken(token);
+
+            // Decode the ID token to get the email claim (required for sync-user endpoint)
+            let userEmail: string = cognitoUser.username || "";
+            try {
+              const tokenParts = token.split(".");
+              if (tokenParts.length === 3) {
+                const base64 = tokenParts[1]
+                  .replace(/-/g, "+")
+                  .replace(/_/g, "/");
+                const payload = JSON.parse(atob(base64));
+                if (payload.email) {
+                  userEmail = payload.email;
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to extract email from stored token");
+            }
+
+            if (userEmail) {
+              const fullUser = await syncUserWithBackend(userEmail, token);
+              if (fullUser) {
+                setUser(fullUser);
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(fullUser));
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to restore session:", err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to parse session:", e);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    restoreSession();
   }, []);
 
-  // Sync user state to both sessionStorage and cookie
+  // Sync user state to sessionStorage when it changes
   useEffect(() => {
     try {
       if (user) {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-        // Set cookie for middleware to read (expires in 24 hours)
-        const expiresIn = new Date();
-        expiresIn.setHours(expiresIn.getHours() + 24);
-
-        const domain = extractCookieDomain();
-        const domainAttr = domain ? `; domain=${domain}` : "";
-        const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
-
-        document.cookie = `session=${encodeURIComponent(JSON.stringify(user))}; path=/${domainAttr}; expires=${expiresIn.toUTCString()}; SameSite=Lax${secureAttr}`;
       } else {
         sessionStorage.removeItem(SESSION_KEY);
-        // Clear cookie
-        const domain = extractCookieDomain();
-        const domainAttr = domain ? `; domain=${domain}` : "";
-        const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
-
-        document.cookie = `session=; path=/${domainAttr}; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax${secureAttr}`;
       }
     } catch (e) {
       console.error("Failed to update session:", e);
     }
   }, [user]);
 
-  function login(userId: string) {
-    const found = availableUsers.find((u) => u.id === userId) ?? null;
-    setUser(found);
-  }
+  const signUp = useCallback(
+    async (
+      email: string,
+      username: string,
+      password: string,
+      fullName: string,
+    ) => {
+      try {
+        setError(null);
+        setIsLoading(true);
 
-  function logout() {
-    setUser(null);
-  }
+        await handleSignUp({ email, username, password, fullName });
+        // Don't set user yet; they need to confirm email first
+      } catch (err: any) {
+        const errorMessage = err.message || "Sign up failed. Please try again.";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const confirmEmail = useCallback(async (email: string, code: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      // Confirm the email first
+      await handleConfirmSignUp(email, code);
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Email confirmation failed. Please try again.";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const login = useCallback(
+    async (emailOrUsername: string, password: string) => {
+      try {
+        setError(null);
+        setIsLoading(true);
+
+        try {
+          await handleSignIn({ emailOrUsername, password });
+        } catch (signInErr: any) {
+          // Re-throw sign-in errors with their original message
+          // (e.g., "User is not confirmed", invalid credentials, etc.)
+          throw signInErr;
+        }
+
+        // Wait briefly for session to be established (Cognito timing issue)
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Get ID token with retry logic (ID token contains email claim needed for verification)
+        let token: string | null = null;
+        let retries = 3;
+        while (!token && retries > 0) {
+          token = await getIdToken();
+          if (!token) {
+            retries--;
+            if (retries > 0) {
+              await new Promise((resolve) => setTimeout(resolve, 200));
+            }
+          }
+        }
+
+        if (!token) {
+          throw new Error(
+            "Failed to get ID token. Please ensure you are signed in correctly.",
+          );
+        }
+
+        setAccessToken(token);
+        saveAccessToken(token);
+
+        // Sync with backend to get full user profile
+        // Decode the ID token to get the email claim (required for sync-user endpoint)
+        let userEmail: string;
+        try {
+          // Parse the JWT token to extract the email claim
+          const tokenParts = token.split(".");
+          if (tokenParts.length === 3) {
+            // Decode base64url (replace - and _ for standard base64)
+            const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
+            const payload = JSON.parse(atob(base64));
+            userEmail = payload.email || emailOrUsername;
+            console.log("Extracted email from token:", userEmail);
+          } else {
+            userEmail = emailOrUsername;
+          }
+        } catch (err) {
+          console.warn("Failed to extract email from token, using input email");
+          userEmail = emailOrUsername;
+        }
+
+        const fullUser = await syncUserWithBackend(userEmail, token);
+        if (fullUser) {
+          setUser(fullUser);
+        } else {
+          throw new Error("Failed to fetch user profile from backend");
+        }
+      } catch (err: any) {
+        const errorMessage = err.message || "Login failed. Please try again.";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      setError(null);
+      await handleSignOut();
+      setUser(null);
+      setAccessToken(null);
+      saveAccessToken(null);
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch (err: any) {
+      const errorMessage = err.message || "Logout failed.";
+      setError(errorMessage);
+      throw err;
+    }
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const value: AuthContextType = {
     user,
+    signUp,
+    confirmEmail,
     login,
     logout,
-    availableUsers,
     isLoading,
+    isAuthenticated: !!user,
+    accessToken,
+    error,
+    clearError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

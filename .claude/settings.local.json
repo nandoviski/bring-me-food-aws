@@ -6,7 +6,11 @@
       "Bash(dir:*)",
       "Bash(find:*)",
       "Bash(npm run lint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -22,7 +22,8 @@
     {
       "label": "Start Both (Client + Server)",
       "dependsOn": ["Start Client (Next.js)", "Start Server (Express)"],
-      "dependsOrder": "parallel"
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }

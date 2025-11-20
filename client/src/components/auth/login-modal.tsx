@@ -4,10 +4,33 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { SignUpForm } from "./sign-up-form";
+import { VerifyEmailForm } from "./verify-email-form";
+import { LoginForm } from "./login-form";
+
+type AuthMode = "login" | "signup" | "verify";
 
 export default function LoginModal({ compact }: { compact?: boolean }) {
-  const { user, login, logout, availableUsers } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [open, setOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
+
+  const handleSignUpSuccess = (email: string) => {
+    setVerifyEmail(email);
+    setAuthMode("verify");
+  };
+
+  const handleVerifySuccess = () => {
+    setAuthMode("login");
+    setVerifyEmail(null);
+  };
+
+  const handleLoginSuccess = () => {
+    setOpen(false);
+    setAuthMode("login");
+    setVerifyEmail(null);
+  };
 
   return (
     <div>
@@ -16,7 +39,11 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
           <span className="text-sm">
             {user.customer?.firstName ?? user.chef?.name ?? user.email}
           </span>
-          <Button variant="ghost" onClick={() => logout()}>
+          <Button
+            variant="ghost"
+            onClick={() => logout()}
+            disabled={isLoading}
+          >
             Sign Out
           </Button>
         </div>
@@ -24,9 +51,12 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
         <>
           <Button
             variant={compact ? "green" : "green"}
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              setAuthMode("login");
+              setVerifyEmail(null);
+            }}
           >
-            {/* px-6 py-3 font-medium */}
             Sign In
           </Button>
 
@@ -38,45 +68,45 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                   className="absolute inset-0 bg-black/40"
                   onClick={() => setOpen(false)}
                 />
-                <div className="relative z-10 w-full max-w-md rounded bg-white p-6 shadow-lg">
-                  <h3 className="mb-4 text-lg font-medium">
-                    Select a user to sign in
-                  </h3>
-                  <div className="space-y-3">
-                    {availableUsers.map((u) => (
-                      <div
-                        key={u.id}
-                        className="flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">
-                            {u.chef?.name ?? u.customer?.firstName ?? u.email}
-                          </div>
-                          <div className="text-muted-foreground text-xs">
-                            {u.email}
-                          </div>
-                        </div>
-                        <div>
-                          <Button
-                            variant="ghost"
-                            onClick={() => {
-                              login(u.id);
-                              setOpen(false);
-                            }}
-                          >
-                            Use
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold">
+                      {authMode === "login" && "Sign In"}
+                      {authMode === "signup" && "Create Account"}
+                      {authMode === "verify" && "Verify Email"}
+                    </h3>
+                    <button
+                      onClick={() => setOpen(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
                   </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <Button onClick={() => setOpen(false)}>Close</Button>
-                  </div>
+                  {authMode === "login" && (
+                    <LoginForm
+                      onLoginSuccess={handleLoginSuccess}
+                      onSwitchToSignUp={() => setAuthMode("signup")}
+                    />
+                  )}
+
+                  {authMode === "signup" && (
+                    <SignUpForm
+                      onSignUpSuccess={handleSignUpSuccess}
+                      onSwitchToLogin={() => setAuthMode("login")}
+                    />
+                  )}
+
+                  {authMode === "verify" && verifyEmail && (
+                    <VerifyEmailForm
+                      email={verifyEmail}
+                      onVerifySuccess={handleVerifySuccess}
+                      onBackToSignUp={() => setAuthMode("signup")}
+                    />
+                  )}
                 </div>
               </div>,
-              document.body,
+              document.body
             )}
         </>
       )}

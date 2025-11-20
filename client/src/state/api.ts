@@ -17,6 +17,14 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
     credentials: "include",
+    prepareHeaders: (headers) => {
+      // Add authorization token from localStorage if available
+      const token = localStorage.getItem("bmf_access_token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   reducerPath: "api",
   tagTypes: [

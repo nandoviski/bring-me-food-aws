@@ -15,6 +15,7 @@ import chefRoutes from "./routes/chefRoutes";
 import customerRoutes from "./routes/customerRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import authRoutes from "./routes/authRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -31,7 +32,7 @@ app.use(
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -45,6 +46,7 @@ apiRouter.get("/", (req, res) => {
   res.send("Hello, this is the Bring Me Food API!");
 });
 
+apiRouter.use("/auth", authRoutes);
 apiRouter.use("/meals", mealRoutes);
 apiRouter.use("/menus", menuRoutes);
 apiRouter.use("/chefs", chefRoutes);
