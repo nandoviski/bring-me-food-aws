@@ -21,9 +21,10 @@ export default function MealItem({ meal }: Props) {
   return (
     <Card
       key={meal.id}
-      className="group overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+      className="group overflow-hidden border-0 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
-      <div className="relative h-48">
+      <div className="relative h-56 overflow-hidden">
+        
         <Image
           src={
             meal.image && meal.image !== "" ? meal.image : "/placeholder.svg"
@@ -31,64 +32,50 @@ export default function MealItem({ meal }: Props) {
           loading={meal.image && meal.image !== "" ? undefined : "eager"}
           alt={`${meal.name} - ${meal.description}`}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+        {/* Gradient overlay for text readability if we put text over image, but here we keep it clean */}
+        {/* <div className="absolute inset-0 bg-black/10 transition-opacity group-hover:opacity-0" /> */}
       </div>
-      <CardContent className="relative -mt-20 bg-white/95 p-6 backdrop-blur-xs">
-        <div className="space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {meal.name}
-              </h3>
-              <p className="mt-1 text-sm text-gray-600">{meal.description}</p>
-              <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-                {meal.ingredients.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Utensils className="h-4 w-4" />
-                    <span>{meal.ingredients.join(", ")}</span>
-                  </div>
-                )}
-              </div>
-              <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-                {meal.allergens.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <p className="font-bold">Allergens: </p>
-                    <span>{meal.allergens[0]}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-orange-600">
-                ${formatPrice(meal.price)}
-              </div>
-              {/* {meal.available ? (
-              <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
-                Available
-              </span>
-            ) : (
-              <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-800">
-                Sold Out
-              </span>
-            )} */}
-            </div>
+      
+      <CardContent className="flex h-[200px] flex-col justify-between p-6">
+        <div>
+          <div className="mb-2 flex items-start justify-between">
+            <h3 className="font-serif text-xl font-medium text-[#1a2e25] line-clamp-1">
+              {meal.name}
+            </h3>
+            <span className="text-lg font-semibold text-orange-600">
+              ${formatPrice(meal.price)}
+            </span>
           </div>
+          
+          <p className="mb-4 text-sm text-gray-500 line-clamp-2 leading-relaxed">
+            {meal.description}
+          </p>
 
-          <MealViewModeDialog meal={meal} />
+          <div className="flex flex-wrap gap-2">
+             {meal.ingredients.length > 0 && (
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                   <Utensils className="h-3 w-3" />
+                   <span className="line-clamp-1">{meal.ingredients.join(", ")}</span>
+                </div>
+             )}
+          </div>
+        </div>
 
-          <div className="flex flex-col gap-2">
-            <Button
+        <div className="mt-4 flex items-center gap-3">
+           <div className="flex-1">
+              <MealViewModeDialog meal={meal} />
+           </div>
+           <Button
               size="sm"
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="bg-[#1a2e25] px-6 text-white hover:bg-[#2a4e35]"
               onClick={() => {
-                increaseItemQuantityByMeal(meal);
+                 increaseItemQuantityByMeal(meal);
               }}
-            >
-              Quick Order
-            </Button>
-          </div>
+           >
+              Add
+           </Button>
         </div>
       </CardContent>
     </Card>
