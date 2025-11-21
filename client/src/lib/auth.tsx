@@ -46,6 +46,35 @@ const SESSION_KEY = "bmf_user";
 const ACCESS_TOKEN_KEY = "bmf_access_token";
 
 /**
+ * Check if JWT token is expired by examining the exp claim
+ * Returns true if token is valid, false if expired or invalid structure
+ */
+function isTokenValid(token: string): boolean {
+  try {
+    const tokenParts = token.split(".");
+    if (tokenParts.length !== 3) {
+      return false; // Invalid token structure
+    }
+
+    // Decode the payload (second part)
+    const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64));
+
+    // Check if token has expiration claim
+    if (!payload.exp) {
+      return false; // No expiration claim
+    }
+
+    // exp is in seconds, Date.now() is in milliseconds
+    const now = Math.floor(Date.now() / 1000);
+
+    return payload.exp > now;
+  } catch {
+    return false; // Any parsing error means invalid token
+  }
+}
+
+/**
  * Sync user data with backend and retrieve complete user profile
  */
 async function syncUserWithBackend(
@@ -120,6 +149,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Sync with backend to get full user profile
           const token = storedToken || (await getIdToken());
           if (token) {
+            // Check if token is expired before using it
+            if (!isTokenValid(token)) {
+              saveAccessToken(null);
+              setIsLoading(false);
+              return;
+            }
+
             setAccessToken(token);
             saveAccessToken(token);
 
@@ -249,6 +285,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           );
         }
 
+        // Verify token is valid (not expired) before using it
+        if (!isTokenValid(token)) {
+          throw new Error("Session token is invalid. Please log in again.");
+        }
+
         setAccessToken(token);
         saveAccessToken(token);
 
@@ -263,7 +304,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
             const payload = JSON.parse(atob(base64));
             userEmail = payload.email || emailOrUsername;
-            console.log("Extracted email from token:", userEmail);
           } else {
             userEmail = emailOrUsername;
           }
