@@ -59,8 +59,6 @@ export const getChefsWeeklyMenu = async (req: Request, res: Response): Promise<v
       },
     });
 
-    console.log("menu", menu);
-
     res.status(200).json(menu);
   } catch (error: any) {
     res.status(500).json({ message: `Error retrieving weekly menu: ${error.message}` });
