@@ -54,6 +54,7 @@ export type SignUpInput = {
   fullName: string;
   firstName?: string;
   lastName?: string;
+  userType?: "chef" | "customer";
 };
 
 export type SignUpResult = {

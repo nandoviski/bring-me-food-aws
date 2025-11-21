@@ -11,8 +11,24 @@ const prisma = new PrismaClient();
  *
  * Called after successful sign-up or login
  * Creates/updates User record in database
+ * Optionally creates Chef or Customer profile based on userType
  *
- * Request body: { email: string }
+ * Request body: {
+ *   email: string,
+ *   userType?: "chef" | "customer",
+ *   // Chef fields (required if userType === "chef"):
+ *   location?: string,
+ *   specialties?: string,
+ *   // Customer fields (required if userType === "customer"):
+ *   firstName?: string,
+ *   lastName?: string,
+ *   phoneNumber?: string,
+ *   address?: string,
+ *   city?: string,
+ *   state?: string,
+ *   country?: string,
+ *   postalCode?: string,
+ * }
  * Requires: Authorization: Bearer <jwt_token>
  */
 export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
@@ -24,7 +40,7 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    const { email } = req.body;
+    const { email, userType, location, specialties, firstName, lastName, phoneNumber, address, city, state, country, postalCode } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -93,6 +109,73 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
           chef: true,
           customer: true,
         },
+      });
+    }
+
+    // Create Chef profile if requested
+    if (userType === "chef" && !user.chef) {
+      if (!location) {
+        return res.status(400).json({
+          success: false,
+          message: "Location is required for chef profile",
+        });
+      }
+
+      await prisma.chef.create({
+        data: {
+          userId: user.id,
+          username: userInfo.username,
+          name: userInfo.email.split("@")[0],
+          location,
+          specialties: specialties || null,
+        },
+      });
+
+      user = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          chef: true,
+          customer: true,
+        },
+      });
+    }
+
+    // Create Customer profile if requested
+    if (userType === "customer" && !user?.customer) {
+      if (!firstName || !lastName || !phoneNumber || !address || !city || !state || !country || !postalCode) {
+        return res.status(400).json({
+          success: false,
+          message: "All customer profile fields are required",
+        });
+      }
+
+      await prisma.customer.create({
+        data: {
+          userId: user!.id,
+          firstName,
+          lastName,
+          phoneNumber,
+          address,
+          city,
+          state,
+          country,
+          postalCode,
+        },
+      });
+
+      user = await prisma.user.findUnique({
+        where: { id: user!.id },
+        include: {
+          chef: true,
+          customer: true,
+        },
+      });
+    }
+
+    if (!user) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create user profile",
       });
     }
 

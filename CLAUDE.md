@@ -172,6 +172,52 @@ npx prisma reset                              # Reset database (dev only)
 - **Component Usage**: Import types directly from `@/schema`, no local duplication
 - All API inputs validated with Zod on both client and server
 
+### Form Validation Pattern (React Hook Form + Zod)
+**ALWAYS use React Hook Form with Zod for all forms** — Never use manual `useState` validation.
+
+**Pattern:**
+1. Define Zod schema in `src/schema/[entity].ts`:
+   ```typescript
+   export const SignUpSchema = z.object({
+     email: z.string().email("Invalid email"),
+     password: z.string().min(8, "Min 8 chars").regex(/[A-Z]/, "Needs uppercase"),
+     confirmPassword: z.string(),
+   }).refine(data => data.password === data.confirmPassword, {
+     message: "Passwords don't match",
+     path: ["confirmPassword"],
+   });
+
+   export type SignUpType = z.infer<typeof SignUpSchema>;
+   ```
+
+2. Use in component:
+   ```typescript
+   import { useForm } from "react-hook-form";
+   import { zodResolver } from "@hookform/resolvers/zod";
+   import type { SignUpType } from "@/schema";
+   import { SignUpSchema } from "@/schema";
+
+   export function SignUpForm() {
+     const { register, handleSubmit, formState: { errors }, } = useForm<SignUpType>({
+       resolver: zodResolver(SignUpSchema),
+     });
+
+     const onSubmit = (data: SignUpType) => {
+       // data is fully typed and validated
+     };
+
+     return (
+       <form onSubmit={handleSubmit(onSubmit)}>
+         <input {...register("email")} />
+         {errors.email && <span>{errors.email.message}</span>}
+         <button type="submit">Submit</button>
+       </form>
+     );
+   }
+   ```
+
+**Benefits:** Type-safe, minimal re-renders, small bundle size, centralized validation, works with shadcn/ui components.
+
 ### Database Changes
 1. Edit `server/prisma/schema.prisma`
 2. Run `npx prisma migrate dev --name <descriptive_name>`

@@ -6,3 +6,4 @@ export * from "./menu";
 export * from "./order";
 export * from "./cart";
 export * from "./types";
+export * from "./auth";

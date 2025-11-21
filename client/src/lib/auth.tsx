@@ -29,6 +29,7 @@ export type AuthContextType = {
     username: string,
     password: string,
     fullName: string,
+    userType?: "chef" | "customer",
   ) => Promise<void>;
   confirmEmail: (email: string, code: string) => Promise<void>;
   login: (emailOrUsername: string, password: string) => Promise<void>;
@@ -214,12 +215,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: string,
       password: string,
       fullName: string,
+      userType?: "chef" | "customer",
     ) => {
       try {
         setError(null);
         setIsLoading(true);
 
-        await handleSignUp({ email, username, password, fullName });
+        await handleSignUp({ email, username, password, fullName, userType });
         // Don't set user yet; they need to confirm email first
       } catch (err: any) {
         const errorMessage = err.message || "Sign up failed. Please try again.";
