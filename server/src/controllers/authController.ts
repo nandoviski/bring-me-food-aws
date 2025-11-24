@@ -40,7 +40,20 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    const { email, userType, location, specialties, firstName, lastName, phoneNumber, address, city, state, country, postalCode } = req.body;
+    const {
+      email,
+      userType,
+      location,
+      specialties,
+      firstName,
+      lastName,
+      phoneNumber,
+      address,
+      city,
+      state,
+      country,
+      postalCode,
+    } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -142,7 +155,16 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
 
     // Create Customer profile if requested
     if (userType === "customer" && !user?.customer) {
-      if (!firstName || !lastName || !phoneNumber || !address || !city || !state || !country || !postalCode) {
+      if (
+        !firstName ||
+        !lastName ||
+        !phoneNumber ||
+        !address ||
+        !city ||
+        !state ||
+        !country ||
+        !postalCode
+      ) {
         return res.status(400).json({
           success: false,
           message: "All customer profile fields are required",

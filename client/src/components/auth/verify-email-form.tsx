@@ -8,12 +8,14 @@ import { Label } from "@/components/ui/label";
 
 type Props = {
   email: string;
+  username: string;
   onVerifySuccess?: () => void;
   onBackToSignUp?: () => void;
 };
 
 export function VerifyEmailForm({
   email,
+  username,
   onVerifySuccess,
   onBackToSignUp,
 }: Props) {
@@ -40,7 +42,7 @@ export function VerifyEmailForm({
     }
 
     try {
-      await confirmEmail(email, code);
+      await confirmEmail(username, code);
       setResendSuccess(false);
       onVerifySuccess?.();
     } catch (err: any) {
@@ -65,7 +67,7 @@ export function VerifyEmailForm({
     setResendLoading(true);
     try {
       const { handleResendSignUpCode } = await import("@/lib/amplify-config");
-      await handleResendSignUpCode(email);
+      await handleResendSignUpCode(username);
       setResendAttempts((prev) => prev + 1);
       setResendSuccess(true);
       setCode("");

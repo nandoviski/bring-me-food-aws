@@ -31,7 +31,7 @@ export type AuthContextType = {
     fullName: string,
     userType?: "chef" | "customer",
   ) => Promise<void>;
-  confirmEmail: (email: string, code: string) => Promise<void>;
+  confirmEmail: (username: string, code: string) => Promise<void>;
   login: (emailOrUsername: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
@@ -82,8 +82,13 @@ async function syncUserWithBackend(
   cognitoEmail: string,
   accessToken: string,
 ): Promise<UserComplete | null> {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   try {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error("API base URL is not configured (NEXT_PUBLIC_API_BASE_URL)");
+    }
+
     const response = await fetch(`${apiBaseUrl}/auth/sync-user`, {
       method: "POST",
       headers: {
@@ -94,14 +99,27 @@ async function syncUserWithBackend(
     });
 
     if (!response.ok) {
-      throw new Error(`Sync failed: ${response.statusText}`);
+      const errorBody = await response.text();
+      throw new Error(
+        `Sync failed with status ${response.status}: ${response.statusText}. Response: ${errorBody}`
+      );
     }
 
     const userData = await response.json();
     return userData.user || userData;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to sync user with backend:", error);
-    return null;
+    // Provide more specific error messages for common issues
+    if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+      console.error(
+        "Network error - Backend server may not be running or CORS is misconfigured"
+      );
+      throw new Error(
+        `Unable to connect to backend server at ${apiBaseUrl}. Make sure the backend is running.`
+      );
+    }
+    // Re-throw the error so the caller knows sync failed
+    throw error;
   }
 }
 
@@ -234,13 +252,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const confirmEmail = useCallback(async (email: string, code: string) => {
+  const confirmEmail = useCallback(async (username: string, code: string) => {
     try {
       setError(null);
       setIsLoading(true);
 
       // Confirm the email first
-      await handleConfirmSignUp(email, code);
+      await handleConfirmSignUp(username, code);
     } catch (err: any) {
       const errorMessage =
         err.message || "Email confirmation failed. Please try again.";

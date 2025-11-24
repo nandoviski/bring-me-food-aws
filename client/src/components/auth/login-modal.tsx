@@ -10,26 +10,31 @@ import { LoginForm } from "./login-form";
 
 type AuthMode = "login" | "signup" | "verify";
 
+type VerifyState = {
+  email: string;
+  username: string;
+};
+
 export default function LoginModal({ compact }: { compact?: boolean }) {
   const { user, logout, isLoading } = useAuth();
   const [open, setOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
+  const [verifyState, setVerifyState] = useState<VerifyState | null>(null);
 
-  const handleSignUpSuccess = (email: string) => {
-    setVerifyEmail(email);
+  const handleSignUpSuccess = (email: string, username: string) => {
+    setVerifyState({ email, username });
     setAuthMode("verify");
   };
 
   const handleVerifySuccess = () => {
     setAuthMode("login");
-    setVerifyEmail(null);
+    setVerifyState(null);
   };
 
   const handleLoginSuccess = () => {
     setOpen(false);
     setAuthMode("login");
-    setVerifyEmail(null);
+    setVerifyState(null);
   };
 
   return (
@@ -54,7 +59,7 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
             onClick={() => {
               setOpen(true);
               setAuthMode("login");
-              setVerifyEmail(null);
+              setVerifyState(null);
             }}
           >
             Sign In
@@ -97,9 +102,10 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                     />
                   )}
 
-                  {authMode === "verify" && verifyEmail && (
+                  {authMode === "verify" && verifyState && (
                     <VerifyEmailForm
-                      email={verifyEmail}
+                      email={verifyState.email}
+                      username={verifyState.username}
                       onVerifySuccess={handleVerifySuccess}
                       onBackToSignUp={() => setAuthMode("signup")}
                     />

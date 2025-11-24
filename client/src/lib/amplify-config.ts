@@ -110,14 +110,15 @@ export async function handleSignUp(input: SignUpInput): Promise<SignUpResult> {
 /**
  * Confirm user email with verification code
  * Called after user receives confirmation email
+ * Note: username parameter must be the same username used during sign-up, not email
  */
 export async function handleConfirmSignUp(
-  email: string,
+  username: string,
   code: string,
 ): Promise<void> {
   try {
     await confirmSignUp({
-      username: email,
+      username: username,
       confirmationCode: code,
     });
   } catch (error) {
@@ -244,11 +245,12 @@ export async function handleSignOut(): Promise<void> {
 /**
  * Resend confirmation code to user's email
  * Called if user didn't receive initial verification email
+ * Note: username parameter must be the same username used during sign-up, not email
  */
-export async function handleResendSignUpCode(email: string): Promise<void> {
+export async function handleResendSignUpCode(username: string): Promise<void> {
   try {
     await resendSignUpCode({
-      username: email,
+      username: username,
     });
   } catch (error) {
     console.error("Resend confirmation code error:", error);

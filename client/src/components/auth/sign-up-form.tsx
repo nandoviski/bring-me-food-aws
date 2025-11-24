@@ -12,27 +12,31 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Props = {
-  onSignUpSuccess?: (email: string) => void;
+  onSignUpSuccess?: (email: string, username: string) => void;
   onSwitchToLogin?: () => void;
 };
 
 export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
-  const { signUp, isLoading, error, clearError } = useAuth();
+  const { signUp, isLoading, clearError } = useAuth();
   const [userType, setUserType] = useState<"chef" | "customer">("customer");
 
   // Chef form
   const chefForm = useForm<ChefSignUpType>({
     resolver: zodResolver(ChefSignUpSchema),
     mode: "onBlur",
+    defaultValues: {
+      userType: "chef",
+    },
   });
 
   // Customer form
   const customerForm = useForm<CustomerSignUpType>({
     resolver: zodResolver(CustomerSignUpSchema),
     mode: "onBlur",
+    defaultValues: {
+      userType: "customer",
+    },
   });
-
-  const currentForm = userType === "chef" ? chefForm : customerForm;
 
   const onSubmitChef = async (data: ChefSignUpType) => {
     clearError();
@@ -44,10 +48,11 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
         data.fullName,
         "chef",
       );
-      onSignUpSuccess?.(data.email);
+      onSignUpSuccess?.(data.email, data.username);
     } catch (err: any) {
+      console.error("Sign up error:", err);
       chefForm.setError("root", {
-        message: err.message || error || "Failed to sign up. Please try again.",
+        message: err.message || "Failed to sign up. Please try again.",
       });
     }
   };
@@ -63,10 +68,11 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
         fullName,
         "customer",
       );
-      onSignUpSuccess?.(data.email);
+      onSignUpSuccess?.(data.email, data.username);
     } catch (err: any) {
+      console.error("Sign up error:", err);
       customerForm.setError("root", {
-        message: err.message || error || "Failed to sign up. Please try again.",
+        message: err.message || "Failed to sign up. Please try again.",
       });
     }
   };
@@ -86,7 +92,10 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
         {/* Customer Sign-Up Form */}
         <TabsContent value="customer" className="space-y-4">
           <form
-            onSubmit={customerForm.handleSubmit(onSubmitCustomer)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              customerForm.handleSubmit(onSubmitCustomer)();
+            }}
             className="space-y-4"
           >
             {/* Common Fields */}
@@ -308,7 +317,10 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
         {/* Chef Sign-Up Form */}
         <TabsContent value="chef" className="space-y-4">
           <form
-            onSubmit={chefForm.handleSubmit(onSubmitChef)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              chefForm.handleSubmit(onSubmitChef)();
+            }}
             className="space-y-4"
           >
             {/* Common Fields */}
