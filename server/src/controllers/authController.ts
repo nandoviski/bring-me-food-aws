@@ -16,7 +16,9 @@ const prisma = new PrismaClient();
  * Request body: {
  *   email: string,
  *   userType?: "chef" | "customer",
+ *   username?: string,
  *   // Chef fields (required if userType === "chef"):
+ *   fullName?: string,
  *   location?: string,
  *   specialties?: string,
  *   // Customer fields (required if userType === "customer"):
@@ -28,6 +30,8 @@ const prisma = new PrismaClient();
  *   state?: string,
  *   country?: string,
  *   postalCode?: string,
+ *   // Optional signup data object (passed during signup flow)
+ *   signupData?: { ... } (full signup form data)
  * }
  * Requires: Authorization: Bearer <jwt_token>
  */
@@ -42,18 +46,23 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
 
     const {
       email,
-      userType,
+      userType: bodyUserType,
+      username: bodyUsername,
+      fullName: bodyFullName,
+      firstName: bodyFirstName,
+      lastName: bodyLastName,
       location,
       specialties,
-      firstName,
-      lastName,
       phoneNumber,
       address,
       city,
       state,
       country,
       postalCode,
+      signupData,
     } = req.body;
+
+    console.log("Sync user request body:", req.body);
 
     if (!email) {
       return res.status(400).json({
@@ -85,6 +94,12 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
     const payload = await verifyCognitoToken(token);
     const userInfo = extractUserFromToken(payload);
 
+    // Determine data source: prefer signupData (from signup), then token, then request body
+    const userType = signupData?.userType || userInfo.userType || bodyUserType;
+    const username = signupData?.username || userInfo.username || bodyUsername;
+    const firstName = signupData?.firstName || userInfo.firstName || bodyFirstName;
+    const lastName = signupData?.lastName || userInfo.lastName || bodyLastName;
+
     // Find or create user
     let user = await prisma.user.findUnique({
       where: { email: userInfo.email },
@@ -99,7 +114,7 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
       user = await prisma.user.create({
         data: {
           email: userInfo.email,
-          username: userInfo.username,
+          username: username || userInfo.username,
           cognitoId: userInfo.cognitoId,
           emailVerified: userInfo.emailVerified,
           status: "CREATED",
@@ -114,7 +129,7 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
       user = await prisma.user.update({
         where: { email: userInfo.email },
         data: {
-          username: userInfo.username,
+          username: username || userInfo.username,
           cognitoId: userInfo.cognitoId,
           emailVerified: userInfo.emailVerified,
         },
@@ -127,20 +142,19 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
 
     // Create Chef profile if requested
     if (userType === "chef" && !user.chef) {
-      if (!location) {
-        return res.status(400).json({
-          success: false,
-          message: "Location is required for chef profile",
-        });
+      // Use location from signupData first, then from body
+      let chefLocation = signupData?.location || location;
+      if (!chefLocation) {
+        chefLocation = "Unknown";
       }
 
       await prisma.chef.create({
         data: {
           userId: user.id,
-          username: userInfo.username,
-          name: userInfo.email.split("@")[0],
-          location,
-          specialties: specialties || null,
+          username: username || userInfo.username,
+          name: signupData?.fullName || userInfo.email.split("@")[0],
+          location: chefLocation,
+          specialties: signupData?.specialties || specialties || null,
         },
       });
 
@@ -155,15 +169,25 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
 
     // Create Customer profile if requested
     if (userType === "customer" && !user?.customer) {
+      // Use values from signupData first, then fall back to body/token
+      const customerFirstName = signupData?.firstName || firstName;
+      const customerLastName = signupData?.lastName || lastName;
+      const customerPhoneNumber = signupData?.phoneNumber || phoneNumber;
+      const customerAddress = signupData?.address || address;
+      const customerCity = signupData?.city || city;
+      const customerState = signupData?.state || state;
+      const customerCountry = signupData?.country || country;
+      const customerPostalCode = signupData?.postalCode || postalCode;
+
       if (
-        !firstName ||
-        !lastName ||
-        !phoneNumber ||
-        !address ||
-        !city ||
-        !state ||
-        !country ||
-        !postalCode
+        !customerFirstName ||
+        !customerLastName ||
+        !customerPhoneNumber ||
+        !customerAddress ||
+        !customerCity ||
+        !customerState ||
+        !customerCountry ||
+        !customerPostalCode
       ) {
         return res.status(400).json({
           success: false,
@@ -174,14 +198,14 @@ export const syncUser = async (req: AuthenticatedRequest, res: Response) => {
       await prisma.customer.create({
         data: {
           userId: user!.id,
-          firstName,
-          lastName,
-          phoneNumber,
-          address,
-          city,
-          state,
-          country,
-          postalCode,
+          firstName: customerFirstName,
+          lastName: customerLastName,
+          phoneNumber: customerPhoneNumber,
+          address: customerAddress,
+          city: customerCity,
+          state: customerState,
+          country: customerCountry,
+          postalCode: customerPostalCode,
         },
       });
 

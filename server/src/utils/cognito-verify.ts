@@ -6,6 +6,10 @@ interface CognitoJwtPayload extends JwtPayload {
   email: string;
   email_verified: boolean;
   "cognito:username": string;
+  "custom:userType"?: "chef" | "customer";
+  name?: string; // Full name
+  given_name?: string; // First name
+  family_name?: string; // Last name
 }
 
 interface JwksKey {
@@ -142,5 +146,9 @@ export function extractUserFromToken(payload: CognitoJwtPayload) {
     email: payload.email,
     emailVerified: payload.email_verified || false,
     username: payload["cognito:username"],
+    userType: payload["custom:userType"] || "customer", // Default to customer if not specified
+    fullName: payload.name || "", // Full name from Cognito
+    firstName: payload.given_name || "", // First name from Cognito
+    lastName: payload.family_name || "", // Last name from Cognito
   };
 }

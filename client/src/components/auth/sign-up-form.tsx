@@ -41,12 +41,14 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
   const onSubmitChef = async (data: ChefSignUpType) => {
     clearError();
     try {
+      // Pass full signup data to enable immediate profile creation
       await signUp(
         data.email,
         data.username,
         data.password,
         data.fullName,
         "chef",
+        data,
       );
       onSignUpSuccess?.(data.email, data.username);
     } catch (err: any) {
@@ -60,13 +62,14 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
   const onSubmitCustomer = async (data: CustomerSignUpType) => {
     clearError();
     try {
-      const fullName = `${data.firstName} ${data.lastName}`;
+      // Pass full signup data to enable immediate profile creation
       await signUp(
         data.email,
         data.username,
         data.password,
-        fullName,
+        `${data.firstName} ${data.lastName}`,
         "customer",
+        data,
       );
       onSignUpSuccess?.(data.email, data.username);
     } catch (err: any) {

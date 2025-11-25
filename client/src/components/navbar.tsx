@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+// import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   ChefHat,
@@ -36,7 +36,7 @@ import ShoppingCartSheet from "@/features/shopping-cart/components/shoppingCartS
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
+  // const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const { cartQuantity } = useShoppingCart();
@@ -46,16 +46,16 @@ export function Navbar() {
     : (user?.chef?.username ?? "BF");
 
   // Check if we're on the homepage
-  const isHomePage = true; //pathname === "/" || "/how-it-works";
+  // const isHomePage = true; //pathname === "/" || "/how-it-works";
 
   // Handle scroll to change navbar appearance
   useEffect(() => {
     const handleScroll = () => {
-      if (isHomePage) {
-        setIsScrolled(window.scrollY > 50);
-      } else {
-        setIsScrolled(true);
-      }
+      // if (isHomePage) {
+      setIsScrolled(window.scrollY > 50);
+      // } else {
+      //   setIsScrolled(true);
+      // }
     };
 
     // Set initial state
@@ -63,26 +63,22 @@ export function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage]);
+  }, []); //isHomePage
 
   // Navbar background and text colors based on scroll state
-  const navBackground =
-    isHomePage && !isScrolled
-      ? "bg-primary backdrop-blur-md top-0 "
-      : "bg-white top-2 container-custom";
+  const navBackground = !isScrolled
+    ? "bg-primary backdrop-blur-md top-0 "
+    : "bg-white top-2 container-custom";
 
-  const navTextColor =
-    isHomePage && !isScrolled ? "text-white" : "text-primary";
+  const navTextColor = !isScrolled ? "text-white" : "text-primary";
 
-  const navBorder =
-    isHomePage && !isScrolled
-      ? "border-primary/20  border-y"
-      : "border-primary/20  border rounded-lg";
+  const navBorder = !isScrolled
+    ? "border-primary/20  border-y"
+    : "border-primary/20  border rounded-lg";
 
-  const navLinkClass =
-    isHomePage && !isScrolled
-      ? "text-white/90 hover:text-secondary"
-      : "primary/90 hover:text-secondary";
+  const navLinkClass = !isScrolled
+    ? "text-white/90 hover:text-secondary"
+    : "primary/90 hover:text-secondary";
 
   return (
     <nav
@@ -286,7 +282,7 @@ export function Navbar() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div
-            className={`border-t py-4 md:hidden ${isHomePage && !isScrolled ? "border-white/20" : "border-primary/20"}`}
+            className={`border-t py-4 md:hidden ${!isScrolled ? "border-white/20" : "border-primary/20"}`}
           >
             <div className="flex flex-col space-y-4">
               <Link

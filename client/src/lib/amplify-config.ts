@@ -94,6 +94,7 @@ export async function handleSignUp(input: SignUpInput): Promise<SignUpResult> {
             input.lastName ||
             input.fullName.split(" ").slice(1).join(" ") ||
             "",
+          "custom:userType": input.userType || "customer", // Store user type as custom attribute
         },
       },
     });
