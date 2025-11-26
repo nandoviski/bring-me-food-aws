@@ -10,6 +10,7 @@ import type {
   CreateEditMenu,
   OrderCreate,
   Order,
+  SignUpType,
 } from "@/schema";
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
@@ -227,3 +228,57 @@ export const {
   useGetCustomerOrdersQuery,
   useGetOrdersByChefIdQuery,
 } = api;
+
+/**
+ * Call sync-user endpoint to create user and profile immediately after signup
+ * No token needed - backend validates user exists in Cognito via AdminGetUser
+ */
+export const callSyncUserEndpoint = async (
+  signupData: SignUpType,
+  userEmail: string,
+) => {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  try {
+    if (!apiBaseUrl) {
+      throw new Error(
+        "API base URL is not configured (NEXT_PUBLIC_API_BASE_URL)",
+      );
+    }
+
+    // No token needed - backend will validate via AdminGetUser
+    const response = await fetch(`${apiBaseUrl}/auth/sync-user`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...signupData,
+        email: userEmail,
+      }),
+      // No Authorization header needed
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `Sync failed with status ${response.status}: ${response.statusText}. Response: ${errorBody}`,
+      );
+    }
+
+    const userData = await response.json();
+    return userData.user || userData;
+  } catch (error: any) {
+    console.error("Failed to sync user with backend:", error);
+    if (
+      error instanceof TypeError &&
+      error.message.includes("Failed to fetch")
+    ) {
+      console.error(
+        "Network error - Backend server may not be running or CORS is misconfigured",
+      );
+      throw new Error(
+        `Unable to connect to backend server at ${apiBaseUrl}. Make sure the backend is running.`,
+      );
+    }
+    throw error;
+  }
+};

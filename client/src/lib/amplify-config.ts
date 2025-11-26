@@ -152,13 +152,15 @@ export async function handleSignIn(input: SignInInput): Promise<SignInResult> {
     if (message.includes("User is not confirmed")) {
       console.error("Sign in error: User not confirmed", error);
       throw new Error(
-        "Email not confirmed. Please check your inbox for a verification email and confirm your email before signing in."
+        "Email not confirmed. Please check your inbox for a verification email and confirm your email before signing in.",
       );
     }
 
     if (message.includes("Incorrect username or password")) {
       console.error("Sign in error: Invalid credentials", error);
-      throw new Error("Incorrect email/username or password. Please try again.");
+      throw new Error(
+        "Incorrect email/username or password. Please try again.",
+      );
     }
 
     if (message.includes("User does not exist")) {
@@ -168,7 +170,9 @@ export async function handleSignIn(input: SignInInput): Promise<SignInResult> {
 
     if (message.includes("User account is disabled")) {
       console.error("Sign in error: Account disabled", error);
-      throw new Error("Your account has been disabled. Please contact support.");
+      throw new Error(
+        "Your account has been disabled. Please contact support.",
+      );
     }
 
     // For any other error, provide the original message
@@ -214,13 +218,10 @@ export async function getAccessToken(): Promise<string | null> {
     const token = session.tokens?.accessToken?.toString() || null;
 
     if (!token) {
-      console.warn(
-        "No access token available. Session state:",
-        {
-          hasTokens: !!session.tokens,
-          hasAccessToken: !!session.tokens?.accessToken,
-        }
-      );
+      console.warn("No access token available. Session state:", {
+        hasTokens: !!session.tokens,
+        hasAccessToken: !!session.tokens?.accessToken,
+      });
     }
 
     return token;

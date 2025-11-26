@@ -18,6 +18,7 @@ import {
   handleSignIn,
   handleSignOut,
 } from "./amplify-config";
+import { callSyncUserEndpoint } from "@/state/api";
 // Amplify is configured at module load time in amplify-config.ts
 import "./amplify-config";
 
@@ -78,111 +79,19 @@ function isTokenValid(token: string): boolean {
 }
 
 /**
- * Extract user info from JWT token payload
+ * Extract email from JWT token payload
  */
-function extractTokenPayload(token: string): {
-  userType: "chef" | "customer" | null;
-  fullName: string | null;
-  firstName: string | null;
-  lastName: string | null;
-} {
+function extractEmailFromToken(token: string): string | null {
   try {
     const tokenParts = token.split(".");
-    if (tokenParts.length !== 3)
-      return {
-        userType: null,
-        fullName: null,
-        firstName: null,
-        lastName: null,
-      };
+    if (tokenParts.length !== 3) return null;
 
     const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
     const payload = JSON.parse(atob(base64));
 
-    const userType = payload["custom:userType"];
-    return {
-      userType:
-        userType === "chef" || userType === "customer" ? userType : null,
-      fullName: payload.name || null,
-      firstName: payload.given_name || null,
-      lastName: payload.family_name || null,
-    };
+    return payload.email || null;
   } catch {
-    return { userType: null, fullName: null, firstName: null, lastName: null };
-  }
-}
-
-/**
- * Sync user data with backend and retrieve complete user profile
- * Can be called with or without signupData
- * - With signupData: Used during signup to create profile with full form data
- * - Without signupData: Used during login to retrieve existing profile
- */
-async function syncUserWithBackend(
-  cognitoEmail: string,
-  accessToken: string,
-  signupData?: SignUpType,
-): Promise<UserComplete | null> {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  try {
-    if (!apiBaseUrl) {
-      throw new Error(
-        "API base URL is not configured (NEXT_PUBLIC_API_BASE_URL)",
-      );
-    }
-
-    // Extract user info from token
-    const { userType, fullName, firstName, lastName } =
-      extractTokenPayload(accessToken);
-
-    const requestBody: any = {
-      email: cognitoEmail,
-      userType: signupData?.userType || userType,
-      fullName: signupData?.userType === "chef" && "fullName" in signupData ? signupData.fullName : fullName,
-      firstName: signupData?.userType === "customer" && "firstName" in signupData ? signupData.firstName : firstName,
-      lastName: signupData?.userType === "customer" && "lastName" in signupData ? signupData.lastName : lastName,
-    };
-
-    // If signupData is provided (signup flow), include it in the request
-    if (signupData) {
-      requestBody.signupData = signupData;
-    }
-
-    const response = await fetch(`${apiBaseUrl}/auth/sync-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(
-        `Sync failed with status ${response.status}: ${response.statusText}. Response: ${errorBody}`,
-      );
-    }
-
-    const userData = await response.json();
-    return userData.user || userData;
-  } catch (error: any) {
-    console.error("Failed to sync user with backend:", error);
-    // Provide more specific error messages for common issues
-    if (
-      error instanceof TypeError &&
-      error.message.includes("Failed to fetch")
-    ) {
-      console.error(
-        "Network error - Backend server may not be running or CORS is misconfigured",
-      );
-      throw new Error(
-        `Unable to connect to backend server at ${apiBaseUrl}. Make sure the backend is running.`,
-      );
-    }
-    // Re-throw the error so the caller knows sync failed
-    throw error;
+    return null;
   }
 }
 
@@ -259,10 +168,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             if (userEmail) {
-              const fullUser = await syncUserWithBackend(userEmail, token);
-              if (fullUser) {
-                setUser(fullUser);
-                sessionStorage.setItem(SESSION_KEY, JSON.stringify(fullUser));
+              // For session restore, use minimal data like login flow
+              try {
+                console.log("calling server");
+                const response = await syncUserWithBackend(token, userEmail);
+
+                if (response.ok) {
+                  const userData = await response.json();
+                  const fullUser = userData.user || userData;
+
+                  if (fullUser) {
+                    setUser(fullUser);
+                    sessionStorage.setItem(
+                      SESSION_KEY,
+                      JSON.stringify(fullUser),
+                    );
+                  }
+                }
+              } catch (err) {
+                console.warn(
+                  "Failed to sync user during session restore:",
+                  err,
+                );
               }
             }
           }
@@ -290,6 +217,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
+  async function syncUserWithBackend(token: string, userEmail: string) {
+    // Call the endpoint - backend will handle partial data for login flow
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error(
+        "API base URL is not configured (NEXT_PUBLIC_API_BASE_URL)",
+      );
+    }
+
+    return await fetch(`${apiBaseUrl}/auth/sync-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ email: userEmail }),
+    });
+  }
+
   const signUp = useCallback(
     async (
       email: string,
@@ -307,43 +253,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // After successful Cognito signup, create profile with full signup data
         if (signupData) {
-          // Get the ID token to sync with backend
-          let token: string | null = null;
-          let retries = 3;
-          while (!token && retries > 0) {
-            token = await getIdToken();
-            if (!token) {
-              retries--;
-              if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 200));
-              }
-            }
-          }
-
-          if (!token) {
-            throw new Error(
-              "Failed to get ID token after signup. Profile creation may have failed. You can complete this by logging in.",
-            );
-          }
-
-          // Verify token is valid before using it
-          if (!isTokenValid(token)) {
-            throw new Error(
-              "Session token is invalid after signup. Please try logging in.",
-            );
-          }
-
-          // Sync with backend to create profile with signup data
-          const fullUser = await syncUserWithBackend(email, token, signupData);
-          if (fullUser) {
-            setUser(fullUser);
-            setAccessToken(token);
-            saveAccessToken(token);
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(fullUser));
-          }
+          await callSyncUserEndpoint(signupData, email);
         }
 
-        // Don't set user if no signupData; they need to confirm email first
+        // User and profile created - show verification form
       } catch (err: any) {
         const errorMessage = err.message || "Sign up failed. Please try again.";
         setError(errorMessage);
@@ -391,13 +304,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Get ID token with retry logic (ID token contains email claim needed for verification)
         let token: string | null = null;
-        let retries = 3;
+        let retries = 5;
         while (!token && retries > 0) {
-          token = await getIdToken();
+          try {
+            token = await getIdToken();
+          } catch (e) {
+            // Token may not be available yet, retry
+            token = null;
+          }
           if (!token) {
             retries--;
             if (retries > 0) {
-              await new Promise((resolve) => setTimeout(resolve, 200));
+              await new Promise((resolve) => setTimeout(resolve, 300));
             }
           }
         }
@@ -417,25 +335,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveAccessToken(token);
 
         // Sync with backend to get full user profile
-        // Decode the ID token to get the email claim (required for sync-user endpoint)
-        let userEmail: string;
-        try {
-          // Parse the JWT token to extract the email claim
-          const tokenParts = token.split(".");
-          if (tokenParts.length === 3) {
-            // Decode base64url (replace - and _ for standard base64)
-            const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
-            const payload = JSON.parse(atob(base64));
-            userEmail = payload.email || emailOrUsername;
-          } else {
-            userEmail = emailOrUsername;
-          }
-        } catch (err) {
-          console.warn("Failed to extract email from token, using input email");
-          userEmail = emailOrUsername;
+        // During login, build minimal data from token for sync endpoint
+        // Note: This endpoint expects full profile data for new users, but for
+        // returning users it will just validate and return existing profile
+        const userEmail = extractEmailFromToken(token) || emailOrUsername;
+        const response = await syncUserWithBackend(token, userEmail);
+
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(
+            `Login sync failed: ${response.status} ${response.statusText}. ${errorBody}`,
+          );
         }
 
-        const fullUser = await syncUserWithBackend(userEmail, token);
+        const userData = await response.json();
+        const fullUser = userData.user || userData;
+
         if (fullUser) {
           setUser(fullUser);
         } else {
