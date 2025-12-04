@@ -19,6 +19,7 @@ import {
   handleSignOut,
 } from "./amplify-config";
 import { callSyncUserEndpoint } from "@/state/api";
+import { createSession, deleteSession } from "@/app/actions";
 // Amplify is configured at module load time in amplify-config.ts
 import "./amplify-config";
 
@@ -183,6 +184,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       SESSION_KEY,
                       JSON.stringify(fullUser),
                     );
+                    // Ensure server-side cookie is set
+                    await createSession(fullUser);
                   }
                 }
               } catch (err) {
@@ -353,6 +356,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (fullUser) {
           setUser(fullUser);
+          await createSession(fullUser);
         } else {
           throw new Error("Failed to fetch user profile from backend");
         }
@@ -375,6 +379,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccessToken(null);
       saveAccessToken(null);
       sessionStorage.removeItem(SESSION_KEY);
+      await deleteSession();
     } catch (err: any) {
       const errorMessage = err.message || "Logout failed.";
       setError(errorMessage);
