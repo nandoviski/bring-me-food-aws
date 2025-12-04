@@ -34,7 +34,7 @@ Runs on every HTTP request before the page renders. Provides the fastest protect
 **How it works**:
 ```typescript
 // middleware.ts reads session cookie
-const sessionCookie = request.cookies.get("session")?.value;
+const sessionCookie = request.cookies.get(SESSION_KEY)?.value;
 const sessionData = sessionCookie ? JSON.parse(sessionCookie) : null;
 
 // Denies unauthenticated access to protected routes

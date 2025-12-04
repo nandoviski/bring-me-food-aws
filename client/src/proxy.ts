@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SESSION_KEY } from "./lib/constants";
 
 const protectedRoutes = ["/account"];
 const chefOnlyRoutes = ["/account/chef"];
@@ -14,7 +15,7 @@ export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Get session from cookie
-  const sessionCookie = request.cookies.get("session")?.value;
+  const sessionCookie = request.cookies.get(SESSION_KEY)?.value;
   let sessionData: any = null;
 
   try {

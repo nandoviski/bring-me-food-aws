@@ -45,10 +45,10 @@ export type AuthContextType = {
   clearError: () => void;
 };
 
+import { SESSION_KEY, ACCESS_TOKEN_KEY } from "./constants";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const SESSION_KEY = "bmf_user";
-const ACCESS_TOKEN_KEY = "bmf_access_token";
 
 /**
  * Check if JWT token is expired by examining the exp claim
@@ -180,10 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                   if (fullUser) {
                     setUser(fullUser);
-                    sessionStorage.setItem(
-                      SESSION_KEY,
-                      JSON.stringify(fullUser),
-                    );
+
                     // Ensure server-side cookie is set
                     await createSession(fullUser);
                   }
@@ -207,18 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restoreSession();
   }, []);
 
-  // Sync user state to sessionStorage when it changes
-  useEffect(() => {
-    try {
-      if (user) {
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      } else {
-        sessionStorage.removeItem(SESSION_KEY);
-      }
-    } catch (e) {
-      console.error("Failed to update session:", e);
-    }
-  }, [user]);
+
 
   async function syncUserWithBackend(token: string, userEmail: string) {
     // Call the endpoint - backend will handle partial data for login flow
@@ -378,7 +364,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setAccessToken(null);
       saveAccessToken(null);
-      sessionStorage.removeItem(SESSION_KEY);
+
       await deleteSession();
     } catch (err: any) {
       const errorMessage = err.message || "Logout failed.";

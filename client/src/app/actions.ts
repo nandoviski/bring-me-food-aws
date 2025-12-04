@@ -1,12 +1,13 @@
 "use server";
 
+import { SESSION_KEY } from "@/lib/constants";
 import { cookies } from "next/headers";
 
 export async function createSession(userData: any) {
   const cookieStore = await cookies();
-  // Store the session data in a cookie named "session"
+  // Store the session data in a cookie named from SESSION_KEY
   // This matches what proxy.ts expects
-  cookieStore.set("session", JSON.stringify(userData), {
+  cookieStore.set(SESSION_KEY, JSON.stringify(userData), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     path: "/",
@@ -17,5 +18,5 @@ export async function createSession(userData: any) {
 
 export async function deleteSession() {
   const cookieStore = await cookies();
-  cookieStore.delete("session");
+  cookieStore.delete(SESSION_KEY);
 }
