@@ -254,7 +254,7 @@ export default function AddMealForm({
 
             <div className="space-y-2">
               <Label>Meal Image</Label>
-              <Card className="overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="overflow-hidden border border-slate-200 shadow-sm transition-shadow hover:shadow-md">
                 <CardContent className="p-0">
                   <div className="relative aspect-square bg-slate-100">
                     <Image
@@ -311,8 +311,9 @@ export default function AddMealForm({
             <h2 className="text-lg font-semibold text-slate-900">
               Ingredients
             </h2>
-            <span className="text-sm text-muted-foreground">
-              {ingredientFields.length} ingredient{ingredientFields.length !== 1 ? "s" : ""}
+            <span className="text-muted-foreground text-sm">
+              {ingredientFields.length} ingredient
+              {ingredientFields.length !== 1 ? "s" : ""}
             </span>
           </div>
           <Card className="border border-slate-200 bg-slate-50 p-4">
@@ -361,11 +362,10 @@ export default function AddMealForm({
         {/* Allergens Section */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Allergens
-            </h2>
-            <span className="text-sm text-muted-foreground">
-              {allergenFields.length} allergen{allergenFields.length !== 1 ? "s" : ""}
+            <h2 className="text-lg font-semibold text-slate-900">Allergens</h2>
+            <span className="text-muted-foreground text-sm">
+              {allergenFields.length} allergen
+              {allergenFields.length !== 1 ? "s" : ""}
             </span>
           </div>
           <Card className="border border-yellow-200 bg-yellow-50 p-4">
@@ -423,7 +423,7 @@ export default function AddMealForm({
           </Button>
           <Button
             type="submit"
-            className="flex-1 bg-orange-500 hover:bg-orange-600"
+            className="bg-admin-green hover:bg-admin-green-hover flex-1"
             disabled={isCreating || isUpdating}
           >
             {isCreating || isUpdating ? (
@@ -431,8 +431,10 @@ export default function AddMealForm({
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 {mealId ? "Updating..." : "Adding..."}
               </>
+            ) : mealId ? (
+              "Update Meal"
             ) : (
-              mealId ? "Update Meal" : "Add Meal"
+              "Add Meal"
             )}
           </Button>
         </div>

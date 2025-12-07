@@ -66,6 +66,13 @@
   }
 }
 
+@theme {
+  --color-admin-green: #4caf50;
+  --color-admin-green-hover: #43a047;
+  --color-admin-light-gray: #f1f8e9;
+  --color-admin-dark-gray: #6b7280;
+}
+
 @layer base {
   :root {
     /* Light green */

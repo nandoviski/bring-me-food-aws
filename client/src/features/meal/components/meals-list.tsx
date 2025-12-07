@@ -57,7 +57,7 @@ export function MealsList({}: MealsListProps) {
             : "Create your first meal to get started"}
         </p>
         <Button
-          className="bg-orange-500 hover:bg-orange-600"
+          className="bg-admin-green hover:bg-admin-green-hover"
           onClick={handleAddNew}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -92,10 +92,6 @@ function MealsEmptyState({ onAddMeal }: MealsEmptyStateProps) {
         Start building your menu by adding your first meal. Your customers will
         see these meals on your profile.
       </p>
-      <Button className="bg-orange-500 hover:bg-orange-600" onClick={onAddMeal}>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Your First Meal
-      </Button>
     </div>
   );
 }

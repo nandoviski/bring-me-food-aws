@@ -72,7 +72,7 @@ export function MenusList({}: MenusListProps) {
             : "Create your first menu to get started"}
         </p>
         <Button
-          className="bg-orange-500 hover:bg-orange-600"
+          className="bg-admin-green hover:bg-admin-green-hover"
           onClick={handleAddNew}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -113,10 +113,6 @@ function MenusEmptyState({ onAddMenu }: MenusEmptyStateProps) {
         Start building your menu offerings to attract customers. Each menu can
         contain multiple meals with specific availability dates.
       </p>
-      <Button className="bg-orange-500 hover:bg-orange-600" onClick={onAddMenu}>
-        <Plus className="mr-2 h-4 w-4" />
-        Create Your First Menu
-      </Button>
     </div>
   );
 }

@@ -1,37 +1,51 @@
-import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
+import React from "react";
+import { Info, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 type Props = {
   children: React.ReactNode;
   title: string;
   description: string;
+  backButton?: boolean;
 };
 
 export default function MainPageWithHeader({
   children,
   title,
   description,
+  backButton = false,
 }: Props) {
-  return (
-    <Card className="overflow-hidden border-0 shadow-sm">
-      {/* Enhanced Card Header with Green Gradient and Pattern */}
-      <div className="relative overflow-hidden bg-linear-to-br from-emerald-600 via-emerald-700 to-teal-800 px-6 py-8">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 h-64 w-64 rounded-full bg-white blur-3xl"></div>
-          <div className="absolute right-0 bottom-0 h-64 w-64 rounded-full bg-white blur-3xl"></div>
-        </div>
+  const router = useRouter();
 
-        <div className="relative z-10 flex items-center justify-between">
+  return (
+    <div className="flex h-full flex-col bg-white">
+      <div className="border-b border-[#E5E7EB] px-6 py-6">
+        <div className="flex items-center gap-3">
           <div>
-            <CardTitle className="text-2xl text-white">{title}</CardTitle>
-            <CardDescription className="mt-1 text-emerald-50">
-              {description}
-            </CardDescription>
+            {backButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="mb-4 text-black hover:bg-white/20"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            )}
+            <h1 className="text-4xl font-normal text-[#1F2937]">{title}</h1>
+            <div className="text-admin-dark-gray flex items-center gap-2 text-sm">
+              <span>{description}</span>
+              <Info className="h-4 w-4 text-[#9CA3AF]" />
+            </div>
           </div>
         </div>
       </div>
-      <CardContent className="p-2">{children}</CardContent>
-    </Card>
+
+      {/* Content */}
+      <div className="px-8 pt-4 pb-8">{children}</div>
+    </div>
   );
 }
 

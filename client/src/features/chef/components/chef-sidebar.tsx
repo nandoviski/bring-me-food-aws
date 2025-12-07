@@ -10,6 +10,10 @@ import {
   ShoppingCart,
   User,
   X,
+  LogOut,
+  MessageSquare,
+  BookOpen,
+  Plus,
 } from "lucide-react";
 
 export function ChefSidebar() {
@@ -18,7 +22,7 @@ export function ChefSidebar() {
 
   const menuItems = [
     {
-      label: "Dashboard",
+      label: "Overview",
       href: "/account/chef/dashboard",
       icon: LayoutDashboard,
     },
@@ -33,14 +37,27 @@ export function ChefSidebar() {
       icon: Menu,
     },
     {
-      label: "Orders",
+      label: "Order history",
       href: "/account/chef/orders",
       icon: ShoppingCart,
     },
     {
-      label: "Profile",
+      label: "User account",
       href: "/account/chef/profile",
       icon: User,
+    },
+  ];
+
+  const communityItems = [
+    {
+      label: "Reviews",
+      href: "/account/chef/reviews",
+      icon: MessageSquare,
+    },
+    {
+      label: "User Recipes",
+      href: "/account/chef/recipes",
+      icon: BookOpen,
     },
   ];
 
@@ -53,7 +70,7 @@ export function ChefSidebar() {
       {/* Mobile Menu Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-primary fixed right-1 top-17 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-colors hover:bg-green-800 md:hidden"
+        className="bg-admin-green hover:bg-admin-green-hover fixed top-20 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-colors md:hidden"
         aria-label="Toggle menu"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -69,39 +86,100 @@ export function ChefSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`bg-primary fixed z-40 flex h-full w-64 transform flex-col text-white shadow-lg transition-transform duration-300 ease-in-out md:relative md:h-auto ${
+        className={`fixed z-40 flex h-full w-64 transform flex-col bg-[#F9FAFB] shadow-sm transition-transform duration-300 ease-in-out md:relative md:h-auto ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-green-600 px-6 py-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
-            <UtensilsCrossed className="h-6 w-6 text-green-800" />
+        {/* User Profile Section */}
+        <div className="border-b border-[#E5E7EB] px-6 py-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-orange-400 to-pink-400">
+              <User className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base font-semibold text-[#1F2937]">
+                Hello Chef
+              </h2>
+              <p className="text-admin-dark-gray text-sm">
+                Your plan: <span className="text-admin-green">Free</span>
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-bold">Chef Hub</h1>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
+        {/* Create New Meal Button */}
+        <div className="px-4 py-4">
+          <Link
+            href="/account/chef/meals/add"
+            className="bg-admin-green hover:bg-admin-green-hover flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create new meal
+          </Link>
+        </div>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-200 ${
-                  active
-                    ? "bg-green-800 text-white shadow-md"
-                    : "text-green-100 hover:bg-green-600 hover:text-white"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+        {/* Main Navigation */}
+        <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-2">
+          <div className="mb-4">
+            <h3 className="mb-2 px-3 text-xs font-medium tracking-wider text-[#9CA3AF] uppercase">
+              Menu
+            </h3>
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+                    active
+                      ? "text-admin-green bg-admin-light-gray font-medium"
+                      : "hover:text-admin-green hover:bg-admin-light-gray text-admin-dark-gray"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mb-4">
+            <h3 className="mb-2 px-3 text-xs font-medium tracking-wider text-[#9CA3AF] uppercase">
+              Community
+            </h3>
+            {communityItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+                    active
+                      ? "text-admin-green bg-admin-light-gray font-medium"
+                      : "hover:text-admin-green hover:bg-admin-light-gray text-admin-dark-gray"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
+
+        {/* Logout Button */}
+        <div className="border-t border-[#E5E7EB] px-4 py-4">
+          <button className="hover:bg-admin-light-gray text-admin-dark-gray flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 hover:text-[#EF4444]">
+            <LogOut className="h-5 w-5 shrink-0" />
+            <span>Log out</span>
+          </button>
+        </div>
       </aside>
     </>
   );

@@ -9,7 +9,7 @@ export default function ChefLayout({ children }: Props) {
   return (
     <div className="container-custom flex flex-1">
       <ChefSidebar />
-      <main className="mt-3 ml-3 flex-1">{children}</main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

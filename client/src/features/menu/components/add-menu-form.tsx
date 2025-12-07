@@ -304,7 +304,7 @@ export default function AddMenuForm({
           </Button>
           <Button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600"
+            className="bg-admin-green hover:bg-admin-green-hover"
             disabled={isCreating || isUpdating}
           >
             {menuId ? "Update Menu" : "Create Menu"}

@@ -11,10 +11,11 @@ import {
 
 import { ChefOrdersSection } from "../../../order/components/chef-orders-section";
 import { StatsCards } from "./stats-cards";
+import Link from "next/link";
 
 export function ChefDashboard() {
   return (
-    <div className="flex-1 space-y-4 overflow-auto p-4 md:p-6">
+    <div className="flex-1 space-y-4 overflow-auto">
       <Button variant="outline" size="sm" className="h-8 gap-1">
         <Clock className="h-4 w-4" />
         <span>Last 7 days</span>
@@ -30,9 +31,12 @@ export function ChefDashboard() {
             <ChefOrdersSection />
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Link
+              href="/account/chef/orders"
+              className="border-input bg-background hover:bg-accent hover:text-accent-foreground flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium shadow-xs transition-colors"
+            >
               View All Orders
-            </Button>
+            </Link>
           </CardFooter>
         </Card>
         <Card className="lg:col-span-3">
@@ -46,9 +50,12 @@ export function ChefDashboard() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Link
+              href="/account/chef/meals"
+              className="border-input bg-background hover:bg-accent hover:text-accent-foreground flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium shadow-xs transition-colors"
+            >
               View All Meals
-            </Button>
+            </Link>
           </CardFooter>
         </Card>
       </div>
