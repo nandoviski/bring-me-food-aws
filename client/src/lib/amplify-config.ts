@@ -234,13 +234,28 @@ export async function getAccessToken(): Promise<string | null> {
 /**
  * Sign out current user
  * Clears session and tokens
+ * Uses global sign-out to invalidate tokens on all devices
  */
 export async function handleSignOut(): Promise<void> {
   try {
-    await signOut();
+    await signOut({ global: true });
   } catch (error) {
     console.error("Sign out error:", error);
     throw error;
+  }
+}
+
+/**
+ * Silently sign out to clear stale session state
+ * Used when detecting expired/stale sessions before re-login
+ * Does not throw errors - just clears any existing state
+ */
+export async function handleSilentSignOut(): Promise<void> {
+  try {
+    await signOut();
+  } catch (error) {
+    // Ignore errors - we just want to clear any stale state
+    console.debug("Silent sign-out (clearing stale session):", error);
   }
 }
 

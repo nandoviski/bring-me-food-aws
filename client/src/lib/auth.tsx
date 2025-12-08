@@ -17,6 +17,7 @@ import {
   handleConfirmSignUp,
   handleSignIn,
   handleSignOut,
+  handleSilentSignOut,
 } from "./amplify-config";
 import { callSyncUserEndpoint } from "@/state/api";
 import { createSession, deleteSession } from "@/app/actions";
@@ -143,7 +144,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (token) {
             // Check if token is expired before using it
             if (!isTokenValid(token)) {
+              console.log("Token expired, clearing stale session...");
               saveAccessToken(null);
+              await handleSilentSignOut();
+              await deleteSession();
               setIsLoading(false);
               return;
             }
@@ -283,9 +287,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await handleSignIn({ emailOrUsername, password });
         } catch (signInErr: any) {
-          // Re-throw sign-in errors with their original message
-          // (e.g., "User is not confirmed", invalid credentials, etc.)
-          throw signInErr;
+          // Handle stale session - clear it and retry sign-in
+          const errorMessage = signInErr.message?.toLowerCase() || "";
+          const isStaleSession =
+            errorMessage.includes("already a signed in user") ||
+            errorMessage.includes("already authenticated") ||
+            signInErr.name === "UserAlreadyAuthenticatedException";
+
+          if (isStaleSession) {
+            console.log("Stale session detected, clearing and retrying...");
+            await handleSilentSignOut();
+            saveAccessToken(null);
+            // Retry sign-in after clearing stale session
+            await handleSignIn({ emailOrUsername, password });
+          } else {
+            // Re-throw other sign-in errors with their original message
+            // (e.g., "User is not confirmed", invalid credentials, etc.)
+            throw signInErr;
+          }
         }
 
         // Wait briefly for session to be established (Cognito timing issue)
