@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { promoteTmpToFinal } from "../lib/s3Utils";
 
 interface ChefEdit {
   username: string;
@@ -7,6 +8,9 @@ interface ChefEdit {
   location: string;
   bio?: string;
   specialties?: string;
+  profileImage?: string;
+  profileImageKey?: string; // tmp S3 key — will be promoted to final
+  phoneNumber?: string;
 }
 
 const prisma = new PrismaClient();
@@ -70,20 +74,38 @@ export const updateChef = async (req: Request, res: Response): Promise<void> => 
     const { chefId } = req.params;
     const data: ChefEdit = req.body;
 
-    // Normalize username if present to enforce consistent casing
-    const normalizedData = { ...data } as any;
-    if (normalizedData.username && typeof normalizedData.username === "string") {
-      normalizedData.username = normalizedData.username.toLowerCase().trim();
+    const updateData: any = {
+      name: data.name,
+      location: data.location,
+      bio: data.bio,
+      specialties: data.specialties,
+      phoneNumber: data.phoneNumber,
+    };
+
+    // Normalize username
+    if (data.username) {
+      updateData.username = data.username.toLowerCase().trim();
+    }
+
+    // Promote profile image from tmp to final if a new key was provided
+    if (data.profileImageKey) {
+      try {
+        const { url } = await promoteTmpToFinal(data.profileImageKey);
+        updateData.profileImage = url;
+      } catch (e) {
+        console.error("Failed to promote profile image:", e);
+        // Don't fail the whole update — just skip image
+      }
     }
 
     const chef = await prisma.chef.update({
       where: { id: chefId },
-      data: normalizedData,
+      data: updateData,
     });
 
     res.status(200).json(chef !== null);
   } catch (error: any) {
-    res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
+    res.status(500).json({ message: `Error updating chef: ${error.message}` });
   }
 };
 
@@ -187,6 +209,7 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
         location: true,
         bio: true,
         specialties: true,
+        profileImage: true,
         _count: { select: { meals: true, order: true } },
       },
       orderBy: { order: { _count: "desc" } },

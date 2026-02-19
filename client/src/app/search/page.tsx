@@ -16,6 +16,7 @@ function ChefCard({
     location: string;
     bio: string | null;
     specialties: string | null;
+    profileImage: string | null;
     _count: { meals: number; order: number };
   };
 }) {
@@ -24,9 +25,17 @@ function ChefCard({
       href={`/chef/${chef.username}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md hover:border-orange-200"
     >
-      {/* Avatar placeholder */}
-      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-orange-400 to-pink-500">
-        <span className="text-5xl font-bold text-white">{chef.name[0]}</span>
+      {/* Avatar */}
+      <div className="relative flex h-32 items-center justify-center bg-gradient-to-br from-orange-400 to-pink-500">
+        {chef.profileImage ? (
+          <img
+            src={chef.profileImage}
+            alt={chef.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="text-5xl font-bold text-white">{chef.name[0]}</span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">

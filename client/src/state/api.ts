@@ -108,7 +108,7 @@ export const api = createApi({
     // Chefs
     updateChef: build.mutation<
       boolean,
-      { chefId: string; chef: Partial<Chef> }
+      { chefId: string; chef: Partial<Chef> & { profileImageKey?: string } }
     >({
       query: ({ chefId, chef }) => ({
         url: `chefs/${chefId}`,
@@ -241,6 +241,7 @@ export const api = createApi({
           location: string;
           bio: string | null;
           specialties: string | null;
+          profileImage: string | null;
           _count: { meals: number; order: number };
         }>;
       },

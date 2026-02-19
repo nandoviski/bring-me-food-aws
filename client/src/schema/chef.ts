@@ -9,6 +9,7 @@ export interface Chef {
   bio?: string;
   specialties?: string;
   phoneNumber?: string;
+  profileImage?: string;
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -28,4 +29,6 @@ export const EditChefSchema = z.object({
   location: z.string().nonempty("Location is required").max(150),
   bio: z.string().optional(),
   specialties: z.string().optional(),
+  profileImage: z.string().optional(),
+  phoneNumber: z.string().optional(),
 });

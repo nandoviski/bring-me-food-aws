@@ -49,6 +49,20 @@ export default function ChefProfile({ username }: { username: string }) {
       {/* Hero Section */}
       <div className="bg-primary px-4 py-20 text-center text-white">
         <div className="container mx-auto max-w-4xl">
+          {/* Profile image */}
+          <div className="mx-auto mb-6 h-24 w-24 overflow-hidden rounded-full border-4 border-white/20">
+            {chef.profileImage ? (
+              <img
+                src={chef.profileImage}
+                alt={chef.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-400 to-pink-500 text-3xl font-bold text-white">
+                {chef.name[0]}
+              </div>
+            )}
+          </div>
           <h1 className="mb-4 font-serif text-5xl font-medium tracking-tight md:text-6xl">
             {chef.name}
           </h1>
