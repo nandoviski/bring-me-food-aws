@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
-import { sendOrderConfirmationEmail } from "../lib/email";
+import { sendOrderConfirmationEmail, sendNewOrderNotification } from "../lib/email";
 
 const prisma = new PrismaClient();
 
@@ -108,26 +108,63 @@ export async function createOrder(req: Request, res: Response) {
       return order;
     });
 
-    // Send confirmation email to guest if email provided
-    if (isGuest && payload.guestEmail) {
-      const chef = await prisma.chef.findUnique({ where: { id: chefId! } });
-      setImmediate(() => {
-        sendOrderConfirmationEmail(payload.guestEmail!, {
-          guestName: payload.guestName!,
-          chefName: chef?.name ?? "your chef",
-          chefPhone: chef?.phoneNumber ?? undefined,
+    // Fetch chef with their user account (for email)
+    const chefWithUser = await prisma.chef.findUnique({
+      where: { id: chefId! },
+      include: { user: true },
+    });
+
+    const appBaseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
+
+    // Determine customer name/phone for notification
+    const customerName = isGuest
+      ? payload.guestName!
+      : `${customer?.firstName ?? ""} ${customer?.lastName ?? ""}`.trim();
+    const customerPhone = isGuest
+      ? payload.guestPhone!
+      : customer?.phoneNumber ?? "—";
+    const customerEmail = isGuest ? payload.guestEmail : undefined;
+
+    const orderItems = payload.meals.map((m) => {
+      const meal = meals.find((ml) => ml.id === m.mealId)!;
+      return { name: meal.name, quantity: m.quantity, price: meal.price };
+    });
+
+    // Send emails async (non-blocking)
+    setImmediate(() => {
+      // 1. Chef gets new-order notification
+      if (chefWithUser?.user?.email) {
+        sendNewOrderNotification({
+          chefName: chefWithUser.name,
+          chefEmail: chefWithUser.user.email,
+          orderId: created.id,
+          customerName,
+          customerPhone,
+          customerEmail,
+          total: created.total,
+          deliveryFee: created.deliveryFee,
+          deliveryAddress: created.deliveryAddress,
+          notes: created.notes ?? undefined,
+          items: orderItems,
+          dashboardLink: `${appBaseUrl}/account/chef/orders`,
+        }).catch((e) => console.error("[email] new order notification error:", e));
+      }
+
+      // 2. Guest customer gets confirmation if email provided
+      if (isGuest && payload.guestEmail) {
+        sendOrderConfirmationEmail(payload.guestEmail, {
+          guestName: customerName,
+          chefName: chefWithUser?.name ?? "your chef",
+          chefPhone: chefWithUser?.phoneNumber ?? undefined,
           orderId: created.id,
           total: created.total,
           deliveryFee: created.deliveryFee,
           deliveryAddress: created.deliveryAddress,
           notes: created.notes ?? undefined,
-          items: payload.meals.map((m) => {
-            const meal = meals.find((ml) => ml.id === m.mealId)!;
-            return { name: meal.name, quantity: m.quantity, price: meal.price };
-          }),
+          items: orderItems,
         }).catch((e) => console.error("[email] order confirmation error:", e));
-      });
-    }
+      }
+    });
 
     return res.status(201).json({
       orderId: created.id,

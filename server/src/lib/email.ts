@@ -203,6 +203,126 @@ function buildOrderConfirmationHtml(data: OrderConfirmationEmailData): string {
 </html>`;
 }
 
+export interface NewOrderNotificationData {
+  chefName: string;
+  chefEmail: string;
+  orderId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  total: number;
+  deliveryFee: number;
+  deliveryAddress: string;
+  notes?: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+  dashboardLink: string;
+}
+
+function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
+  const grandTotal = data.total + data.deliveryFee;
+  const itemsHtml = data.items.map((item) => `
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333;">
+        ${item.name} × ${item.quantity}
+      </td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333; text-align: right;">
+        $${(item.price * item.quantity).toFixed(2)}
+      </td>
+    </tr>
+  `).join("");
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><title>New Order – Bring Me Food</title></head>
+<body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; padding: 32px 16px;">
+    <tr>
+      <td>
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 28px 40px; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 13px; color: rgba(255,255,255,0.8);">🔔 You have a</p>
+              <h1 style="margin: 0; font-size: 26px; color: #ffffff; font-weight: 700;">New Order!</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 40px 0;">
+              <p style="margin: 0 0 8px; font-size: 15px; color: #333;">Hi ${data.chefName},</p>
+              <p style="margin: 0 0 20px; font-size: 15px; color: #555;">You have a new order from <strong>${data.customerName}</strong>.</p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8fffe; border: 1px solid #d1fae5; border-radius: 8px; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0 0 4px; font-size: 13px; color: #666;">Customer: <strong style="color: #1a1a1a;">${data.customerName}</strong></p>
+                    <p style="margin: 0 0 4px; font-size: 13px; color: #666;">Phone: <strong style="color: #1a1a1a;">${data.customerPhone}</strong></p>
+                    ${data.customerEmail ? `<p style="margin: 0 0 4px; font-size: 13px; color: #666;">Email: <strong style="color: #1a1a1a;">${data.customerEmail}</strong></p>` : ""}
+                    ${data.deliveryAddress ? `<p style="margin: 0 0 4px; font-size: 13px; color: #666;">Delivery to: <strong style="color: #1a1a1a;">${data.deliveryAddress}</strong></p>` : ""}
+                    ${data.notes ? `<p style="margin: 0; font-size: 13px; color: #666;">Notes: <strong style="color: #1a1a1a;">${data.notes}</strong></p>` : ""}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${itemsHtml}
+                <tr>
+                  <td style="padding: 8px 0; font-size: 14px; color: #666;">Delivery fee</td>
+                  <td style="padding: 8px 0; font-size: 14px; color: #666; text-align: right;">$${data.deliveryFee.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0; font-size: 16px; font-weight: 700; color: #1a1a1a; border-top: 2px solid #eee;">Total</td>
+                  <td style="padding: 12px 0 0; font-size: 16px; font-weight: 700; color: #16a34a; text-align: right; border-top: 2px solid #eee;">$${grandTotal.toFixed(2)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 16px 40px 32px; text-align: center;">
+              <a href="${data.dashboardLink}" style="display: inline-block; background: #16a34a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 12px 32px; border-radius: 8px;">
+                View in Dashboard →
+              </a>
+              <p style="margin: 12px 0 0; font-size: 12px; color: #888;">
+                Order ID: ${data.orderId.slice(0, 8)}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: #f5f5f5; padding: 16px 40px; text-align: center; border-top: 1px solid #eee;">
+              <p style="margin: 0; font-size: 12px; color: #999;">Bring Me Food · Contact the customer directly to confirm and arrange payment.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendNewOrderNotification(
+  data: NewOrderNotificationData,
+): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+    console.warn("[email] RESEND_API_KEY not set — skipping new order notification");
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  try {
+    await resend.emails.send({
+      from: "Bring Me Food Orders <orders@bringmefood.app>",
+      to: data.chefEmail,
+      subject: `🆕 New order from ${data.customerName} — $${(data.total + data.deliveryFee).toFixed(2)}`,
+      html: buildNewOrderNotificationHtml(data),
+    });
+    return { success: true };
+  } catch (err: any) {
+    console.error("[email] New order notification failed:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function sendOrderConfirmationEmail(
   to: string,
   data: OrderConfirmationEmailData,
