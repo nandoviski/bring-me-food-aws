@@ -119,6 +119,113 @@ function buildMenuEmailHtml(data: MenuEmailData): string {
 </html>`;
 }
 
+export interface OrderConfirmationEmailData {
+  guestName: string;
+  chefName: string;
+  chefPhone?: string;
+  orderId: string;
+  total: number;
+  deliveryFee: number;
+  deliveryAddress: string;
+  notes?: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+}
+
+function buildOrderConfirmationHtml(data: OrderConfirmationEmailData): string {
+  const grandTotal = data.total + data.deliveryFee;
+  const itemsHtml = data.items.map((item) => `
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333;">
+        ${item.name} × ${item.quantity}
+      </td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333; text-align: right;">
+        $${(item.price * item.quantity).toFixed(2)}
+      </td>
+    </tr>
+  `).join("");
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><title>Order Confirmed – Bring Me Food</title></head>
+<body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; padding: 32px 16px;">
+    <tr>
+      <td>
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #e85d04 0%, #dc2f02 100%); padding: 28px 40px; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 13px; color: rgba(255,255,255,0.8);">Your order is in</p>
+              <h1 style="margin: 0; font-size: 26px; color: #ffffff; font-weight: 700;">Order Confirmed 🎉</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 40px 0;">
+              <p style="margin: 0 0 16px; font-size: 15px; color: #333;">Hi ${data.guestName},</p>
+              <p style="margin: 0 0 16px; font-size: 15px; color: #555;">
+                Your order with <strong>${data.chefName}</strong> has been received. They'll be in touch to confirm and arrange payment.
+              </p>
+              <p style="margin: 0 0 24px; font-size: 13px; color: #888;">Order ID: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">${data.orderId.slice(0, 8)}</code></p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${itemsHtml}
+                <tr>
+                  <td style="padding: 8px 0; font-size: 14px; color: #666;">Delivery fee</td>
+                  <td style="padding: 8px 0; font-size: 14px; color: #666; text-align: right;">$${data.deliveryFee.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0; font-size: 16px; font-weight: 700; color: #1a1a1a; border-top: 2px solid #eee;">Total</td>
+                  <td style="padding: 12px 0 0; font-size: 16px; font-weight: 700; color: #e85d04; text-align: right; border-top: 2px solid #eee;">$${grandTotal.toFixed(2)}</td>
+                </tr>
+              </table>
+              ${data.deliveryAddress ? `<p style="margin: 16px 0 0; font-size: 13px; color: #888;">📍 ${data.deliveryAddress}</p>` : ""}
+              ${data.notes ? `<p style="margin: 8px 0 0; font-size: 13px; color: #888;">📝 Note: ${data.notes}</p>` : ""}
+            </td>
+          </tr>
+          ${data.chefPhone ? `
+          <tr>
+            <td style="background: #fff8f4; border-top: 1px solid #ffe0cc; padding: 20px 40px;">
+              <p style="margin: 0; font-size: 13px; color: #888;">The chef may reach out to you at: <strong style="color: #333;">${data.chefPhone}</strong></p>
+            </td>
+          </tr>` : ""}
+          <tr>
+            <td style="background: #f5f5f5; padding: 20px 40px; text-align: center; border-top: 1px solid #eee;">
+              <p style="margin: 0; font-size: 12px; color: #999;">Bring Me Food · Questions? Contact your chef directly.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendOrderConfirmationEmail(
+  to: string,
+  data: OrderConfirmationEmailData,
+): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+    console.warn("[email] RESEND_API_KEY not set — skipping order confirmation email");
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  try {
+    await resend.emails.send({
+      from: "Bring Me Food <orders@bringmefood.app>",
+      to,
+      subject: `✅ Your order with ${data.chefName} is confirmed`,
+      html: buildOrderConfirmationHtml(data),
+    });
+    return { success: true };
+  } catch (err: any) {
+    console.error("[email] Order confirmation failed:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function sendMenuEmail(
   to: string,
   data: MenuEmailData,

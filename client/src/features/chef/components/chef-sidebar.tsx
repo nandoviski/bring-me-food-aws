@@ -14,6 +14,7 @@ import {
   MessageSquare,
   BookOpen,
   Plus,
+  Users,
 } from "lucide-react";
 
 export function ChefSidebar() {
@@ -40,6 +41,11 @@ export function ChefSidebar() {
       label: "Order history",
       href: "/account/chef/orders",
       icon: ShoppingCart,
+    },
+    {
+      label: "Subscribers",
+      href: "/account/chef/subscribers",
+      icon: Users,
     },
     {
       label: "User account",

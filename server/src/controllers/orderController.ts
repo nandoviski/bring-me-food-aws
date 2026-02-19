@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import { sendOrderConfirmationEmail } from "../lib/email";
 
 const prisma = new PrismaClient();
 
@@ -106,6 +107,27 @@ export async function createOrder(req: Request, res: Response) {
 
       return order;
     });
+
+    // Send confirmation email to guest if email provided
+    if (isGuest && payload.guestEmail) {
+      const chef = await prisma.chef.findUnique({ where: { id: chefId! } });
+      setImmediate(() => {
+        sendOrderConfirmationEmail(payload.guestEmail!, {
+          guestName: payload.guestName!,
+          chefName: chef?.name ?? "your chef",
+          chefPhone: chef?.phoneNumber ?? undefined,
+          orderId: created.id,
+          total: created.total,
+          deliveryFee: created.deliveryFee,
+          deliveryAddress: created.deliveryAddress,
+          notes: created.notes ?? undefined,
+          items: payload.meals.map((m) => {
+            const meal = meals.find((ml) => ml.id === m.mealId)!;
+            return { name: meal.name, quantity: m.quantity, price: meal.price };
+          }),
+        }).catch((e) => console.error("[email] order confirmation error:", e));
+      });
+    }
 
     return res.status(201).json({
       orderId: created.id,

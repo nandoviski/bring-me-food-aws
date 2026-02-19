@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, CreditCard, DollarSign, Package, Users, Clock } from "lucide-react";
+import { ArrowDown, ArrowUp, DollarSign, Package, Users, Clock, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { useGetChefStatsQuery } from "@/state/api";
+import { useGetChefStatsQuery, useGetSubscribersQuery } from "@/state/api";
 
 export function StatsCards() {
   const { user } = useAuth();
@@ -14,10 +14,17 @@ export function StatsCards() {
     { skip: !chefId }
   );
 
+  const { data: subscriberData } = useGetSubscribersQuery(
+    { chefId },
+    { skip: !chefId }
+  );
+
+  const subscriberCount = subscriberData?.count ?? 0;
+
   if (isLoading || !stats) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="bg-muted h-4 w-24 animate-pulse rounded" />
@@ -33,7 +40,7 @@ export function StatsCards() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {/* Revenue */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -83,6 +90,22 @@ export function StatsCards() {
         <CardContent>
           <div className="text-2xl font-bold">{stats.uniqueCustomersThisWeek}</div>
           <ChangeLabel change={stats.customersChange} unit="" suffix="from last week" isAbsolute />
+        </CardContent>
+      </Card>
+
+      {/* Subscribers */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Email Subscribers</CardTitle>
+          <Mail className="text-muted-foreground h-4 w-4" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{subscriberCount}</div>
+          <p className="text-muted-foreground text-xs">
+            {subscriberCount === 0
+              ? "Share your profile to grow"
+              : `${subscriberCount} will get your next menu`}
+          </p>
         </CardContent>
       </Card>
     </div>
