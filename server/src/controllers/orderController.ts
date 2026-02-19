@@ -101,6 +101,33 @@ export async function createOrder(req: Request, res: Response) {
   }
 }
 
+export async function updateOrderStatus(req: Request, res: Response) {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ["PENDING", "CONFIRMED", "DELIVERED", "CANCELLED"];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      });
+    }
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error("updateOrderStatus error", err);
+    return res.status(500).json({ message: "Error updating order status" });
+  }
+}
+
 export async function getOrdersByChefId(req: Request, res: Response) {
   try {
     // Validate chef ID from URL params

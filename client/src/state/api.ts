@@ -203,6 +203,17 @@ export const api = createApi({
       query: ({ chefId }) => `orders/chef/${chefId}`,
       providesTags: ["OrdersByChef"],
     }),
+    updateOrderStatus: build.mutation<
+      Order,
+      { orderId: string; status: "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED" }
+    >({
+      query: ({ orderId, status }) => ({
+        url: `orders/${orderId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: ["OrdersByChef"],
+    }),
   }),
 });
 
@@ -227,6 +238,7 @@ export const {
   useCreateOrderMutation,
   useGetCustomerOrdersQuery,
   useGetOrdersByChefIdQuery,
+  useUpdateOrderStatusMutation,
 } = api;
 
 /**

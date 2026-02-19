@@ -21,6 +21,12 @@ import authRoutes from "./routes/authRoutes";
 dotenv.config();
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+
+/* S3 / MINIO BUCKET SETUP */
+import { createS3Client, ensureBucketExists } from "./lib/s3Client";
+const s3 = createS3Client();
+const bucket = process.env.S3_BUCKET || "bring-me-food";
+ensureBucketExists(s3, bucket).catch((e) => console.error("[S3] Startup bucket check failed:", e));
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -30,7 +36,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
