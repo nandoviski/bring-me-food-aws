@@ -231,6 +231,26 @@ export const api = createApi({
       invalidatesTags: ["OrdersByChef"],
     }),
 
+    // Chef directory
+    getAllChefs: build.query<
+      {
+        chefs: Array<{
+          id: string;
+          username: string;
+          name: string;
+          location: string;
+          bio: string | null;
+          specialties: string | null;
+          _count: { meals: number; order: number };
+        }>;
+      },
+      { search?: string }
+    >({
+      query: ({ search }) =>
+        search ? `chefs?search=${encodeURIComponent(search)}` : "chefs",
+      providesTags: ["Chefs"],
+    }),
+
     // Menu distribution
     distributeMenu: build.mutation<
       { message: string; sent: number; failed: number; total: number },
@@ -290,6 +310,7 @@ export const {
   useDistributeMenuMutation,
   useSubscribeToChefMutation,
   useGetSubscribersQuery,
+  useGetAllChefsQuery,
 } = api;
 
 /**

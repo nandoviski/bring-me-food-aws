@@ -159,3 +159,41 @@ export const getChefByUserId = async (req: Request, res: Response): Promise<void
     res.status(500).json({ message: `Error retrieving chef: ${error.message}` });
   }
 };
+
+/**
+ * GET /chefs
+ * List all active chefs with basic profile info.
+ * Optional query: ?search=name|location|specialties
+ */
+export const getAllChefs = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { search } = req.query;
+
+    const chefs = await prisma.chef.findMany({
+      where: search
+        ? {
+            OR: [
+              { name: { contains: search as string, mode: "insensitive" } },
+              { location: { contains: search as string, mode: "insensitive" } },
+              { specialties: { contains: search as string, mode: "insensitive" } },
+              { username: { contains: search as string, mode: "insensitive" } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        location: true,
+        bio: true,
+        specialties: true,
+        _count: { select: { meals: true, order: true } },
+      },
+      orderBy: { order: { _count: "desc" } },
+    });
+
+    res.status(200).json({ chefs });
+  } catch (error: any) {
+    res.status(500).json({ message: `Error listing chefs: ${error.message}` });
+  }
+};

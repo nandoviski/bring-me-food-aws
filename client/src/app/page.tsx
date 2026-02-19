@@ -24,10 +24,10 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button size="lg" variant="orange" asChild>
-                  <Link href="#">Order Now</Link>
+                  <Link href="/search">Order Now</Link>
                 </Button>
                 <Button size="lg" variant="green" asChild>
-                  <Link href="#">Become a Chef</Link>
+                  <Link href="/account/signin?type=chef">Become a Chef</Link>
                 </Button>
               </div>
 
@@ -193,7 +193,7 @@ export default function HomePage() {
                 recipes passed down through generations.
               </p>
               <Button size="lg" variant="orange" asChild>
-                <Link href="#">About Our Story</Link>
+                <Link href="/how-it-works">How We Work</Link>
               </Button>
             </div>
           </div>
@@ -347,10 +347,10 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="orange" asChild>
-                <Link href="#">Explore Meals</Link>
+                <Link href="/search">Explore Chefs</Link>
               </Button>
               <Button size="lg" variant="green" asChild>
-                <Link href="#">Start Selling</Link>
+                <Link href="/account/signin?type=chef">Start Selling</Link>
               </Button>
             </div>
           </div>

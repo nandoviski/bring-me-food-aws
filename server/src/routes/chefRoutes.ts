@@ -7,9 +7,13 @@ import {
   getChefByUserId,
   checkChefUsernameExists,
   getChefStats,
+  getAllChefs,
 } from "../controllers/chefController";
 
 const router = Router();
+
+// Public: list/search all chefs
+router.get("/", getAllChefs);
 
 router.put("/:chefId", requireAuth, requireChef, updateChef);
 router.get("/byUserId/:userId", getChefByUserId);
