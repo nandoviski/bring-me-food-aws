@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
 
 /* MIDDLEWARE IMPORTS */
 import { authMiddleware } from "./middleware/auth";
@@ -51,6 +52,19 @@ const apiRouter = express.Router();
 
 apiRouter.get("/", (req, res) => {
   res.send("Hello, this is the Bring Me Food API!");
+});
+
+// Health check — used by Railway / load balancers
+apiRouter.get("/health", async (req, res) => {
+  const prisma = new PrismaClient();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ status: "ok", db: "connected", ts: new Date().toISOString() });
+  } catch (err) {
+    res.status(503).json({ status: "error", db: "disconnected", ts: new Date().toISOString() });
+  } finally {
+    await prisma.$disconnect();
+  }
 });
 
 apiRouter.use("/auth", authRoutes);

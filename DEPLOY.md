@@ -103,7 +103,7 @@ To use a custom domain (e.g. `bringmefood.app`), add it in Vercel project settin
 
 ## 5. Post-deploy checklist
 
-- [ ] Hit `GET /api/` in a browser — should return "Hello, this is the Bring Me Food API!"
+- [ ] Hit `GET /api/health` — should return `{"status": "ok", "db": "connected"}`
 - [ ] Create a chef account and sign in
 - [ ] Add a meal and create a menu
 - [ ] Visit `https://your-app.vercel.app/chef/[username]` — public profile visible
