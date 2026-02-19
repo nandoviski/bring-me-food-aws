@@ -1,8 +1,11 @@
-import { Router, Response } from "express";
-import { syncUser } from "../controllers/authController";
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth";
+import { signup, signin, me } from "../controllers/authController";
 
 const router = Router();
 
-router.post("/sync-user", syncUser);  // No requireAuth - validate Cognito user via AdminGetUser instead
+router.post("/signup", signup);
+router.post("/signin", signin);
+router.get("/me", requireAuth, me);
 
 export default router;

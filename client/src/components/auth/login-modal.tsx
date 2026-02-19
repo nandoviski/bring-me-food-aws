@@ -21,9 +21,9 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [verifyState, setVerifyState] = useState<VerifyState | null>(null);
 
-  const handleSignUpSuccess = (email: string, username: string) => {
-    setVerifyState({ email, username });
-    setAuthMode("verify");
+  const handleSignUpSuccess = (_email: string, _username: string) => {
+    // With our own auth, signup immediately creates a session — just close the modal.
+    handleLoginSuccess();
   };
 
   const handleVerifySuccess = () => {
