@@ -134,6 +134,12 @@ export const api = createApi({
       query: ({ userId }) => `chefs/byUserId/${userId}`,
       providesTags: ["ChefByUserId"],
     }),
+    getPopularMeals: build.query<
+      { meals: Array<{ id: string; name: string; price: number; totalOrdered: number; totalRevenue: number }> },
+      { chefId: string }
+    >({
+      query: ({ chefId }) => `chefs/${chefId}/popular-meals`,
+    }),
     getChefStats: build.query<ChefStats, { chefId: string }>({
       query: ({ chefId }) => `chefs/${chefId}/stats`,
       providesTags: ["Chefs"],
@@ -308,6 +314,7 @@ export const {
   useGetOrdersByChefIdQuery,
   useUpdateOrderStatusMutation,
   useGetChefStatsQuery,
+  useGetPopularMealsQuery,
   useDistributeMenuMutation,
   useSubscribeToChefMutation,
   useGetSubscribersQuery,

@@ -12,6 +12,7 @@ import {
 import { ChefOrdersSection } from "../../../order/components/chef-orders-section";
 import { StatsCards } from "./stats-cards";
 import { GettingStarted } from "./getting-started";
+import { PopularMealsCard } from "./popular-meals-card";
 import Link from "next/link";
 
 export function ChefDashboard() {
@@ -41,25 +42,7 @@ export function ChefDashboard() {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Popular Meals</CardTitle>
-            <CardDescription>Your top selling meals this week</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-muted-foreground py-8 text-center text-sm">
-              <p>Popular meals analytics coming soon</p>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link
-              href="/account/chef/meals"
-              className="border-input bg-background hover:bg-accent hover:text-accent-foreground flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium shadow-xs transition-colors"
-            >
-              View All Meals
-            </Link>
-          </CardFooter>
-        </Card>
+        <PopularMealsCard />
       </div>
     </div>
   );

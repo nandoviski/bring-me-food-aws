@@ -220,3 +220,47 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: `Error listing chefs: ${error.message}` });
   }
 };
+
+/**
+ * GET /chefs/:chefId/popular-meals
+ * Returns the top 5 most-ordered meals for this chef (all time).
+ */
+export const getPopularMeals = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { chefId } = req.params;
+
+    const popular = await prisma.mealsOnOrders.groupBy({
+      by: ["mealId"],
+      where: { meal: { chefId } },
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 5,
+    });
+
+    if (popular.length === 0) {
+      res.status(200).json({ meals: [] });
+      return;
+    }
+
+    const mealIds = popular.map((p) => p.mealId);
+    const meals = await prisma.meal.findMany({
+      where: { id: { in: mealIds } },
+      select: { id: true, name: true, price: true },
+    });
+
+    const result = popular.map((p) => {
+      const meal = meals.find((m) => m.id === p.mealId)!;
+      return {
+        id: p.mealId,
+        name: meal?.name ?? "Unknown",
+        price: meal?.price ?? 0,
+        totalOrdered: p._sum.quantity ?? 0,
+        totalRevenue: (meal?.price ?? 0) * (p._sum.quantity ?? 0),
+      };
+    });
+
+    res.status(200).json({ meals: result });
+  } catch (error: any) {
+    res.status(500).json({ message: `Error retrieving popular meals: ${error.message}` });
+  }
+};
