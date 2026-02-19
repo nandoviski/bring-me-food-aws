@@ -87,6 +87,66 @@ export const updateChef = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+export const getChefStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { chefId } = req.params;
+
+    const chef = await prisma.chef.findUnique({ where: { id: chefId } });
+    if (!chef) { res.status(404).json({ message: "Chef not found" }); return; }
+
+    const now = new Date();
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setDate(now.getDate() - now.getDay());
+    startOfThisWeek.setHours(0, 0, 0, 0);
+
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+
+    const [thisWeekOrders, lastWeekOrders, activeMeals, pendingOrders] = await Promise.all([
+      prisma.order.findMany({
+        where: { chefId, createdAt: { gte: startOfThisWeek } },
+        select: { total: true, deliveryFee: true, customerId: true },
+      }),
+      prisma.order.findMany({
+        where: { chefId, createdAt: { gte: startOfLastWeek, lt: startOfThisWeek } },
+        select: { total: true, deliveryFee: true, customerId: true },
+      }),
+      prisma.meal.count({ where: { chefId } }),
+      prisma.order.count({ where: { chefId, status: "PENDING" } }),
+    ]);
+
+    const revenueThisWeek = thisWeekOrders.reduce((s, o) => s + o.total + o.deliveryFee, 0);
+    const revenueLastWeek = lastWeekOrders.reduce((s, o) => s + o.total + o.deliveryFee, 0);
+
+    const revenueChange = revenueLastWeek === 0
+      ? null
+      : ((revenueThisWeek - revenueLastWeek) / revenueLastWeek) * 100;
+
+    const ordersChange = lastWeekOrders.length === 0
+      ? null
+      : ((thisWeekOrders.length - lastWeekOrders.length) / lastWeekOrders.length) * 100;
+
+    const uniqueCustomersThisWeek = new Set(thisWeekOrders.map((o) => o.customerId)).size;
+    const uniqueCustomersLastWeek = new Set(lastWeekOrders.map((o) => o.customerId)).size;
+    const customersChange = uniqueCustomersLastWeek === 0
+      ? null
+      : uniqueCustomersThisWeek - uniqueCustomersLastWeek;
+
+    res.status(200).json({
+      revenueThisWeek,
+      revenueChange,
+      ordersThisWeek: thisWeekOrders.length,
+      ordersChange,
+      activeMeals,
+      pendingOrders,
+      uniqueCustomersThisWeek,
+      customersChange,
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: `Error retrieving chef stats: ${error.message}` });
+  }
+};
+
 export const getChefByUserId = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;

@@ -12,6 +12,17 @@ import type {
   Order,
   SignUpType,
 } from "@/schema";
+
+export type ChefStats = {
+  revenueThisWeek: number;
+  revenueChange: number | null;
+  ordersThisWeek: number;
+  ordersChange: number | null;
+  activeMeals: number;
+  pendingOrders: number;
+  uniqueCustomersThisWeek: number;
+  customersChange: number | null;
+};
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -121,6 +132,10 @@ export const api = createApi({
     getChefByUserId: build.query<Chef, { userId: string }>({
       query: ({ userId }) => `chefs/byUserId/${userId}`,
       providesTags: ["ChefByUserId"],
+    }),
+    getChefStats: build.query<ChefStats, { chefId: string }>({
+      query: ({ chefId }) => `chefs/${chefId}/stats`,
+      providesTags: ["Chefs"],
     }),
 
     // Customers
@@ -239,6 +254,7 @@ export const {
   useGetCustomerOrdersQuery,
   useGetOrdersByChefIdQuery,
   useUpdateOrderStatusMutation,
+  useGetChefStatsQuery,
 } = api;
 
 /**

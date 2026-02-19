@@ -6,14 +6,16 @@ import {
   updateChef,
   getChefByUserId,
   checkChefUsernameExists,
+  getChefStats,
 } from "../controllers/chefController";
 
 const router = Router();
 
 router.put("/:chefId", requireAuth, requireChef, updateChef);
+router.get("/byUserId/:userId", getChefByUserId);
+router.get("/:chefId/stats", requireAuth, requireChef, getChefStats);
+router.get("/:chefId/menu", getChefsWeeklyMenu);
 router.get("/:username/profile", getChefByUsername);
 router.get("/:username/exists", checkChefUsernameExists);
-router.get("/:chefId/menu", getChefsWeeklyMenu);
-router.get("/byUserId/:userId", getChefByUserId);
 
 export default router;
