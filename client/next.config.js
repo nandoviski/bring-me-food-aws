@@ -13,9 +13,9 @@ const config = {
         hostname: "images.unsplash.com",
       },
       {
-        protocol: process.env.S3_BUCKET_PROTOCOL,
-        hostname: process.env.S3_BUCKET_HOSTNAME,
-        port: process.env.S3_BUCKET_PORT,
+        protocol: "http",
+        hostname: "localhost",
+        port: "9000",
       },
     ],
   },

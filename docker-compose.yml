@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: bmf-postgres
+    environment:
+      POSTGRES_USER: bmf
+      POSTGRES_PASSWORD: bmf_password
+      POSTGRES_DB: bring_me_food
+    ports:
+      - "5432:5432"
+    volumes:
+      - bmf_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: bmf-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - bmf_minio_data:/data
+    restart: unless-stopped
+
+volumes:
+  bmf_postgres_data:
+  bmf_minio_data:
