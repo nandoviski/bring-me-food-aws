@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { WeeklyMenu } from "@/features/chef/components/weekly-menu";
+import { SubscribeWidget } from "@/features/chef/components/subscribe-widget";
 import { useEffect } from "react";
 import Error from "@/components/error";
 
@@ -120,6 +121,13 @@ export default function ChefProfile({ username }: { username: string }) {
                 <Button>Create Menu</Button>
               </Link>
             )}
+          </div>
+        )}
+
+        {/* Subscribe widget */}
+        {chef && (
+          <div className="mx-auto mt-16 max-w-md">
+            <SubscribeWidget chefId={chef.id} chefName={chef.name} />
           </div>
         )}
       </div>

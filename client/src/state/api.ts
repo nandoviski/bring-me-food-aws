@@ -48,6 +48,7 @@ export const api = createApi({
     "ChefByUserId",
     "Customers",
     "OrdersByChef",
+    "Subscribers",
   ],
   endpoints: (build) => ({
     // Meals
@@ -229,6 +230,37 @@ export const api = createApi({
       }),
       invalidatesTags: ["OrdersByChef"],
     }),
+
+    // Menu distribution
+    distributeMenu: build.mutation<
+      { message: string; sent: number; failed: number; total: number },
+      { menuId: string }
+    >({
+      query: ({ menuId }) => ({
+        url: `menus/${menuId}/distribute`,
+        method: "POST",
+      }),
+      invalidatesTags: ["MenusByChef"],
+    }),
+
+    // Subscribers
+    subscribeToChef: build.mutation<
+      { message: string; id: string },
+      { chefId: string; email: string; name?: string }
+    >({
+      query: ({ chefId, email, name }) => ({
+        url: `subscribers/${chefId}`,
+        method: "POST",
+        body: { email, name },
+      }),
+    }),
+    getSubscribers: build.query<
+      { count: number; subscribers: Array<{ id: string; email: string; name: string | null; createdAt: string }> },
+      { chefId: string }
+    >({
+      query: ({ chefId }) => `subscribers/${chefId}`,
+      providesTags: ["Subscribers"],
+    }),
   }),
 });
 
@@ -255,6 +287,9 @@ export const {
   useGetOrdersByChefIdQuery,
   useUpdateOrderStatusMutation,
   useGetChefStatsQuery,
+  useDistributeMenuMutation,
+  useSubscribeToChefMutation,
+  useGetSubscribersQuery,
 } = api;
 
 /**

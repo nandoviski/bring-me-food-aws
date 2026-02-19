@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
+import { CalendarDays, Edit, MoreHorizontal, Plus, Send, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { useGetMenusByChefQuery, useDeleteMenuMutation } from "@/state/api";
+import { useGetMenusByChefQuery, useDeleteMenuMutation, useDistributeMenuMutation } from "@/state/api";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
@@ -40,6 +40,8 @@ export function MenusList({}: MenusListProps) {
     filter: "upcoming",
   });
 
+  const [triggerDistribute, { isLoading: isDistributing }] = useDistributeMenuMutation();
+
   const handleAddNew = () => {
     router.push("/account/chef/menus/add");
   };
@@ -56,6 +58,17 @@ export function MenusList({}: MenusListProps) {
       } else {
         toast.error("Error deleting menu");
       }
+    }
+  }
+
+  async function handleDistributeMenu(menuId: string) {
+    if (!confirm("Send this menu to all your subscribers now?")) return;
+    try {
+      const result = await triggerDistribute({ menuId }).unwrap();
+      toast.success(result.message || `Sent to ${result.sent} subscriber${result.sent !== 1 ? "s" : ""}`);
+    } catch (err: any) {
+      const msg = err?.data?.message || "Failed to distribute menu";
+      toast.error(msg);
     }
   }
 
@@ -90,6 +103,8 @@ export function MenusList({}: MenusListProps) {
           onEditMenu={handleEdit}
           onDeleteMenu={handleDeleteMenu}
           isDeleting={isDeleting}
+          onDistributeMenu={handleDistributeMenu}
+          isDistributing={isDistributing}
         />
       )}
     </div>
@@ -123,6 +138,8 @@ type MenusGridProps = {
   onEditMenu: (menu: Menu) => void;
   onDeleteMenu: (menuId: string) => void;
   isDeleting: boolean;
+  onDistributeMenu: (menuId: string) => void;
+  isDistributing: boolean;
 };
 
 function MenusGrid({
@@ -131,6 +148,8 @@ function MenusGrid({
   onEditMenu,
   onDeleteMenu,
   isDeleting,
+  onDistributeMenu,
+  isDistributing,
 }: MenusGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -142,6 +161,8 @@ function MenusGrid({
           onEdit={onEditMenu}
           onDelete={onDeleteMenu}
           isDeleting={isDeleting}
+          onDistribute={onDistributeMenu}
+          isDistributing={isDistributing}
         />
       ))}
     </div>
@@ -154,6 +175,8 @@ type MenuCardProps = {
   onEdit: (menu: Menu) => void;
   onDelete: (menuId: string) => void;
   isDeleting: boolean;
+  onDistribute: (menuId: string) => void;
+  isDistributing: boolean;
 };
 
 function MenuCard({
@@ -162,6 +185,8 @@ function MenuCard({
   onEdit,
   onDelete,
   isDeleting,
+  onDistribute,
+  isDistributing,
 }: MenuCardProps) {
   const status = getMenuStatus(dateNow, menu.startDate, menu.endDate);
 
@@ -200,6 +225,13 @@ function MenuCard({
             {status}
           </Badge>
         </div>
+
+        {/* Last distributed */}
+        {menu.distributedAt && (
+          <p className="mt-1 text-xs text-slate-400">
+            Last sent: {new Date(menu.distributedAt).toLocaleDateString("en-AU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+          </p>
+        )}
       </div>
 
       {/* Meals */}
@@ -215,9 +247,17 @@ function MenuCard({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 p-4">
-        <Button variant="outline" className="w-full">
+      <div className="border-t border-slate-200 p-4 flex gap-2">
+        <Button variant="outline" className="flex-1">
           View Details
+        </Button>
+        <Button
+          className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+          onClick={() => onDistribute(menu.id)}
+          disabled={isDistributing}
+        >
+          <Send className="mr-2 h-4 w-4" />
+          {isDistributing ? "Sending…" : "Publish & Send"}
         </Button>
       </div>
     </div>

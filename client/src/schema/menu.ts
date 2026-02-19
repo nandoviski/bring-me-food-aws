@@ -14,6 +14,7 @@ export interface Menu {
   endDate: Date;
   orderFrom?: Date;
   orderTo?: Date;
+  distributedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   meals: Meal[];

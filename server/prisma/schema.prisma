@@ -58,11 +58,12 @@ model Chef {
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  userId      String    @unique @db.VarChar(50)
-  user        User      @relation(fields: [userId], references: [id])
+  userId      String       @unique @db.VarChar(50)
+  user        User         @relation(fields: [userId], references: [id])
   meals       Meal[]
   menus       Menu[]
   order       Order[]
+  subscribers Subscriber[]
 
   @@index([username])
 }
@@ -73,13 +74,14 @@ model Menu {
   description String    @db.VarChar(250)
   startDate   DateTime
   endDate     DateTime
-  orderFrom   DateTime?
-  orderTo     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  chefId      String    @db.VarChar(50)
-  chef        Chef      @relation(fields: [chefId], references: [id])
-  meals       Meal[]    @relation("menu_meal")
+  orderFrom      DateTime?
+  orderTo        DateTime?
+  distributedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  chefId         String    @db.VarChar(50)
+  chef           Chef      @relation(fields: [chefId], references: [id])
+  meals          Meal[]    @relation("menu_meal")
 }
 
 // model MealsOnMenus {
@@ -157,4 +159,18 @@ enum PaymentStatus {
   PAID
   REFUNDED
   FAILED
+}
+
+model Subscriber {
+  id           String    @id @default(uuid()) @db.VarChar(50)
+  email        String    @db.VarChar(150)
+  name         String?   @db.VarChar(150)
+  chefId       String    @db.VarChar(50)
+  chef         Chef      @relation(fields: [chefId], references: [id])
+  unsubscribed Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([email, chefId])
+  @@index([chefId])
 }
