@@ -42,27 +42,35 @@ export async function subscribe(req: Request, res: Response) {
 }
 
 /**
- * DELETE /subscribers/:chefId
- * Unsubscribe from a chef's menu emails (by token or email).
+ * GET /subscribers/:chefId/unsubscribe
+ * Unsubscribe from a chef's menu emails (via email link).
+ * Redirects to frontend success page.
  */
 export async function unsubscribe(req: Request, res: Response) {
+  const appBaseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
+
   try {
     const { chefId } = req.params;
     const { email } = req.query;
 
     if (!email || typeof email !== "string") {
-      return res.status(400).json({ message: "email query param required" });
+      return res.redirect(`${appBaseUrl}/unsubscribed?status=error`);
     }
+
+    // Get chef username for the success page
+    const chef = await prisma.chef.findUnique({ where: { id: chefId }, select: { username: true } });
 
     await prisma.subscriber.updateMany({
       where: { email, chefId },
       data: { unsubscribed: true },
     });
 
-    return res.status(200).json({ message: "Unsubscribed successfully" });
+    return res.redirect(
+      `${appBaseUrl}/unsubscribed?chef=${encodeURIComponent(chef?.username ?? "")}&email=${encodeURIComponent(email)}`
+    );
   } catch (err) {
     console.error("unsubscribe error", err);
-    return res.status(500).json({ message: "Error unsubscribing" });
+    return res.redirect(`${appBaseUrl}/unsubscribed?status=error`);
   }
 }
 
