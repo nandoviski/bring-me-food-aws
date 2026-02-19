@@ -2,6 +2,10 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
 
+// Configurable sender addresses — override in .env for your verified domain
+const SENDER_MENU = process.env.EMAIL_FROM_MENU || "menu@bringmefood.app";
+const SENDER_ORDERS = process.env.EMAIL_FROM_ORDERS || "orders@bringmefood.app";
+
 export interface MenuEmailData {
   chefName: string;
   chefUsername: string;
@@ -311,7 +315,7 @@ export async function sendNewOrderNotification(
 
   try {
     await resend.emails.send({
-      from: "Bring Me Food Orders <orders@bringmefood.app>",
+      from: `Bring Me Food Orders <${SENDER_ORDERS}>`,
       to: data.chefEmail,
       subject: `🆕 New order from ${data.customerName} — $${(data.total + data.deliveryFee).toFixed(2)}`,
       html: buildNewOrderNotificationHtml(data),
@@ -334,7 +338,7 @@ export async function sendOrderConfirmationEmail(
 
   try {
     await resend.emails.send({
-      from: "Bring Me Food <orders@bringmefood.app>",
+      from: `Bring Me Food <${SENDER_ORDERS}>`,
       to,
       subject: `✅ Your order with ${data.chefName} is confirmed`,
       html: buildOrderConfirmationHtml(data),
@@ -357,7 +361,7 @@ export async function sendMenuEmail(
 
   try {
     await resend.emails.send({
-      from: `${data.chefName} via Bring Me Food <menu@bringmefood.app>`,
+      from: `${data.chefName} via Bring Me Food <${SENDER_MENU}>`,
       to,
       subject: `🍽️ ${data.menuName} is here — order by ${data.orderTo ?? data.endDate}`,
       html: buildMenuEmailHtml(data),

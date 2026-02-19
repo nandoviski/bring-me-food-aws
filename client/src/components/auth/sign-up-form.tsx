@@ -14,11 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 type Props = {
   onSignUpSuccess?: (email: string, username: string) => void;
   onSwitchToLogin?: () => void;
+  initialUserType?: "chef" | "customer";
 };
 
-export function SignUpForm({ onSignUpSuccess, onSwitchToLogin }: Props) {
+export function SignUpForm({ onSignUpSuccess, onSwitchToLogin, initialUserType = "customer" }: Props) {
   const { signUp, isLoading, clearError } = useAuth();
-  const [userType, setUserType] = useState<"chef" | "customer">("customer");
+  const [userType, setUserType] = useState<"chef" | "customer">(initialUserType);
 
   // Chef form
   const chefForm = useForm<ChefSignUpType>({

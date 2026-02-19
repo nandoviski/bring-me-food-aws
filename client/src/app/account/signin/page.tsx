@@ -12,8 +12,10 @@ function SignInContent() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/";
+  const type = params.get("type") as "chef" | "customer" | null;
   const { user } = useAuth();
-  const [view, setView] = useState<"signin" | "signup">("signin");
+  // If ?type=chef is passed, start on sign-up with chef tab
+  const [view, setView] = useState<"signin" | "signup">(type === "chef" ? "signup" : "signin");
 
   // Already logged in → redirect
   useEffect(() => {
@@ -49,6 +51,7 @@ function SignInContent() {
             <SignUpForm
               onSignUpSuccess={() => handleSuccess()}
               onSwitchToLogin={() => setView("signin")}
+              initialUserType={type ?? "customer"}
             />
           )}
         </div>
