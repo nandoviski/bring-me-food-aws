@@ -130,12 +130,16 @@ model Order {
   deliveryFee     Float           @default(0)
   deliveryAddress String          @db.VarChar(250)
   notes           String?         @db.VarChar(300)
+  // Guest checkout fields (set when customerId is null)
+  guestName       String?         @db.VarChar(150)
+  guestPhone      String?         @db.VarChar(20)
+  guestEmail      String?         @db.VarChar(150)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   chefId          String          @db.VarChar(50)
   chef            Chef            @relation(fields: [chefId], references: [id])
-  customerId      String          @db.VarChar(50)
-  customer        Customer        @relation(fields: [customerId], references: [id])
+  customerId      String?         @db.VarChar(50)
+  customer        Customer?       @relation(fields: [customerId], references: [id])
   mealsOnOrders   MealsOnOrders[]
 }
 

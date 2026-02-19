@@ -11,13 +11,17 @@ export interface Order {
   id: string;
   status: string;
   chefId: string;
-  customerId: string;
+  customerId: string | null;
   total: number;
   deliveryFee: number;
   deliveryAddress: string;
   notes?: string | null;
   createdAt: string;
   grandTotal?: number;
+  // Guest checkout fields
+  guestName?: string | null;
+  guestPhone?: string | null;
+  guestEmail?: string | null;
 
   customer?: Customer;
   chef?: Chef;
@@ -38,6 +42,10 @@ export interface Order {
 export const createOrderSchema = z.object({
   chefId: z.string().optional(),
   customerId: z.string().optional(),
+  // Guest checkout fields
+  guestName: z.string().min(1).max(150).optional(),
+  guestPhone: z.string().min(1).max(20).optional(),
+  guestEmail: z.string().email().optional(),
   meals: z
     .array(
       z.object({ mealId: z.string(), quantity: z.number().int().positive() }),

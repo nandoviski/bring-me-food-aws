@@ -7,6 +7,10 @@ const prisma = new PrismaClient();
 const createOrderSchema = z.object({
   chefId: z.string().optional(),
   customerId: z.string().optional(),
+  // Guest checkout fields
+  guestName: z.string().min(1).max(150).optional(),
+  guestPhone: z.string().min(1).max(20).optional(),
+  guestEmail: z.string().email().optional(),
   meals: z.array(z.object({ mealId: z.string(), quantity: z.number().int().positive() })).min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
@@ -21,12 +25,28 @@ export async function createOrder(req: Request, res: Response) {
   try {
     const payload = createOrderSchema.parse(req.body);
 
-    // TODO: get the logged in user from auth middleware
-    const customerId = payload.customerId || (req as any).user?.id;
-    if (!customerId) return res.status(400).json({ message: "customerId required" });
+    const isGuest = !payload.customerId && !(req as any).user?.id;
 
-    const customer = await prisma.customer.findUnique({ where: { id: customerId } });
-    if (!customer) return res.status(400).json({ message: "Customer not found" });
+    // Validate: need either a logged-in customer OR guest details
+    if (isGuest) {
+      if (!payload.guestName) {
+        return res.status(400).json({ message: "guestName is required for guest orders" });
+      }
+      if (!payload.guestPhone) {
+        return res.status(400).json({ message: "guestPhone is required for guest orders" });
+      }
+      if (!payload.deliveryAddress) {
+        return res.status(400).json({ message: "deliveryAddress is required for guest orders" });
+      }
+    }
+
+    const customerId = payload.customerId || (req as any).user?.id || null;
+
+    let customer = null;
+    if (customerId) {
+      customer = await prisma.customer.findUnique({ where: { id: customerId } });
+      if (!customer) return res.status(400).json({ message: "Customer not found" });
+    }
 
     const mealIds = payload.meals.map((i) => i.mealId);
     const meals = await prisma.meal.findMany({ where: { id: { in: mealIds } } });
@@ -39,7 +59,7 @@ export async function createOrder(req: Request, res: Response) {
       return sum + meal.price * it.quantity;
     }, 0);
 
-    const deliveryAddress = payload.deliveryAddress ?? customer.address;
+    const deliveryAddress = payload.deliveryAddress ?? customer?.address ?? "";
 
     // Derive chefId from meals if not provided; ensure all meals belong to same chef
     let chefId = payload.chefId;
@@ -64,6 +84,10 @@ export async function createOrder(req: Request, res: Response) {
           deliveryFee: payload.deliveryFee || 0,
           deliveryAddress,
           notes: payload.notes,
+          // Guest fields
+          guestName: isGuest ? payload.guestName : null,
+          guestPhone: isGuest ? payload.guestPhone : null,
+          guestEmail: isGuest ? payload.guestEmail : null,
         },
       });
 
@@ -90,14 +114,14 @@ export async function createOrder(req: Request, res: Response) {
       total: created.total,
       deliveryFee: created.deliveryFee,
       grandTotal: created.total + created.deliveryFee,
+      isGuest,
     });
   } catch (err: any) {
-    console.error("createOrder error", err);
     if (err instanceof z.ZodError) {
       return res.status(400).json({ message: "Invalid payload", errors: err.issues });
     }
     console.error("createOrder error", err);
-    return res.status(500).json({ message: "Error fetching orders" });
+    return res.status(500).json({ message: "Error creating order" });
   }
 }
 

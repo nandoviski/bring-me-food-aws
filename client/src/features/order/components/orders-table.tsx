@@ -79,9 +79,21 @@ function OrderTableRow({ order }: OrderTableRowProps) {
         #{order.id.slice(0, 8)}
       </TableCell>
       <TableCell>
-        {order.customer
-          ? `${order.customer.firstName} ${order.customer.lastName}`
-          : "—"}
+        {order.customer ? (
+          `${order.customer.firstName} ${order.customer.lastName}`
+        ) : order.guestName ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span>{order.guestName}</span>
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">Guest</span>
+          </span>
+        ) : (
+          "—"
+        )}
+        {(order.guestPhone || order.customer?.phoneNumber) && (
+          <div className="text-xs text-slate-400">
+            {order.guestPhone ?? order.customer?.phoneNumber}
+          </div>
+        )}
       </TableCell>
       <TableCell className="text-slate-600">
         {itemCount} item{itemCount !== 1 ? "s" : ""}

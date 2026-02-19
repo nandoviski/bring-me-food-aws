@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { requireAuth, requireChef, requireCustomer } from "../middleware/auth";
+import { requireAuth, requireChef } from "../middleware/auth";
 import { createOrder, getOrdersByChefId, updateOrderStatus } from "../controllers/orderController";
 
 const router = Router();
 
-router.post("/", requireAuth, requireCustomer, createOrder);
+// POST /orders — allows both authenticated customers and guests (no auth middleware)
+// Global authMiddleware still runs and attaches req.user if a token is present
+router.post("/", createOrder);
 router.get("/chef/:chefId", requireAuth, requireChef, getOrdersByChefId);
 router.patch("/:orderId/status", requireAuth, requireChef, updateOrderStatus);
 
