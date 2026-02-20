@@ -64,6 +64,29 @@ export async function createOrder(req: Request, res: Response) {
       return res.status(400).json({ message: "One or more meals not found" });
     }
 
+    // Stock limit check: for any meal with stockLimit, count active ordered portions
+    for (const item of payload.meals) {
+      const meal = meals.find((m) => m.id === item.mealId)!;
+      if (meal.stockLimit !== null && meal.stockLimit !== undefined) {
+        const soldCount = await prisma.mealsOnOrders.aggregate({
+          where: {
+            mealId: meal.id,
+            order: { status: { not: "CANCELLED" } },
+          },
+          _sum: { quantity: true },
+        });
+        const sold = soldCount._sum.quantity ?? 0;
+        const remaining = meal.stockLimit - sold;
+        if (item.quantity > remaining) {
+          return res.status(409).json({
+            message: `Sorry, "${meal.name}" only has ${remaining} portion${remaining === 1 ? "" : "s"} left.`,
+            mealId: meal.id,
+            remaining,
+          });
+        }
+      }
+    }
+
     const total = payload.meals.reduce((sum, it) => {
       const meal = meals.find((m) => m.id === it.mealId)!;
       return sum + meal.price * it.quantity;

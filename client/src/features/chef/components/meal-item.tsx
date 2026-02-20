@@ -13,6 +13,8 @@ type Props = {
 
 export default function MealItem({ meal }: Props) {
   const { increaseItemQuantityByMeal } = useShoppingCart();
+  const soldOut = meal.remainingStock !== null && meal.remainingStock !== undefined && meal.remainingStock <= 0;
+  const lowStock = !soldOut && meal.remainingStock !== null && meal.remainingStock !== undefined && meal.remainingStock <= 5;
 
   const formatPrice = (price: number | undefined) => {
     if (typeof price !== "number") return "0.00";
@@ -33,10 +35,23 @@ export default function MealItem({ meal }: Props) {
           loading={meal.image && meal.image !== "" ? undefined : "eager"}
           alt={`${meal.name} - ${meal.description}`}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          className={`object-cover transition-transform duration-500 group-hover:scale-110 ${soldOut ? "grayscale opacity-70" : ""}`}
         />
-        {/* Gradient overlay for text readability if we put text over image, but here we keep it clean */}
-        {/* <div className="absolute inset-0 bg-black/10 transition-opacity group-hover:opacity-0" /> */}
+        {/* Stock badges */}
+        {soldOut && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <span className="rounded-full bg-black/80 px-4 py-1.5 text-sm font-semibold text-white">
+              Sold Out
+            </span>
+          </div>
+        )}
+        {lowStock && !soldOut && (
+          <div className="absolute top-3 right-3">
+            <span className="rounded-full bg-orange-500/90 px-2.5 py-1 text-xs font-semibold text-white">
+              Only {meal.remainingStock} left!
+            </span>
+          </div>
+        )}
       </div>
       
       <CardContent className="flex h-[200px] flex-col justify-between p-6">
@@ -70,16 +85,18 @@ export default function MealItem({ meal }: Props) {
            </div>
            <Button
               size="sm"
-              className="bg-[#1a2e25] px-6 text-white hover:bg-[#2a4e35]"
+              disabled={soldOut}
+              className={soldOut ? "px-6 bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#1a2e25] px-6 text-white hover:bg-[#2a4e35]"}
               onClick={() => {
-                 increaseItemQuantityByMeal(meal);
-                 toast.success(`${meal.name} added to cart`, {
-                   description: `$${meal.price.toFixed(2)} · tap the cart to checkout`,
-                   duration: 2500,
-                 });
+                if (soldOut) return;
+                increaseItemQuantityByMeal(meal);
+                toast.success(`${meal.name} added to cart`, {
+                  description: `$${meal.price.toFixed(2)} · tap the cart to checkout`,
+                  duration: 2500,
+                });
               }}
            >
-              Add
+              {soldOut ? "Sold out" : "Add"}
            </Button>
         </div>
       </CardContent>

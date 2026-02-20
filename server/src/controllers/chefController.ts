@@ -56,14 +56,41 @@ export const getChefsWeeklyMenu = async (req: Request, res: Response): Promise<v
       },
       include: {
         meals: {
-          orderBy: {
-            name: "asc",
-          },
+          orderBy: { name: "asc" },
         },
       },
     });
 
-    res.status(200).json(menu);
+    if (!menu) {
+      res.status(200).json(null);
+      return;
+    }
+
+    // Add remaining stock info for meals with stockLimit
+    const mealIdsWithLimit = menu.meals.filter((m) => m.stockLimit !== null).map((m) => m.id);
+    const soldCounts: Record<string, number> = {};
+
+    if (mealIdsWithLimit.length > 0) {
+      const aggregates = await prisma.mealsOnOrders.groupBy({
+        by: ["mealId"],
+        where: {
+          mealId: { in: mealIdsWithLimit },
+          order: { status: { not: "CANCELLED" } },
+        },
+        _sum: { quantity: true },
+      });
+      for (const a of aggregates) {
+        soldCounts[a.mealId] = a._sum.quantity ?? 0;
+      }
+    }
+
+    const mealsWithStock = menu.meals.map((m) => ({
+      ...m,
+      soldCount: soldCounts[m.id] ?? null,
+      remainingStock: m.stockLimit !== null ? m.stockLimit - (soldCounts[m.id] ?? 0) : null,
+    }));
+
+    res.status(200).json({ ...menu, meals: mealsWithStock });
   } catch (error: any) {
     res.status(500).json({ message: `Error retrieving weekly menu: ${error.message}` });
   }

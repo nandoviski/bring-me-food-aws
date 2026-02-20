@@ -10,6 +10,9 @@ export interface Meal {
   image?: string;
   ingredients: string[];
   allergens: string[];
+  stockLimit?: number | null;   // Chef-set portion limit (null = unlimited)
+  soldCount?: number | null;    // Current sold portions (active/confirmed orders)
+  remainingStock?: number | null; // stockLimit - soldCount (null if no limit)
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -106,6 +106,8 @@ model Meal {
   image         String?         @db.VarChar(150)
   ingredients   String[]
   allergens     String[]
+  /// Optional: max portions available per week/session; null = unlimited
+  stockLimit    Int?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   chefId        String          @db.VarChar(50)

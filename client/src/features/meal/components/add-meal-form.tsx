@@ -52,6 +52,7 @@ export default function AddMealForm({
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [stockLimit, setStockLimit] = useState<string>("");
   const [uploadFileTrigger] = useUploadFileMutation();
   const { user: loggedUser } = useAuth();
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();
@@ -115,6 +116,7 @@ export default function AddMealForm({
       size: data.size ? Number.parseInt(data.size) : undefined,
       ingredients: data.ingredients.map((ing) => ing.value),
       allergens: data.allergens.map((all) => all.value),
+      stockLimit: stockLimit !== "" ? Number.parseInt(stockLimit) : null,
     } as Meal;
 
     let imageKey: string | undefined = undefined;
@@ -221,6 +223,25 @@ export default function AddMealForm({
                   </FormItem>
                 )}
               />
+
+              {/* Stock Limit (uncontrolled — not part of zod schema) */}
+              <div className="space-y-2">
+                <Label htmlFor="stockLimit">
+                  Portions available{" "}
+                  <span className="text-xs font-normal text-gray-400">(optional)</span>
+                </Label>
+                <Input
+                  id="stockLimit"
+                  type="number"
+                  min="0"
+                  placeholder="Leave blank for unlimited"
+                  value={stockLimit}
+                  onChange={(e) => setStockLimit(e.target.value)}
+                />
+                <p className="text-xs text-gray-400">
+                  Set a limit to show &quot;Sold out&quot; when all portions are taken.
+                </p>
+              </div>
 
               <FormField
                 control={form.control}
