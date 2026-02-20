@@ -7,7 +7,8 @@ import GuestCheckoutForm from "@/features/checkout/components/guest-checkout-for
 import Loading from "@/components/loading";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type CheckoutMode = "choose" | "guest" | "account";
 
@@ -15,7 +16,9 @@ export default function CheckoutPage() {
   const { user, isLoading } = useAuth();
   const [mode, setMode] = useState<CheckoutMode>("choose");
   const searchParams = useSearchParams();
+  const router = useRouter();
   const paymentCancelled = searchParams.get("payment_cancelled") === "1";
+  const cancelledOrderId = searchParams.get("orderId");
 
   if (isLoading) {
     return <Loading />;
@@ -38,11 +41,20 @@ export default function CheckoutPage() {
         {paymentCancelled && (
           <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-medium text-amber-800">Payment was cancelled</p>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-xs text-amber-700 mt-0.5 mb-3">
                 No charge was made. Your order has been saved — you can complete payment anytime.
               </p>
+              {cancelledOrderId && (
+                <button
+                  onClick={() => router.push(`/order/pay/${cancelledOrderId}`)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600 transition"
+                >
+                  <CreditCard className="h-3.5 w-3.5" />
+                  Complete payment for previous order
+                </button>
+              )}
             </div>
           </div>
         )}

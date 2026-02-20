@@ -73,7 +73,7 @@ export async function createCheckoutSession(req: Request, res: Response) {
       },
       customer_email: order.guestEmail || undefined,
       success_url: `${APP_BASE_URL}/order/success?session_id={CHECKOUT_SESSION_ID}&orderId=${order.id}`,
-      cancel_url: `${APP_BASE_URL}/checkout?payment_cancelled=1`,
+      cancel_url: `${APP_BASE_URL}/checkout?payment_cancelled=1&orderId=${order.id}`,
     });
 
     // Save the session ID on the order so webhook can look it up
