@@ -5,6 +5,7 @@ import { Utensils } from "lucide-react";
 import Image from "next/image";
 import MealViewModeDialog from "./meal-view-mode-dialog";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
+import { toast } from "sonner";
 
 type Props = {
   meal: Meal;
@@ -72,6 +73,10 @@ export default function MealItem({ meal }: Props) {
               className="bg-[#1a2e25] px-6 text-white hover:bg-[#2a4e35]"
               onClick={() => {
                  increaseItemQuantityByMeal(meal);
+                 toast.success(`${meal.name} added to cart`, {
+                   description: `$${meal.price.toFixed(2)} · tap the cart to checkout`,
+                   duration: 2500,
+                 });
               }}
            >
               Add

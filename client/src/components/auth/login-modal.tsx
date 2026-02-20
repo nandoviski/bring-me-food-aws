@@ -73,8 +73,9 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                   className="absolute inset-0 bg-black/40"
                   onClick={() => setOpen(false)}
                 />
-                <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="relative z-10 w-full max-w-md rounded-lg bg-white shadow-lg flex flex-col max-h-[90vh]">
+                  {/* Sticky header */}
+                  <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 shrink-0">
                     <h3 className="text-lg font-semibold">
                       {authMode === "login" && "Sign In"}
                       {authMode === "signup" && "Create Account"}
@@ -88,28 +89,31 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                     </button>
                   </div>
 
-                  {authMode === "login" && (
-                    <LoginForm
-                      onLoginSuccess={handleLoginSuccess}
-                      onSwitchToSignUp={() => setAuthMode("signup")}
-                    />
-                  )}
+                  {/* Scrollable body */}
+                  <div className="overflow-y-auto flex-1 px-6 py-4">
+                    {authMode === "login" && (
+                      <LoginForm
+                        onLoginSuccess={handleLoginSuccess}
+                        onSwitchToSignUp={() => setAuthMode("signup")}
+                      />
+                    )}
 
-                  {authMode === "signup" && (
-                    <SignUpForm
-                      onSignUpSuccess={handleSignUpSuccess}
-                      onSwitchToLogin={() => setAuthMode("login")}
-                    />
-                  )}
+                    {authMode === "signup" && (
+                      <SignUpForm
+                        onSignUpSuccess={handleSignUpSuccess}
+                        onSwitchToLogin={() => setAuthMode("login")}
+                      />
+                    )}
 
-                  {authMode === "verify" && verifyState && (
-                    <VerifyEmailForm
-                      email={verifyState.email}
-                      username={verifyState.username}
-                      onVerifySuccess={handleVerifySuccess}
-                      onBackToSignUp={() => setAuthMode("signup")}
-                    />
-                  )}
+                    {authMode === "verify" && verifyState && (
+                      <VerifyEmailForm
+                        email={verifyState.email}
+                        username={verifyState.username}
+                        onVerifySuccess={handleVerifySuccess}
+                        onBackToSignUp={() => setAuthMode("signup")}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>,
               document.body

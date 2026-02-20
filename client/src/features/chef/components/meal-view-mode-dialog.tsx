@@ -11,6 +11,7 @@ import type { Meal } from "@/schema";
 import { Utensils, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
+import { toast } from "sonner";
 
 type Props = {
   meal: Meal;
@@ -120,12 +121,18 @@ export default function MealViewModeDialog({ meal }: Props) {
                   $ {getTotal(meal.id, meal.price)}
                 </span>
               </div>
-              {/* <Button
+              <Button
                 className="w-full bg-orange-500 hover:bg-orange-600"
-                onClick={() => increaseItemQuantityByMeal(meal)}
+                onClick={() => {
+                  increaseItemQuantityByMeal(meal);
+                  toast.success(`${meal.name} added to cart`, {
+                    description: `$${meal.price.toFixed(2)} · tap the cart to checkout`,
+                    duration: 2500,
+                  });
+                }}
               >
                 Add to Order
-              </Button> */}
+              </Button>
             </div>
           </div>
         </div>
