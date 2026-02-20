@@ -132,6 +132,7 @@ export interface OrderConfirmationEmailData {
   deliveryFee: number;
   deliveryAddress: string;
   notes?: string;
+  payLink?: string; // Stripe pay-later link e.g. /order/pay/:id
   items: Array<{ name: string; quantity: number; price: number }>;
 }
 
@@ -166,7 +167,7 @@ function buildOrderConfirmationHtml(data: OrderConfirmationEmailData): string {
             <td style="padding: 28px 40px 0;">
               <p style="margin: 0 0 16px; font-size: 15px; color: #333;">Hi ${data.guestName},</p>
               <p style="margin: 0 0 16px; font-size: 15px; color: #555;">
-                Your order with <strong>${data.chefName}</strong> has been received. They'll be in touch to confirm and arrange payment.
+                Your order with <strong>${data.chefName}</strong> has been received. Complete your payment below to confirm your spot.
               </p>
               <p style="margin: 0 0 24px; font-size: 13px; color: #888;">Order ID: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">${data.orderId.slice(0, 8)}</code></p>
             </td>
@@ -188,6 +189,15 @@ function buildOrderConfirmationHtml(data: OrderConfirmationEmailData): string {
               ${data.notes ? `<p style="margin: 8px 0 0; font-size: 13px; color: #888;">📝 Note: ${data.notes}</p>` : ""}
             </td>
           </tr>
+          ${data.payLink ? `
+          <tr>
+            <td style="padding: 24px 40px; text-align: center; background: #fff8f4;">
+              <a href="${data.payLink}" style="display: inline-block; background: linear-gradient(135deg, #e85d04 0%, #dc2f02 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px; letter-spacing: 0.3px;">
+                💳 Pay Now — $${(data.total + data.deliveryFee).toFixed(2)}
+              </a>
+              <p style="margin: 12px 0 0; font-size: 12px; color: #aaa;">Secure payment powered by Stripe</p>
+            </td>
+          </tr>` : ""}
           ${data.chefPhone ? `
           <tr>
             <td style="background: #fff8f4; border-top: 1px solid #ffe0cc; padding: 20px 40px;">

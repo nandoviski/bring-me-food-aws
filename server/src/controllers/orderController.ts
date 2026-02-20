@@ -161,6 +161,7 @@ export async function createOrder(req: Request, res: Response) {
 
       // 2. Guest customer gets confirmation if email provided
       if (isGuest && payload.guestEmail) {
+        const stripeConfigured = !!process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_placeholder";
         sendOrderConfirmationEmail(payload.guestEmail, {
           guestName: customerName,
           chefName: chefWithUser?.name ?? "your chef",
@@ -171,6 +172,7 @@ export async function createOrder(req: Request, res: Response) {
           deliveryAddress: created.deliveryAddress,
           notes: created.notes ?? undefined,
           items: orderItems,
+          payLink: stripeConfigured ? `${appBaseUrl}/order/pay/${created.id}` : undefined,
         }).catch((e) => console.error("[email] order confirmation error:", e));
       }
     });
