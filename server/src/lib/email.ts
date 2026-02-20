@@ -132,7 +132,8 @@ export interface OrderConfirmationEmailData {
   deliveryFee: number;
   deliveryAddress: string;
   notes?: string;
-  payLink?: string; // Stripe pay-later link e.g. /order/pay/:id
+  payLink?: string;       // Stripe pay-later link e.g. /order/pay/:id
+  trackingLink?: string;  // Order tracking page e.g. /order/track/:id
   items: Array<{ name: string; quantity: number; price: number }>;
 }
 
@@ -189,15 +190,19 @@ function buildOrderConfirmationHtml(data: OrderConfirmationEmailData): string {
               ${data.notes ? `<p style="margin: 8px 0 0; font-size: 13px; color: #888;">📝 Note: ${data.notes}</p>` : ""}
             </td>
           </tr>
-          ${data.payLink ? `
           <tr>
             <td style="padding: 24px 40px; text-align: center; background: #fff8f4;">
-              <a href="${data.payLink}" style="display: inline-block; background: linear-gradient(135deg, #e85d04 0%, #dc2f02 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px; letter-spacing: 0.3px;">
+              ${data.payLink ? `
+              <a href="${data.payLink}" style="display: inline-block; background: linear-gradient(135deg, #e85d04 0%, #dc2f02 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px; letter-spacing: 0.3px; margin-bottom: 12px;">
                 💳 Pay Now — $${(data.total + data.deliveryFee).toFixed(2)}
               </a>
-              <p style="margin: 12px 0 0; font-size: 12px; color: #aaa;">Secure payment powered by Stripe</p>
+              <p style="margin: 0 0 12px; font-size: 12px; color: #aaa;">Secure payment powered by Stripe</p>` : ""}
+              ${data.trackingLink ? `
+              <a href="${data.trackingLink}" style="display: inline-block; border: 2px solid #e85d04; color: #e85d04; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 8px;">
+                📦 Track your order
+              </a>` : ""}
             </td>
-          </tr>` : ""}
+          </tr>
           ${data.chefPhone ? `
           <tr>
             <td style="background: #fff8f4; border-top: 1px solid #ffe0cc; padding: 20px 40px;">

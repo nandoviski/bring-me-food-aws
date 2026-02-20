@@ -173,6 +173,7 @@ export async function createOrder(req: Request, res: Response) {
           notes: created.notes ?? undefined,
           items: orderItems,
           payLink: stripeConfigured ? `${appBaseUrl}/order/pay/${created.id}` : undefined,
+          trackingLink: `${appBaseUrl}/order/track/${created.id}`,
         }).catch((e) => console.error("[email] order confirmation error:", e));
       }
     });
@@ -219,6 +220,60 @@ export async function updateOrderStatus(req: Request, res: Response) {
   } catch (err) {
     console.error("updateOrderStatus error", err);
     return res.status(500).json({ message: "Error updating order status" });
+  }
+}
+
+/**
+ * GET /api/orders/:orderId/track
+ * Public endpoint — no auth required. Returns order status and payment status for tracking.
+ * The UUID orderId is the "token" — sufficiently hard to guess.
+ */
+export async function getOrderTrackingById(req: Request, res: Response) {
+  const { orderId } = req.params;
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        total: true,
+        deliveryFee: true,
+        deliveryAddress: true,
+        notes: true,
+        createdAt: true,
+        guestName: true,
+        // Don't return guestEmail, guestPhone, stripeSessionId for privacy
+        chef: {
+          select: {
+            name: true,
+            username: true,
+            profileImage: true,
+            phoneNumber: true,
+          },
+        },
+        mealsOnOrders: {
+          select: {
+            quantity: true,
+            priceAtPurchase: true,
+            meal: {
+              select: { id: true, name: true, description: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    return res.status(200).json({
+      ...order,
+      grandTotal: order.total + order.deliveryFee,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ message: "Error fetching order" });
   }
 }
 

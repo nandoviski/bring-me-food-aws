@@ -55,10 +55,10 @@ export default function OrderSuccessPage() {
         <div className="space-y-3">
           {orderId && (
             <Link
-              href={`/account/customer/orders/${orderId}`}
+              href={`/order/track/${orderId}`}
               className="flex items-center justify-center gap-2 w-full rounded-lg bg-orange-500 text-white px-4 py-3 text-sm font-medium hover:bg-orange-600 transition"
             >
-              View order details
+              Track your order
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}
