@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 type Props = {
   onLoginSuccess?: () => void;
   onSwitchToSignUp?: () => void;
+  onForgotPassword?: () => void;
 };
 
-export function LoginForm({ onLoginSuccess, onSwitchToSignUp }: Props) {
+export function LoginForm({ onLoginSuccess, onSwitchToSignUp, onForgotPassword }: Props) {
   const { login, isLoading, error, clearError } = useAuth();
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -66,7 +67,18 @@ export function LoginForm({ onLoginSuccess, onSwitchToSignUp }: Props) {
         </div>
 
         <div>
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {onForgotPassword && (
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
           <Input
             id="password"
             type="password"

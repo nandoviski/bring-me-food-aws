@@ -7,8 +7,9 @@ import { useAuth } from "@/lib/auth";
 import { SignUpForm } from "./sign-up-form";
 import { VerifyEmailForm } from "./verify-email-form";
 import { LoginForm } from "./login-form";
+import { ForgotPasswordForm } from "./forgot-password-form";
 
-type AuthMode = "login" | "signup" | "verify";
+type AuthMode = "login" | "signup" | "verify" | "forgot";
 
 type VerifyState = {
   email: string;
@@ -80,6 +81,7 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                       {authMode === "login" && "Sign In"}
                       {authMode === "signup" && "Create Account"}
                       {authMode === "verify" && "Verify Email"}
+                      {authMode === "forgot" && "Reset Password"}
                     </h3>
                     <button
                       onClick={() => setOpen(false)}
@@ -95,6 +97,7 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                       <LoginForm
                         onLoginSuccess={handleLoginSuccess}
                         onSwitchToSignUp={() => setAuthMode("signup")}
+                        onForgotPassword={() => setAuthMode("forgot")}
                       />
                     )}
 
@@ -111,6 +114,12 @@ export default function LoginModal({ compact }: { compact?: boolean }) {
                         username={verifyState.username}
                         onVerifySuccess={handleVerifySuccess}
                         onBackToSignUp={() => setAuthMode("signup")}
+                      />
+                    )}
+
+                    {authMode === "forgot" && (
+                      <ForgotPasswordForm
+                        onBackToLogin={() => setAuthMode("login")}
                       />
                     )}
                   </div>

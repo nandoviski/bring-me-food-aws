@@ -110,23 +110,24 @@ export function Navbar() {
             >
               How It Works
             </Link>
+            {/* Cart — always visible, guests and logged-in users alike */}
+            <ShoppingCartSheet>
+              <Button
+                variant="green"
+                size="icon"
+                className={`relative border-0 ${isScrolled && "text-primary hover:text-secondary bg-white"} hover:bg-white/10`}
+              >
+                <ShoppingBag className="h-5 w-5" />
+                {cartQuantity > 0 && (
+                  <span className="bg-secondary absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold text-white">
+                    {cartQuantity}
+                  </span>
+                )}
+              </Button>
+            </ShoppingCartSheet>
+
             {user ? (
               <>
-                <ShoppingCartSheet>
-                  <Button
-                    variant="green"
-                    size="icon"
-                    className={`relative border-0 ${isScrolled && "text-primary hover:text-secondary bg-white"} hover:bg-white/10`}
-                  >
-                    <ShoppingBag className="h-5 w-5" />
-                    {cartQuantity > 0 && (
-                      <span className="bg-secondary absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold text-white">
-                        {cartQuantity}
-                      </span>
-                    )}
-                  </Button>
-                </ShoppingCartSheet>
-
                 {/* Profile dropdown menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -299,23 +300,24 @@ export function Navbar() {
               >
                 How It Works
               </Link>
+              {/* Cart — always visible in mobile menu */}
+              <ShoppingCartSheet>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start ${navLinkClass} hover:bg-white/10`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Cart
+                  {cartQuantity > 0 && (
+                    <span className="bg-secondary ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                      {cartQuantity}
+                    </span>
+                  )}
+                </Button>
+              </ShoppingCartSheet>
               {user && (
                 <>
-                  <ShoppingCartSheet>
-                    <Button
-                      variant="ghost"
-                      className={`w-full justify-start ${navLinkClass} hover:bg-white/10`}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <ShoppingBag className="mr-2 h-4 w-4" />
-                      Cart
-                      {cartQuantity > 0 && (
-                        <span className="bg-secondary ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
-                          {cartQuantity}
-                        </span>
-                      )}
-                    </Button>
-                  </ShoppingCartSheet>
                   <Link
                     href="/account/customer/orders"
                     className={`font-medium transition-colors ${navLinkClass}`}

@@ -134,6 +134,34 @@ export const signin = async (req: Request, res: Response) => {
   }
 };
 
+// POST /auth/reset-password  (dev-mode: no email token — just email + new password)
+// TODO production: generate a signed token, email it, validate before allowing reset
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ success: false, message: "Email and new password are required" });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Return 200 anyway to avoid email enumeration
+      return res.status(200).json({ success: true, message: "If that email exists, the password has been reset" });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+
+    return res.status(200).json({ success: true, message: "Password reset successfully" });
+  } catch (err: any) {
+    console.error("reset-password error", err);
+    return res.status(500).json({ success: false, message: "Reset failed" });
+  }
+};
+
 // GET /auth/me  (requires valid JWT)
 export const me = async (req: AuthenticatedRequest, res: Response) => {
   try {
