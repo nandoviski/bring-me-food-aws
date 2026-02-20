@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCreateOrderMutation, useCreateCheckoutSessionMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import type { Customer, OrderCreate } from "@/schema";
-import { ChevronDownIcon, TrashIcon } from "lucide-react";
+import { ChevronDownIcon, TrashIcon, AlertCircle } from "lucide-react";
 
 type Props = {
   customer: Customer;
@@ -14,6 +14,8 @@ type Props = {
 
 export default function CheckoutForm({ customer, userEmail }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const paymentCancelled = searchParams.get("payment_cancelled") === "1";
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const { cartItems, clearCart } = useShoppingCart();
@@ -141,6 +143,15 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
           </div>
         ) : (
           <>
+            {paymentCancelled && (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Payment cancelled</p>
+                  <p className="text-xs text-amber-700 mt-0.5">No charge was made. Review your order and try again.</p>
+                </div>
+              </div>
+            )}
             {error && (
               <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700">
                 {error}

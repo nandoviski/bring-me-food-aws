@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import CheckoutForm from "@/features/checkout/components/checkout-form";
 import GuestCheckoutForm from "@/features/checkout/components/guest-checkout-form";
 import Loading from "@/components/loading";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { AlertCircle } from "lucide-react";
 
 type CheckoutMode = "choose" | "guest" | "account";
 
 export default function CheckoutPage() {
   const { user, isLoading } = useAuth();
   const [mode, setMode] = useState<CheckoutMode>("choose");
+  const searchParams = useSearchParams();
+  const paymentCancelled = searchParams.get("payment_cancelled") === "1";
 
   if (isLoading) {
     return <Loading />;
@@ -31,6 +35,18 @@ export default function CheckoutPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="mx-auto max-w-lg px-4 pt-24 pb-16">
+        {paymentCancelled && (
+          <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">Payment was cancelled</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                No charge was made. Your order has been saved — you can complete payment anytime.
+              </p>
+            </div>
+          </div>
+        )}
+
         <h1 className="mb-2 text-center text-2xl font-semibold text-gray-900">
           How would you like to check out?
         </h1>
