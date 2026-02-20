@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth, requireChef } from "../middleware/auth";
-import { createOrder, getOrdersByChefId, updateOrderStatus, getOrderTrackingById } from "../controllers/orderController";
+import { createOrder, getOrdersByChefId, updateOrderStatus, getOrderTrackingById, exportOrdersAsCsv } from "../controllers/orderController";
 
 const router = Router();
 
@@ -8,6 +8,7 @@ const router = Router();
 // Global authMiddleware still runs and attaches req.user if a token is present
 router.post("/", createOrder);
 router.get("/chef/:chefId", requireAuth, requireChef, getOrdersByChefId);
+router.get("/chef/:chefId/export", requireAuth, requireChef, exportOrdersAsCsv); // CSV export
 router.get("/:orderId/track", getOrderTrackingById); // Public order tracking — no auth
 router.patch("/:orderId/status", requireAuth, requireChef, updateOrderStatus);
 

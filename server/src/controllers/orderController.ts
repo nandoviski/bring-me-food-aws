@@ -224,6 +224,82 @@ export async function updateOrderStatus(req: Request, res: Response) {
 }
 
 /**
+ * GET /api/orders/chef/:chefId/export
+ * Download all orders as CSV. Chef-authenticated.
+ */
+export async function exportOrdersAsCsv(req: Request, res: Response) {
+  const { chefId } = req.params;
+
+  // Validate caller is the chef
+  const callerChefId = (req as any).user?.chef?.id;
+  if (!callerChefId || callerChefId !== chefId) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: { chefId },
+      include: {
+        mealsOnOrders: {
+          include: { meal: { select: { name: true } } },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const escape = (v: string | null | undefined) =>
+      `"${String(v ?? "").replace(/"/g, '""')}"`;
+
+    const rows = orders.map((o) => {
+      const customerName = o.guestName || "Account customer";
+      const items = o.mealsOnOrders
+        .map((m) => `${m.meal.name} x${m.quantity}`)
+        .join("; ");
+      return [
+        escape(o.id),
+        escape(new Date(o.createdAt).toLocaleString("en-AU")),
+        escape(o.status),
+        escape(o.paymentStatus),
+        escape(customerName),
+        escape(o.guestPhone ?? ""),
+        escape(o.guestEmail ?? ""),
+        escape(items),
+        `${o.total.toFixed(2)}`,
+        `${o.deliveryFee.toFixed(2)}`,
+        `${(o.total + o.deliveryFee).toFixed(2)}`,
+        escape(o.deliveryAddress),
+        escape(o.notes ?? ""),
+      ].join(",");
+    });
+
+    const header = [
+      "Order ID",
+      "Date",
+      "Status",
+      "Payment",
+      "Customer",
+      "Phone",
+      "Email",
+      "Items",
+      "Subtotal",
+      "Delivery Fee",
+      "Total",
+      "Address",
+      "Notes",
+    ].join(",");
+
+    const csv = [header, ...rows].join("\n");
+    const filename = `orders-${chefId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.status(200).send(csv);
+  } catch (err) {
+    return res.status(500).json({ message: "Export failed" });
+  }
+}
+
+/**
  * GET /api/orders/:orderId/track
  * Public endpoint — no auth required. Returns order status and payment status for tracking.
  * The UUID orderId is the "token" — sufficiently hard to guess.
