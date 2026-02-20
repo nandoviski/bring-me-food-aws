@@ -126,24 +126,27 @@ model MealsOnOrders {
 }
 
 model Order {
-  id              String          @id @default(uuid()) @db.VarChar(50)
-  status          OrderStatus     @default(PENDING)
-  paymentStatus   PaymentStatus   @default(PENDING)
-  total           Float
-  deliveryFee     Float           @default(0)
-  deliveryAddress String          @db.VarChar(250)
-  notes           String?         @db.VarChar(300)
+  id                    String          @id @default(uuid()) @db.VarChar(50)
+  status                OrderStatus     @default(PENDING)
+  paymentStatus         PaymentStatus   @default(PENDING)
+  total                 Float
+  deliveryFee           Float           @default(0)
+  deliveryAddress       String          @db.VarChar(250)
+  notes                 String?         @db.VarChar(300)
   // Guest checkout fields (set when customerId is null)
-  guestName       String?         @db.VarChar(150)
-  guestPhone      String?         @db.VarChar(20)
-  guestEmail      String?         @db.VarChar(150)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  chefId          String          @db.VarChar(50)
-  chef            Chef            @relation(fields: [chefId], references: [id])
-  customerId      String?         @db.VarChar(50)
-  customer        Customer?       @relation(fields: [customerId], references: [id])
-  mealsOnOrders   MealsOnOrders[]
+  guestName             String?         @db.VarChar(150)
+  guestPhone            String?         @db.VarChar(20)
+  guestEmail            String?         @db.VarChar(150)
+  // Stripe payment fields
+  stripeSessionId       String?         @db.VarChar(200)
+  stripePaymentIntentId String?         @db.VarChar(200)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  chefId                String          @db.VarChar(50)
+  chef                  Chef            @relation(fields: [chefId], references: [id])
+  customerId            String?         @db.VarChar(50)
+  customer              Customer?       @relation(fields: [customerId], references: [id])
+  mealsOnOrders         MealsOnOrders[]
 }
 
 enum UserStatus {

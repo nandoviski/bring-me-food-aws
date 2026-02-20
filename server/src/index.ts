@@ -18,6 +18,7 @@ import uploadRoutes from "./routes/uploadRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import authRoutes from "./routes/authRoutes";
 import subscriberRoutes from "./routes/subscriberRoutes";
+import paymentRoutes, { stripeWebhookRouter } from "./routes/paymentRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -29,6 +30,11 @@ import { createS3Client, ensureBucketExists } from "./lib/s3Client";
 const s3 = createS3Client();
 const bucket = process.env.S3_BUCKET || "bring-me-food";
 ensureBucketExists(s3, bucket).catch((e) => console.error("[S3] Startup bucket check failed:", e));
+
+// ⚠️ Stripe webhook MUST be mounted before bodyParser.json()
+// Stripe requires the raw request body to verify the webhook signature
+app.use("/api/stripe", stripeWebhookRouter);
+
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -74,6 +80,7 @@ apiRouter.use("/chefs", chefRoutes);
 apiRouter.use("/customers", customerRoutes);
 apiRouter.use("/upload", uploadRoutes);
 apiRouter.use("/orders", orderRoutes);
+apiRouter.use("/orders", paymentRoutes); // payment routes mount on /orders too (e.g. /orders/:id/checkout)
 apiRouter.use("/subscribers", subscriberRoutes);
 
 // Mount the router with a prefix

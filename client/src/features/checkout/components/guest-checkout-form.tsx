@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateOrderMutation } from "@/state/api";
+import { useCreateOrderMutation, useCreateCheckoutSessionMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import type { OrderCreate } from "@/schema";
 import { ChevronDownIcon, Package, User } from "lucide-react";
@@ -10,10 +10,13 @@ import { ChevronDownIcon, Package, User } from "lucide-react";
 export default function GuestCheckoutForm() {
   const router = useRouter();
   const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const { cartItems, clearCart } = useShoppingCart();
   const [confirmation, setConfirmation] = useState<null | { orderId: string }>(null);
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+
+  const isSubmitting = isLoading || isCreatingSession;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,8 +45,21 @@ export default function GuestCheckoutForm() {
 
     try {
       const resp = await createOrder(payload).unwrap();
-      setConfirmation({ orderId: resp.orderId });
       clearCart();
+
+      // Attempt to create a Stripe checkout session
+      try {
+        const session = await createCheckoutSession({ orderId: resp.orderId }).unwrap();
+        // Redirect to Stripe Checkout
+        window.location.href = session.url;
+        return;
+      } catch (stripeErr: any) {
+        // If Stripe isn't configured (503) or any other error, fall back to confirmation screen
+        console.info("[checkout] Stripe not available, showing manual confirmation:", stripeErr?.data?.message);
+      }
+
+      // Fallback: show confirmation without Stripe
+      setConfirmation({ orderId: resp.orderId });
     } catch (err: any) {
       setError(err?.data?.message || "Failed to create order. Please try again.");
     }
@@ -102,10 +118,10 @@ export default function GuestCheckoutForm() {
           </div>
         </div>
 
-        <div className="mb-6 rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
-          <p className="text-sm text-blue-700">
-            <span className="font-medium text-blue-800">About payments: </span>
-            We don&apos;t process payments online yet. The chef will contact you to arrange payment and delivery.
+        <div className="mb-6 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
+          <p className="text-sm text-green-700">
+            <span className="font-medium text-green-800">Secure online payment: </span>
+            After confirming your order details you&apos;ll be taken to our secure payment page powered by Stripe.
           </p>
         </div>
 
@@ -294,10 +310,10 @@ export default function GuestCheckoutForm() {
               <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="w-full rounded-md bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-60"
                 >
-                  {isLoading ? "Placing order…" : "Confirm order"}
+                  {isLoading ? "Placing order…" : isCreatingSession ? "Redirecting to payment…" : "Confirm order & pay"}
                 </button>
               </div>
             </div>

@@ -212,13 +212,22 @@ export const api = createApi({
     }),
     // Orders
     createOrder: build.mutation<
-      { orderId: string; status: string },
+      { orderId: string; status: string; isGuest?: boolean },
       OrderCreate
     >({
       query: (body) => ({
         url: "orders",
         method: "POST",
         body,
+      }),
+    }),
+    createCheckoutSession: build.mutation<
+      { url: string; sessionId: string },
+      { orderId: string }
+    >({
+      query: ({ orderId }) => ({
+        url: `orders/${orderId}/checkout`,
+        method: "POST",
       }),
     }),
     getOrdersByChefId: build.query<Order[], { chefId: string }>({
@@ -310,6 +319,7 @@ export const {
   useUpdateCustomerMutation,
   useUploadFileMutation,
   useCreateOrderMutation,
+  useCreateCheckoutSessionMutation,
   useGetCustomerOrdersQuery,
   useGetOrdersByChefIdQuery,
   useUpdateOrderStatusMutation,

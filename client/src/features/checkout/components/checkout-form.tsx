@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateOrderMutation } from "@/state/api";
+import { useCreateOrderMutation, useCreateCheckoutSessionMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import type { Customer, OrderCreate } from "@/schema";
 import { ChevronDownIcon, TrashIcon } from "lucide-react";
@@ -15,17 +15,22 @@ type Props = {
 export default function CheckoutForm({ customer, userEmail }: Props) {
   const router = useRouter();
   const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const { cartItems, clearCart } = useShoppingCart();
   const [confirmation, setConfirmation] = useState<null | { orderId: string }>(
     null,
   );
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const isSubmitting = isLoading || isCreatingSession;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
 
     if (!cartItems || cartItems.length === 0) {
-      alert("Your cart is empty");
+      setError("Your cart is empty");
       return;
     }
 
@@ -48,11 +53,22 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
 
     try {
       const resp = await createOrder(payload).unwrap();
-      setConfirmation({ orderId: resp.orderId });
       clearCart();
+
+      // Attempt to redirect to Stripe Checkout
+      try {
+        const session = await createCheckoutSession({ orderId: resp.orderId }).unwrap();
+        window.location.href = session.url;
+        return;
+      } catch (stripeErr: any) {
+        console.info("[checkout] Stripe not available, showing manual confirmation:", stripeErr?.data?.message);
+      }
+
+      // Fallback: show confirmation
+      setConfirmation({ orderId: resp.orderId });
     } catch (err: any) {
       console.error(err);
-      alert(err?.data?.message || "Failed to create order");
+      setError(err?.data?.message || "Failed to create order");
     }
   }
 
@@ -125,31 +141,20 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
           </div>
         ) : (
           <>
-            <div className="mb-6 rounded-lg border-l-4 border-orange-400 bg-orange-50 p-4">
+            {error && (
+              <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            <div className="mb-6 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
               <div className="flex items-start gap-3">
-                <svg
-                  className="h-6 w-6 shrink-0 text-orange-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-4a1 1 0 100 2 1 1 0 000-2zm1 9a1 1 0 10-2 0v-4a1 1 0 102 0v4z"
-                    clipRule="evenodd"
-                  />
+                <svg className="h-6 w-6 shrink-0 text-green-500 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
-                <div className="text-sm text-orange-700">
-                  <p className="font-medium text-orange-800">
-                    A quick note about payments
-                  </p>
+                <div className="text-sm text-green-700">
+                  <p className="font-medium text-green-800">Secure online payment</p>
                   <p className="mt-1">
-                    We don&apos;t process payments on the site yet. After you
-                    confirm your order, the chef will review it, confirm
-                    availability, and contact you to arrange payment and
-                    delivery or pickup. Please double-check your contact and
-                    address details so the chef can reach you.
+                    After reviewing your order details, you&apos;ll be taken to our secure payment page powered by Stripe.
                   </p>
                 </div>
               </div>
@@ -521,9 +526,10 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                   <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                     <button
                       type="submit"
-                      className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-hidden"
+                      disabled={isSubmitting}
+                      className="w-full rounded-md border border-transparent bg-orange-500 px-4 py-3 text-base font-medium text-white shadow-xs hover:bg-orange-600 disabled:opacity-60 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-hidden"
                     >
-                      Confirm order
+                      {isLoading ? "Placing order…" : isCreatingSession ? "Redirecting to payment…" : "Confirm order & pay"}
                     </button>
                   </div>
                 </div>

@@ -38,6 +38,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             <TableHead className="font-semibold">Items</TableHead>
             <TableHead className="font-semibold">Date</TableHead>
             <TableHead className="font-semibold">Status</TableHead>
+            <TableHead className="font-semibold">Payment</TableHead>
             <TableHead className="font-semibold">Total</TableHead>
             <TableHead className="text-right font-semibold">Actions</TableHead>
           </TableRow>
@@ -102,6 +103,9 @@ function OrderTableRow({ order }: OrderTableRowProps) {
       <TableCell>
         <OrderStatusBadge status={optimisticStatus as Order["status"]} />
       </TableCell>
+      <TableCell>
+        <PaymentStatusBadge status={order.paymentStatus ?? "PENDING"} />
+      </TableCell>
       <TableCell className="font-semibold text-slate-900">
         ${order.total.toFixed(2)}
       </TableCell>
@@ -136,6 +140,39 @@ function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
     },
     CANCELLED: {
       label: "Cancelled",
+      className: "border-red-200 bg-red-50 text-red-700",
+    },
+  };
+
+  const config = statusConfig[status] ?? { label: status, className: "border-slate-200 bg-slate-50 text-slate-600" };
+
+  return (
+    <Badge variant="outline" className={config.className}>
+      {config.label}
+    </Badge>
+  );
+}
+
+type PaymentStatusBadgeProps = {
+  status: "PENDING" | "PAID" | "REFUNDED" | "FAILED";
+};
+
+function PaymentStatusBadge({ status }: PaymentStatusBadgeProps) {
+  const statusConfig: Record<string, { label: string; className: string }> = {
+    PENDING: {
+      label: "Unpaid",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    },
+    PAID: {
+      label: "Paid ✓",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    },
+    REFUNDED: {
+      label: "Refunded",
+      className: "border-blue-200 bg-blue-50 text-blue-700",
+    },
+    FAILED: {
+      label: "Failed",
       className: "border-red-200 bg-red-50 text-red-700",
     },
   };

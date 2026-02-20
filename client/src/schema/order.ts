@@ -10,6 +10,7 @@ import { Chef } from "./chef";
 export interface Order {
   id: string;
   status: string;
+  paymentStatus?: "PENDING" | "PAID" | "REFUNDED" | "FAILED";
   chefId: string;
   customerId: string | null;
   total: number;
@@ -22,6 +23,9 @@ export interface Order {
   guestName?: string | null;
   guestPhone?: string | null;
   guestEmail?: string | null;
+  // Stripe fields
+  stripeSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
 
   customer?: Customer;
   chef?: Chef;
