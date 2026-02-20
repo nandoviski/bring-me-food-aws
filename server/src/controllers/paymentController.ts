@@ -2,8 +2,10 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { stripe } from "../lib/stripe";
 import Stripe from "stripe";
+import { Resend } from "resend";
 
 const prisma = new PrismaClient();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_BASE_URL = process.env.APP_BASE_URL || "http://localhost:3000";
 
@@ -126,7 +128,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           break;
         }
 
-        await prisma.order.update({
+        const updatedOrder = await prisma.order.update({
           where: { id: orderId },
           data: {
             paymentStatus: "PAID",
@@ -136,9 +138,45 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 ? session.payment_intent
                 : session.payment_intent?.id ?? null,
           },
+          include: {
+            chef: { include: { user: { select: { email: true } } } },
+          },
         });
 
         console.log(`[stripe] Order ${orderId} marked as PAID (session ${session.id})`);
+
+        // Notify chef by email that payment was received
+        const chefEmail = updatedOrder.chef?.user?.email;
+        const chefName = updatedOrder.chef?.name ?? "Chef";
+        const grandTotal = updatedOrder.total + updatedOrder.deliveryFee;
+
+        if (chefEmail && process.env.RESEND_API_KEY) {
+          resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || "Bring Me Food <no-reply@bringmefood.com>",
+            to: chefEmail,
+            subject: `💳 Payment received — $${grandTotal.toFixed(2)} for order #${orderId.slice(0, 8)}`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 24px; background: #ffffff;">
+                <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 12px; padding: 28px 32px; margin-bottom: 28px; text-align: center;">
+                  <p style="margin: 0 0 4px; font-size: 13px; color: rgba(255,255,255,0.8);">Payment confirmed via Stripe</p>
+                  <h1 style="margin: 0; font-size: 28px; color: #ffffff; font-weight: 700;">💳 $${grandTotal.toFixed(2)} received!</h1>
+                </div>
+                <p style="color: #555; font-size: 15px;">Hi ${chefName},</p>
+                <p style="color: #555; font-size: 15px;">
+                  Great news — a customer just paid for their order. You can now confirm and prepare it.
+                </p>
+                <div style="background: #f9f9f9; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+                  <p style="margin: 0 0 8px; font-size: 13px; color: #888;">Order ID: <code style="background: #eee; padding: 2px 6px; border-radius: 4px;">${orderId.slice(0, 8)}</code></p>
+                  <p style="margin: 0; font-size: 18px; font-weight: 700; color: #16a34a;">$${grandTotal.toFixed(2)} confirmed</p>
+                </div>
+                <a href="${APP_BASE_URL}/account/chef/orders" style="display: inline-block; background: #e85d04; color: #fff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: 8px; margin-top: 8px;">
+                  View order in dashboard →
+                </a>
+                <p style="margin-top: 28px; font-size: 12px; color: #aaa;">Bring Me Food · Payments powered by Stripe</p>
+              </div>
+            `,
+          }).catch((e: any) => console.error("[stripe] Chef payment notification failed:", e));
+        }
         break;
       }
 

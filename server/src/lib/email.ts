@@ -235,6 +235,7 @@ export interface NewOrderNotificationData {
   notes?: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   dashboardLink: string;
+  paymentStatus?: "PENDING" | "PAID" | "REFUNDED" | "FAILED"; // Set after Stripe session is created
 }
 
 function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
