@@ -26,9 +26,18 @@ export async function createOrder(req: Request, res: Response) {
   try {
     const payload = createOrderSchema.parse(req.body);
 
-    const isGuest = !payload.customerId && !(req as any).user?.id;
+    // If logged in and no explicit customerId, try to find their customer record
+    let resolvedCustomerId = payload.customerId || null;
+    if (!resolvedCustomerId && (req as any).user?.id) {
+      const customerByUser = await prisma.customer.findFirst({
+        where: { userId: (req as any).user.id },
+      });
+      if (customerByUser) resolvedCustomerId = customerByUser.id;
+    }
 
-    // Validate: need either a logged-in customer OR guest details
+    const isGuest = !resolvedCustomerId;
+
+    // Validate: need either a linked customer OR guest details
     if (isGuest) {
       if (!payload.guestName) {
         return res.status(400).json({ message: "guestName is required for guest orders" });
@@ -41,7 +50,7 @@ export async function createOrder(req: Request, res: Response) {
       }
     }
 
-    const customerId = payload.customerId || (req as any).user?.id || null;
+    const customerId = resolvedCustomerId;
 
     let customer = null;
     if (customerId) {

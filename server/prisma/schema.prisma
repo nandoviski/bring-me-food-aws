@@ -18,6 +18,8 @@ model User {
   deletedAt      DateTime?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  resetToken       String?   @db.VarChar(64)
+  resetTokenExpiry DateTime?
   chef           Chef?
   customer       Customer?
 

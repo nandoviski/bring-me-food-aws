@@ -13,31 +13,25 @@ type Props = {
 
 export function ForgotPasswordForm({ onBackToLogin }: Props) {
   const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
     if (!email) return setError("Email is required");
-    if (!newPassword) return setError("New password is required");
-    if (newPassword.length < 8) return setError("Password must be at least 8 characters");
-    if (newPassword !== confirm) return setError("Passwords don't match");
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, newPassword }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Reset failed");
-      setDone(true);
+      if (!res.ok) throw new Error(data.message || "Request failed");
+      setSent(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -45,16 +39,20 @@ export function ForgotPasswordForm({ onBackToLogin }: Props) {
     }
   };
 
-  if (done) {
+  if (sent) {
     return (
-      <div className="space-y-4 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <span className="text-2xl">✓</span>
+      <div className="space-y-4 text-center py-2">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl">
+          ✉️
         </div>
-        <h4 className="font-semibold text-gray-900">Password reset!</h4>
-        <p className="text-sm text-gray-500">You can now sign in with your new password.</p>
-        <Button className="w-full" onClick={onBackToLogin}>
-          Sign In
+        <h4 className="font-semibold text-gray-900">Check your email</h4>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          If <span className="font-medium text-gray-700">{email}</span> has an account,
+          we've sent a password reset link. It expires in 1 hour.
+        </p>
+        <p className="text-xs text-gray-400">Don't see it? Check your spam folder.</p>
+        <Button variant="outline" className="w-full" onClick={onBackToLogin}>
+          Back to Sign In
         </Button>
       </div>
     );
@@ -63,43 +61,17 @@ export function ForgotPasswordForm({ onBackToLogin }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500">
-        Enter your email and choose a new password.
+        Enter your email and we'll send you a link to reset your password.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="reset-email">Email Address</Label>
+          <Label htmlFor="forgot-email">Email Address</Label>
           <Input
-            id="reset-email"
+            id="forgot-email"
             type="email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(null); }}
-            disabled={isLoading}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="reset-new-password">New Password</Label>
-          <Input
-            id="reset-new-password"
-            type="password"
-            placeholder="At least 8 characters"
-            value={newPassword}
-            onChange={(e) => { setNewPassword(e.target.value); setError(null); }}
-            disabled={isLoading}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="reset-confirm-password">Confirm New Password</Label>
-          <Input
-            id="reset-confirm-password"
-            type="password"
-            placeholder="Repeat new password"
-            value={confirm}
-            onChange={(e) => { setConfirm(e.target.value); setError(null); }}
             disabled={isLoading}
             required
           />
@@ -112,7 +84,7 @@ export function ForgotPasswordForm({ onBackToLogin }: Props) {
         )}
 
         <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Resetting…" : "Reset Password"}
+          {isLoading ? "Sending…" : "Send Reset Link"}
         </Button>
       </form>
 
