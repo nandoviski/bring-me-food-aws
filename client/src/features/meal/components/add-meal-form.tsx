@@ -40,6 +40,7 @@ interface Props {
   onMealAdded?: () => void;
   initialData?: EditMealType;
   mealId?: string;
+  initialStockLimit?: number | null;
 }
 
 export default function AddMealForm({
@@ -47,12 +48,15 @@ export default function AddMealForm({
   onMealAdded,
   initialData,
   mealId,
+  initialStockLimit,
 }: Props) {
   const [imagePreview, setImagePreview] = useState(
     initialData?.image ?? "/placeholder.svg?height=200&width=200",
   );
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
-  const [stockLimit, setStockLimit] = useState<string>("");
+  const [stockLimit, setStockLimit] = useState<string>(
+    initialStockLimit != null ? String(initialStockLimit) : ""
+  );
   const [uploadFileTrigger] = useUploadFileMutation();
   const { user: loggedUser } = useAuth();
   const [triggerUpdate, { isLoading: isUpdating }] = useUpdateMealMutation();

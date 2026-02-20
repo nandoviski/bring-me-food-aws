@@ -113,6 +113,7 @@ function MealsTable({ meals, onEditMeal }: MealsTableProps) {
             <TableHead className="font-semibold">Meal</TableHead>
             <TableHead className="font-semibold">Price</TableHead>
             <TableHead className="font-semibold">Size</TableHead>
+            <TableHead className="font-semibold">Stock</TableHead>
             <TableHead className="text-right font-semibold">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -160,6 +161,19 @@ function MealTableRow({ meal, onEdit }: MealTableRowProps) {
       </TableCell>
       <TableCell className="text-slate-600">
         {meal.size ? `${meal.size}g` : "—"}
+      </TableCell>
+      <TableCell>
+        {meal.stockLimit == null ? (
+          <span className="text-xs text-slate-400">Unlimited</span>
+        ) : meal.remainingStock != null && meal.remainingStock <= 0 ? (
+          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+            Sold out
+          </span>
+        ) : (
+          <span className={`text-xs font-medium ${(meal.remainingStock ?? 99) <= 5 ? "text-orange-600" : "text-emerald-600"}`}>
+            {meal.remainingStock} / {meal.stockLimit} left
+          </span>
+        )}
       </TableCell>
       <TableCell className="text-right">
         <MealRowActions meal={meal} onEdit={onEdit} />

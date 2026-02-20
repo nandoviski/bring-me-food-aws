@@ -44,6 +44,7 @@ export default function EditMealDialog({
             allergens: meal.allergens.map((a) => ({ value: a })),
           }}
           mealId={meal.id}
+          initialStockLimit={meal.stockLimit}
         />
       </DialogContent>
     </Dialog>
