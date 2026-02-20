@@ -16,6 +16,8 @@ import type {
 export type ChefStats = {
   revenueThisWeek: number;
   revenueChange: number | null;
+  paidRevenueThisWeek: number;
+  awaitingPaymentCount: number;
   ordersThisWeek: number;
   ordersChange: number | null;
   activeMeals: number;

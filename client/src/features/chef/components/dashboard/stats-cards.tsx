@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, DollarSign, Package, Users, Clock, Mail } from "lucide-react";
+import { ArrowDown, ArrowUp, DollarSign, Package, Users, Clock, Mail, CreditCard } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { useGetChefStatsQuery, useGetSubscribersQuery } from "@/state/api";
@@ -23,8 +23,8 @@ export function StatsCards() {
 
   if (isLoading || !stats) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(5)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {[...Array(6)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="bg-muted h-4 w-24 animate-pulse rounded" />
@@ -40,7 +40,7 @@ export function StatsCards() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {/* Revenue */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -49,7 +49,29 @@ export function StatsCards() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${stats.revenueThisWeek.toFixed(2)}</div>
-          <ChangeLabel change={stats.revenueChange} unit="%" suffix="from last week" />
+          {stats.paidRevenueThisWeek > 0 ? (
+            <p className="text-xs text-emerald-600 mt-0.5">
+              ${stats.paidRevenueThisWeek.toFixed(2)} confirmed paid via Stripe
+            </p>
+          ) : (
+            <ChangeLabel change={stats.revenueChange} unit="%" suffix="from last week" />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Awaiting Payment */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Awaiting Payment</CardTitle>
+          <CreditCard className="text-muted-foreground h-4 w-4" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.awaitingPaymentCount}</div>
+          <p className="text-muted-foreground text-xs">
+            {stats.awaitingPaymentCount === 0
+              ? "All orders paid ✓"
+              : `Order${stats.awaitingPaymentCount === 1 ? "" : "s"} pending payment`}
+          </p>
         </CardContent>
       </Card>
 

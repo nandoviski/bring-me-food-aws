@@ -124,7 +124,7 @@ export const getChefStats = async (req: Request, res: Response): Promise<void> =
     const startOfLastWeek = new Date(startOfThisWeek);
     startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
 
-    const [thisWeekOrders, lastWeekOrders, activeMeals, pendingOrders] = await Promise.all([
+    const [thisWeekOrders, lastWeekOrders, activeMeals, pendingOrders, paidOrdersThisWeek, awaitingPaymentCount] = await Promise.all([
       prisma.order.findMany({
         where: { chefId, createdAt: { gte: startOfThisWeek } },
         select: { total: true, deliveryFee: true, customerId: true },
@@ -135,10 +135,20 @@ export const getChefStats = async (req: Request, res: Response): Promise<void> =
       }),
       prisma.meal.count({ where: { chefId } }),
       prisma.order.count({ where: { chefId, status: "PENDING" } }),
+      // Paid orders this week (Stripe payment confirmed)
+      prisma.order.findMany({
+        where: { chefId, createdAt: { gte: startOfThisWeek }, paymentStatus: "PAID" },
+        select: { total: true, deliveryFee: true },
+      }),
+      // Orders awaiting payment (created but not paid)
+      prisma.order.count({
+        where: { chefId, paymentStatus: "PENDING", status: { not: "CANCELLED" } },
+      }),
     ]);
 
     const revenueThisWeek = thisWeekOrders.reduce((s, o) => s + o.total + o.deliveryFee, 0);
     const revenueLastWeek = lastWeekOrders.reduce((s, o) => s + o.total + o.deliveryFee, 0);
+    const paidRevenueThisWeek = paidOrdersThisWeek.reduce((s, o) => s + o.total + o.deliveryFee, 0);
 
     const revenueChange = revenueLastWeek === 0
       ? null
@@ -157,6 +167,8 @@ export const getChefStats = async (req: Request, res: Response): Promise<void> =
     res.status(200).json({
       revenueThisWeek,
       revenueChange,
+      paidRevenueThisWeek,
+      awaitingPaymentCount,
       ordersThisWeek: thisWeekOrders.length,
       ordersChange,
       activeMeals,
