@@ -25,6 +25,12 @@ export type ChefStats = {
   uniqueCustomersThisWeek: number;
   customersChange: number | null;
 };
+export type DeliveryZones = {
+  deliveryMode: "ALL" | "ZONES";
+  deliveryZones: string[];
+  deliveryCities: string[];
+};
+
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -146,6 +152,18 @@ export const api = createApi({
       query: ({ chefId }) => `chefs/${chefId}/stats`,
       providesTags: ["Chefs"],
     }),
+    getDeliveryZones: build.query<DeliveryZones, { chefId: string }>({
+      query: ({ chefId }) => `chefs/${chefId}/delivery-zones`,
+      providesTags: ["Chefs"],
+    }),
+    updateDeliveryZones: build.mutation<DeliveryZones, { chefId: string; data: DeliveryZones }>({
+      query: ({ chefId, data }) => ({
+        url: `chefs/${chefId}/delivery-zones`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Chefs"],
+    }),
 
     // Customers
     getCustomer: build.query<Customer, { userId: string }>({
@@ -214,7 +232,7 @@ export const api = createApi({
     }),
     // Orders
     createOrder: build.mutation<
-      { orderId: string; status: string; isGuest?: boolean },
+      { orderId: string; status: string; isGuest?: boolean; outsideZone?: boolean; deliverySuburb?: string | null },
       OrderCreate
     >({
       query: (body) => ({
@@ -327,6 +345,8 @@ export const {
   useUpdateOrderStatusMutation,
   useGetChefStatsQuery,
   useGetPopularMealsQuery,
+  useGetDeliveryZonesQuery,
+  useUpdateDeliveryZonesMutation,
   useDistributeMenuMutation,
   useSubscribeToChefMutation,
   useGetSubscribersQuery,

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { sendOrderConfirmationEmail, sendNewOrderNotification } from "../lib/email";
+import { isSuburbAllowed } from "./chefController";
 
 const prisma = new PrismaClient();
 
@@ -15,6 +16,7 @@ const createOrderSchema = z.object({
   meals: z.array(z.object({ mealId: z.string(), quantity: z.number().int().positive() })).min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
+  deliverySuburb: z.string().optional(),  // suburb for zone checking
   deliveryFee: z.number().nonnegative().optional(),
 });
 
@@ -106,6 +108,16 @@ export async function createOrder(req: Request, res: Response) {
       chefId = chefIds[0];
     }
 
+    // Check delivery zone
+    const chef = await prisma.chef.findUnique({
+      where: { id: chefId! },
+      select: { deliveryMode: true, deliveryZones: true, deliveryCities: true },
+    });
+    const deliverySuburb = payload.deliverySuburb?.trim() || null;
+    const outsideZone = deliverySuburb && chef
+      ? !isSuburbAllowed(deliverySuburb, chef.deliveryMode, chef.deliveryZones, chef.deliveryCities)
+      : false;
+
     // Create order and meals in a transaction
     const created = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
@@ -117,6 +129,8 @@ export async function createOrder(req: Request, res: Response) {
           deliveryFee: payload.deliveryFee || 0,
           deliveryAddress,
           notes: payload.notes,
+          deliverySuburb,
+          outsideZone: !!outsideZone,
           // Guest fields
           guestName: isGuest ? payload.guestName : null,
           guestPhone: isGuest ? payload.guestPhone : null,
@@ -209,6 +223,8 @@ export async function createOrder(req: Request, res: Response) {
       deliveryFee: created.deliveryFee,
       grandTotal: created.total + created.deliveryFee,
       isGuest,
+      outsideZone: created.outsideZone,
+      deliverySuburb: created.deliverySuburb,
     });
   } catch (err: any) {
     if (err instanceof z.ZodError) {

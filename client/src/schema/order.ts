@@ -57,6 +57,7 @@ export const createOrderSchema = z.object({
     .min(1),
   notes: z.string().optional(),
   deliveryAddress: z.string().optional(),
+  deliverySuburb: z.string().optional(),
   deliveryFee: z.number().nonnegative().optional(),
 });
 

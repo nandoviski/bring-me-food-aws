@@ -303,3 +303,58 @@ export const getPopularMeals = async (req: Request, res: Response): Promise<void
     res.status(500).json({ message: `Error retrieving popular meals: ${error.message}` });
   }
 };
+
+// GET /chefs/:chefId/delivery-zones
+export const getDeliveryZones = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { chefId } = req.params;
+    const chef = await prisma.chef.findUnique({
+      where: { id: chefId },
+      select: { deliveryMode: true, deliveryZones: true, deliveryCities: true },
+    });
+    if (!chef) { res.status(404).json({ message: "Chef not found" }); return; }
+    res.status(200).json(chef);
+  } catch (error: any) {
+    res.status(500).json({ message: `Error: ${error.message}` });
+  }
+};
+
+// PUT /chefs/:chefId/delivery-zones
+export const updateDeliveryZones = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { chefId } = req.params;
+    const { deliveryMode, deliveryZones, deliveryCities } = req.body;
+
+    if (!["ALL", "ZONES"].includes(deliveryMode)) {
+      res.status(400).json({ message: "deliveryMode must be ALL or ZONES" }); return;
+    }
+
+    const updated = await prisma.chef.update({
+      where: { id: chefId },
+      data: {
+        deliveryMode,
+        deliveryZones: deliveryMode === "ZONES" ? (deliveryZones ?? []) : [],
+        deliveryCities: deliveryMode === "ZONES" ? (deliveryCities ?? []) : [],
+      },
+      select: { deliveryMode: true, deliveryZones: true, deliveryCities: true },
+    });
+
+    res.status(200).json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: `Error: ${error.message}` });
+  }
+};
+
+// Helper: check if a suburb is within a chef's delivery zones
+export function isSuburbAllowed(
+  suburb: string,
+  mode: string,
+  zones: string[],
+  cities: string[],
+): boolean {
+  if (mode === "ALL") return true;
+  const s = suburb.trim().toLowerCase();
+  const inZones = zones.some((z) => z.trim().toLowerCase() === s);
+  const inCities = cities.some((c) => c.trim().toLowerCase() === s);
+  return inZones || inCities;
+}

@@ -95,6 +95,11 @@ function OrderTableRow({ order }: OrderTableRowProps) {
             {order.guestPhone ?? order.customer?.phoneNumber}
           </div>
         )}
+        {(order as any).outsideZone && (
+          <div className="mt-1 inline-flex items-center gap-1 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+            ⚠️ Outside zone{(order as any).deliverySuburb ? ` · ${(order as any).deliverySuburb}` : ""}
+          </div>
+        )}
       </TableCell>
       <TableCell className="text-slate-600">
         {itemCount} item{itemCount !== 1 ? "s" : ""}

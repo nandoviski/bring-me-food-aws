@@ -19,7 +19,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const { cartItems, clearCart } = useShoppingCart();
-  const [confirmation, setConfirmation] = useState<null | { orderId: string }>(
+  const [confirmation, setConfirmation] = useState<null | { orderId: string; outsideZone?: boolean; deliverySuburb?: string | null }>(
     null,
   );
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
@@ -39,6 +39,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
     const address = (formData.get("address") as string) || "";
+    const suburb = (formData.get("suburb") as string) || "";
     const notes = (formData.get("notes") as string) || "";
 
     const payload: OrderCreate = {
@@ -49,6 +50,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
       })),
       notes,
       deliveryAddress: address,
+      deliverySuburb: suburb || undefined,
       chefId: "",
       deliveryFee,
     };
@@ -67,7 +69,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
       }
 
       // Fallback: show confirmation
-      setConfirmation({ orderId: resp.orderId });
+      setConfirmation({ orderId: resp.orderId, outsideZone: resp.outsideZone, deliverySuburb: resp.deliverySuburb });
     } catch (err: any) {
       console.error(err);
       setError(err?.data?.message || "Failed to create order");
@@ -91,6 +93,16 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                     {confirmation.orderId}
                   </span>
                 </p>
+
+                {confirmation.outsideZone && (
+                  <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <p className="font-semibold">⚠️ Your suburb may be outside this chef's delivery area</p>
+                    <p className="mt-1">
+                      Your order from <strong>{confirmation.deliverySuburb}</strong> has been received, but this suburb isn't in the chef's usual delivery zone.
+                      The chef will review your order and may contact you to confirm delivery or suggest a pickup alternative.
+                    </p>
+                  </div>
+                )}
 
                 <div className="mt-4 text-sm text-gray-700">
                   <p className="font-medium text-gray-900">What happens next</p>
@@ -267,18 +279,19 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
 
                     <div>
                       <label
-                        htmlFor="city"
+                        htmlFor="suburb"
                         className="block text-sm/6 font-medium text-gray-700"
                       >
-                        City
+                        Suburb
                       </label>
                       <div className="mt-2">
                         <input
-                          id="city"
-                          name="city"
+                          id="suburb"
+                          name="suburb"
                           type="text"
                           defaultValue={customer.city}
                           autoComplete="address-level2"
+                          placeholder="e.g. Bondi"
                           className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                         />
                       </div>

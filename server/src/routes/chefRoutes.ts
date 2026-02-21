@@ -9,6 +9,8 @@ import {
   getChefStats,
   getAllChefs,
   getPopularMeals,
+  getDeliveryZones,
+  updateDeliveryZones,
 } from "../controllers/chefController";
 
 const router = Router();
@@ -23,5 +25,7 @@ router.get("/:chefId/popular-meals", requireAuth, requireChef, getPopularMeals);
 router.get("/:chefId/menu", getChefsWeeklyMenu);
 router.get("/:username/profile", getChefByUsername);
 router.get("/:username/exists", checkChefUsernameExists);
+router.get("/:chefId/delivery-zones", getDeliveryZones);
+router.put("/:chefId/delivery-zones", requireAuth, requireChef, updateDeliveryZones);
 
 export default router;

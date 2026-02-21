@@ -58,6 +58,10 @@ model Chef {
   specialties  String?   @db.VarChar(250)
   phoneNumber  String?   @db.VarChar(20)
   profileImage String?   @db.VarChar(500)
+  // Delivery zones
+  deliveryMode   String    @default("ALL")  // "ALL" | "ZONES"
+  deliveryZones  String[]  @default([])     // specific suburbs allowed
+  deliveryCities String[]  @default([])     // all suburbs in these cities allowed
   deletedAt    DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -139,6 +143,9 @@ model Order {
   guestName             String?         @db.VarChar(150)
   guestPhone            String?         @db.VarChar(20)
   guestEmail            String?         @db.VarChar(150)
+  // Delivery zone tracking
+  deliverySuburb        String?         @db.VarChar(100)
+  outsideZone           Boolean         @default(false)
   // Stripe payment fields
   stripeSessionId       String?         @db.VarChar(200)
   stripePaymentIntentId String?         @db.VarChar(200)
