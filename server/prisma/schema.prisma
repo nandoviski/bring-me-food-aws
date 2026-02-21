@@ -71,6 +71,7 @@ model Chef {
   menus       Menu[]
   order       Order[]
   subscribers Subscriber[]
+  promoCodes  PromoCode[]
 
   @@index([username])
 }
@@ -146,6 +147,9 @@ model Order {
   // Delivery zone tracking
   deliverySuburb        String?         @db.VarChar(100)
   outsideZone           Boolean         @default(false)
+  // Promo code
+  promoCode             String?         @db.VarChar(50)
+  discountAmount        Float?
   // Stripe payment fields
   stripeSessionId       String?         @db.VarChar(200)
   stripePaymentIntentId String?         @db.VarChar(200)
@@ -178,6 +182,32 @@ enum PaymentStatus {
   PAID
   REFUNDED
   FAILED
+}
+
+model PromoCode {
+  id            String    @id @default(uuid()) @db.VarChar(50)
+  code          String    @db.VarChar(50)
+  chefId        String    @db.VarChar(50)
+  chef          Chef      @relation(fields: [chefId], references: [id])
+  /// PERCENTAGE (0-100) or FIXED (dollar amount)
+  discountType  DiscountType @default(PERCENTAGE)
+  discountValue Float        // e.g. 20 = 20% off, or 5 = $5 off
+  /// Optional usage cap. Null = unlimited.
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  /// Optional expiry. Null = never expires.
+  expiresAt     DateTime?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([code, chefId])
+  @@index([chefId])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
 }
 
 model Subscriber {

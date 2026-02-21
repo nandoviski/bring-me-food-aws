@@ -57,6 +57,7 @@ export const api = createApi({
     "Customers",
     "OrdersByChef",
     "Subscribers",
+    "PromoCodes",
   ],
   endpoints: (build) => ({
     // Meals
@@ -309,6 +310,58 @@ export const api = createApi({
       invalidatesTags: ["MenusByChef"],
     }),
 
+    // Promo codes (chef management)
+    listPromoCodes: build.query<
+      {
+        codes: Array<{
+          id: string;
+          code: string;
+          discountType: "PERCENTAGE" | "FIXED";
+          discountValue: number;
+          maxUses: number | null;
+          usedCount: number;
+          expiresAt: string | null;
+          active: boolean;
+          createdAt: string;
+        }>;
+      },
+      void
+    >({
+      query: () => "promo-codes",
+      providesTags: ["PromoCodes"],
+    }),
+    createPromoCode: build.mutation<
+      { id: string; code: string },
+      {
+        code: string;
+        discountType: "PERCENTAGE" | "FIXED";
+        discountValue: number;
+        maxUses?: number;
+        expiresAt?: string;
+      }
+    >({
+      query: (body) => ({ url: "promo-codes", method: "POST", body }),
+      invalidatesTags: ["PromoCodes"],
+    }),
+    deactivatePromoCode: build.mutation<{ id: string; active: boolean }, { codeId: string }>({
+      query: ({ codeId }) => ({ url: `promo-codes/${codeId}/deactivate`, method: "PATCH" }),
+      invalidatesTags: ["PromoCodes"],
+    }),
+    validatePromoCode: build.mutation<
+      {
+        valid: boolean;
+        code?: string;
+        discountType?: "PERCENTAGE" | "FIXED";
+        discountValue?: number;
+        discountAmount?: number;
+        finalTotal?: number;
+        message?: string;
+      },
+      { code: string; chefId: string; orderTotal: number }
+    >({
+      query: (body) => ({ url: "promo-codes/validate", method: "POST", body }),
+    }),
+
     // Subscribers
     subscribeToChef: build.mutation<
       { message: string; id: string },
@@ -341,6 +394,10 @@ export const api = createApi({
 });
 
 export const {
+  useListPromoCodesQuery,
+  useCreatePromoCodeMutation,
+  useDeactivatePromoCodeMutation,
+  useValidatePromoCodeMutation,
   useCreateMealMutation,
   useUpdateMealMutation,
   useGetMealsByChefQuery,

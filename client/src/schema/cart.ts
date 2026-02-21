@@ -15,6 +15,7 @@ export type ShoppingCartProviderProps = {
 export type ShoppingCartContextType = {
   cartItems: CartItem[];
   cartQuantity: number;
+  cartChefId: string | null; // chefId derived from meals in cart
   increaseItemQuantityByMeal: (meal: Meal) => void;
   increaseItemQuantity: (cartItem: CartItem) => void;
   decreaseItemQuantity: (id: string) => void;

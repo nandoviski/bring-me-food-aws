@@ -2,21 +2,68 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateOrderMutation, useCreateCheckoutSessionMutation } from "@/state/api";
+import { useCreateOrderMutation, useCreateCheckoutSessionMutation, useValidatePromoCodeMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import type { OrderCreate } from "@/schema";
-import { ChevronDownIcon, Package, User } from "lucide-react";
+import { ChevronDownIcon, Package, User, Tag, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function GuestCheckoutForm() {
   const router = useRouter();
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
-  const { cartItems, clearCart } = useShoppingCart();
+  const [validatePromo, { isLoading: isValidatingPromo }] = useValidatePromoCodeMutation();
+  const { cartItems, clearCart, cartChefId } = useShoppingCart();
   const [confirmation, setConfirmation] = useState<null | { orderId: string }>(null);
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Promo code state
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountType: "PERCENTAGE" | "FIXED";
+    discountValue: number;
+    discountAmount: number;
+  } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
   const isSubmitting = isLoading || isCreatingSession;
+  const subtotalBeforePromo = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
+
+  async function handleApplyPromo() {
+    if (!promoInput.trim()) return;
+    if (!cartChefId) {
+      setPromoError("Cannot validate promo — please add items to your cart first");
+      return;
+    }
+    setPromoError(null);
+    try {
+      const result = await validatePromo({
+        code: promoInput.trim(),
+        chefId: cartChefId,
+        orderTotal: subtotalBeforePromo,
+      }).unwrap();
+
+      if (result.valid && result.discountAmount !== undefined) {
+        setAppliedPromo({
+          code: result.code!,
+          discountType: result.discountType!,
+          discountValue: result.discountValue!,
+          discountAmount: result.discountAmount,
+        });
+        setPromoInput("");
+      } else {
+        setPromoError(result.message ?? "Invalid promo code");
+      }
+    } catch (err: any) {
+      setPromoError(err?.data?.message ?? "Could not validate promo code");
+    }
+  }
+
+  function handleRemovePromo() {
+    setAppliedPromo(null);
+    setPromoError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,6 +88,7 @@ export default function GuestCheckoutForm() {
       notes: (formData.get("notes") as string) || undefined,
       deliveryAddress: (formData.get("address") as string) || "",
       deliveryFee,
+      promoCode: appliedPromo?.code,
     };
 
     try {
@@ -100,7 +148,8 @@ export default function GuestCheckoutForm() {
     );
   }
 
-  const subtotal = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
+  const discount = appliedPromo?.discountAmount ?? 0;
+  const subtotalAfterDiscount = Math.max(0, subtotalBeforePromo - discount);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -293,8 +342,69 @@ export default function GuestCheckoutForm() {
               <dl className="space-y-4 border-t border-gray-200 px-4 py-6 sm:px-6">
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-600">Subtotal</dt>
-                  <dd className="text-sm font-medium text-gray-900">${subtotal.toFixed(2)}</dd>
+                  <dd className="text-sm font-medium text-gray-900">${subtotalBeforePromo.toFixed(2)}</dd>
                 </div>
+
+                {/* Promo code input */}
+                {!appliedPromo ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Promo code"
+                          value={promoInput}
+                          onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyPromo())}
+                          className="w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm uppercase placeholder:normal-case placeholder:text-gray-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          disabled={isValidatingPromo || !cartChefId}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        disabled={!promoInput.trim() || isValidatingPromo || !cartChefId}
+                        className="shrink-0 rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                      >
+                        {isValidatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <div className="flex items-center gap-1.5 text-xs text-red-600">
+                        <XCircle className="h-3.5 w-3.5" />
+                        {promoError}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">{appliedPromo.code}</p>
+                        <p className="text-xs text-green-700">
+                          {appliedPromo.discountType === "PERCENTAGE"
+                            ? `${appliedPromo.discountValue}% off`
+                            : `$${appliedPromo.discountValue.toFixed(2)} off`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-green-800">
+                        −${appliedPromo.discountAmount.toFixed(2)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="text-xs text-green-600 hover:text-green-800 underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-600">Delivery</dt>
                   <dd className="text-sm font-medium text-gray-900">${deliveryFee.toFixed(2)}</dd>
@@ -302,7 +412,12 @@ export default function GuestCheckoutForm() {
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-semibold">Total</dt>
                   <dd className="text-base font-semibold text-gray-900">
-                    ${(subtotal + deliveryFee).toFixed(2)}
+                    ${(subtotalAfterDiscount + deliveryFee).toFixed(2)}
+                    {discount > 0 && (
+                      <span className="ml-2 text-xs font-normal text-green-600">
+                        (saved ${discount.toFixed(2)})
+                      </span>
+                    )}
                   </dd>
                 </div>
               </dl>

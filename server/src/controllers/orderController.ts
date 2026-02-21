@@ -19,6 +19,7 @@ const createOrderSchema = z.object({
   deliveryAddress: z.string().optional(),
   deliverySuburb: z.string().optional(),  // suburb for zone checking
   deliveryFee: z.number().nonnegative().optional(),
+  promoCode: z.string().optional(),
 });
 
 const ChefIdParamSchema = z.object({
@@ -90,7 +91,7 @@ export async function createOrder(req: Request, res: Response) {
       }
     }
 
-    const total = payload.meals.reduce((sum, it) => {
+    const subtotal = payload.meals.reduce((sum, it) => {
       const meal = meals.find((m) => m.id === it.mealId)!;
       return sum + meal.price * it.quantity;
     }, 0);
@@ -119,6 +120,31 @@ export async function createOrder(req: Request, res: Response) {
       ? !isSuburbAllowed(deliverySuburb, chef.deliveryMode, chef.deliveryZones, chef.deliveryCities)
       : false;
 
+    // Apply promo code discount if provided
+    let discountAmount = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (payload.promoCode && chefId) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code_chefId: { code: payload.promoCode.toUpperCase(), chefId } },
+      });
+
+      if (promo && promo.active && !(promo.expiresAt && new Date() > promo.expiresAt)) {
+        const usageOk = promo.maxUses === null || promo.usedCount < promo.maxUses;
+        if (usageOk) {
+          if (promo.discountType === "PERCENTAGE") {
+            discountAmount = Math.round((subtotal * (promo.discountValue / 100)) * 100) / 100;
+          } else {
+            discountAmount = Math.min(promo.discountValue, subtotal);
+          }
+          appliedPromoCode = promo.code;
+        }
+      }
+      // If invalid code, we ignore it silently — validation endpoint for the UI to use first
+    }
+
+    const total = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+
     // Create order and meals in a transaction
     const created = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
@@ -136,8 +162,19 @@ export async function createOrder(req: Request, res: Response) {
           guestName: isGuest ? payload.guestName : null,
           guestPhone: isGuest ? payload.guestPhone : null,
           guestEmail: isGuest ? payload.guestEmail : null,
+          // Promo code
+          promoCode: appliedPromoCode,
+          discountAmount: discountAmount > 0 ? discountAmount : null,
         },
       });
+
+      // Increment promo code usedCount if applied
+      if (appliedPromoCode && chefId) {
+        await tx.promoCode.updateMany({
+          where: { code: appliedPromoCode, chefId },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
 
       // Create meal entries with quantity and priceAtPurchase
       for (const mealItem of payload.meals) {
@@ -234,6 +271,9 @@ export async function createOrder(req: Request, res: Response) {
       orderId: created.id,
       status: created.status,
       createdAt: created.createdAt,
+      subtotal,
+      discountAmount: discountAmount > 0 ? discountAmount : undefined,
+      promoCode: appliedPromoCode ?? undefined,
       total: created.total,
       deliveryFee: created.deliveryFee,
       grandTotal: created.total + created.deliveryFee,

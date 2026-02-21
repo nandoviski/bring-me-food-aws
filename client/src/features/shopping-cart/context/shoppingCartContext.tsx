@@ -23,6 +23,7 @@ export function useShoppingCart() {
 export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
   // const [isOpen, setIsOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartChefId, setCartChefId] = useState<string | null>(null);
 
   const cartQuantity = cartItems.reduce(
     (quantity, item) => quantity + item.quantity,
@@ -37,6 +38,10 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
   };
 
   const increaseItemQuantityByMeal = (meal: Meal) => {
+    // Capture the chefId from the meal so checkout forms can validate promo codes
+    if (meal.chefId && !cartChefId) {
+      setCartChefId(meal.chefId);
+    }
     increaseItemQuantity({
       id: meal.id,
       image: meal.image,
@@ -98,12 +103,13 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
         increaseItemQuantityByMeal,
         decreaseItemQuantity,
         removeItem,
-        clearCart: () => setCartItems([]),
+        clearCart: () => { setCartItems([]); setCartChefId(null); },
         // isOpen,
         // openCart,
         // closeCart,
         cartItems,
         cartQuantity,
+        cartChefId,
       }}
     >
       {children}

@@ -59,6 +59,7 @@ export const createOrderSchema = z.object({
   deliveryAddress: z.string().optional(),
   deliverySuburb: z.string().optional(),
   deliveryFee: z.number().nonnegative().optional(),
+  promoCode: z.string().optional(),
 });
 
 export type OrderCreate = z.infer<typeof createOrderSchema>;

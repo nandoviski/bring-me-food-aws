@@ -15,6 +15,7 @@ import {
   BookOpen,
   Plus,
   Users,
+  Tag,
 } from "lucide-react";
 
 export function ChefSidebar() {
@@ -46,6 +47,11 @@ export function ChefSidebar() {
       label: "Subscribers",
       href: "/account/chef/subscribers",
       icon: Users,
+    },
+    {
+      label: "Promo Codes",
+      href: "/account/chef/promo-codes",
+      icon: Tag,
     },
     {
       label: "User account",
