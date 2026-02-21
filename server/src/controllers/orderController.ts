@@ -349,6 +349,7 @@ export async function exportOrdersAsCsv(req: Request, res: Response) {
       const items = o.mealsOnOrders
         .map((m) => `${m.meal.name} x${m.quantity}`)
         .join("; ");
+      const discountStr = o.discountAmount ? `-$${o.discountAmount.toFixed(2)}` : "";
       return [
         escape(o.id),
         escape(new Date(o.createdAt).toLocaleString("en-AU")),
@@ -358,6 +359,9 @@ export async function exportOrdersAsCsv(req: Request, res: Response) {
         escape(o.guestPhone ?? ""),
         escape(o.guestEmail ?? ""),
         escape(items),
+        `${(o.total + (o.discountAmount ?? 0)).toFixed(2)}`,  // subtotal before discount
+        escape(o.promoCode ?? ""),
+        escape(discountStr),
         `${o.total.toFixed(2)}`,
         `${o.deliveryFee.toFixed(2)}`,
         `${(o.total + o.deliveryFee).toFixed(2)}`,
@@ -375,9 +379,12 @@ export async function exportOrdersAsCsv(req: Request, res: Response) {
       "Phone",
       "Email",
       "Items",
-      "Subtotal",
+      "Subtotal (before discount)",
+      "Promo Code",
+      "Discount",
+      "Total (after discount)",
       "Delivery Fee",
-      "Total",
+      "Grand Total",
       "Address",
       "Notes",
     ].join(",");

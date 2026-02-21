@@ -228,24 +228,7 @@ export function Navbar() {
                           className="text-muted-foreground"
                           disabled
                         >
-                          No favorite chefs yet
-                        </DropdownMenuItem>
-                        {/* )} */}
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href="/chef/sarah_kitchen"
-                            className="flex items-center font-medium"
-                          >
-                            Sarah Kitchen
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href="/favorites"
-                            className="flex items-center font-medium"
-                          >
-                            View All Favorites
-                          </Link>
+                          No favourite chefs yet — browse chefs to follow.
                         </DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
