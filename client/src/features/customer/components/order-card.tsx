@@ -42,10 +42,9 @@ const PAYMENT_CONFIG: Record<string, { label: string; className: string; icon?: 
 };
 
 export default function OrderCard({ order }: Props) {
-  const total =
-    (order.meals ?? []).reduce((s, m) => s + (m.price || 0), 0) ||
-    order.total ||
-    0;
+  // Use server-calculated total (includes discount). Fall back to meals sum if needed.
+  const total = order.total || (order.meals ?? []).reduce((s, m) => s + (m.price || 0), 0);
+  const grandTotal = order.total + order.deliveryFee;
   const router = useRouter();
 
   const statusConfig = STATUS_LABEL[order.status] ?? { label: order.status, className: "bg-slate-100 text-slate-600" };
@@ -93,10 +92,14 @@ export default function OrderCard({ order }: Props) {
             <>
               <div className="mt-3 text-xs text-slate-500">Items</div>
               <ul className="mt-1 space-y-0.5">
-                {(order.meals ?? []).map((m) => (
+                {(order.meals ?? []).map((m: any) => (
                   <li key={m.id} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700">{m.name}</span>
-                    <span className="text-slate-500 ml-4">{formatCurrency(m.price)}</span>
+                    <span className="text-slate-700">
+                      {m.quantity && m.quantity > 1 ? `${m.quantity}× ` : ""}{m.name}
+                    </span>
+                    <span className="text-slate-500 ml-4">
+                      {formatCurrency((m.priceAtPurchase ?? m.price) * (m.quantity ?? 1))}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -113,8 +116,15 @@ export default function OrderCard({ order }: Props) {
           )}
 
           <div className="mt-4 w-full border-t border-slate-100 pt-4 text-right">
-            <div className="text-xs text-slate-500">Total</div>
-            <div className="text-lg font-semibold text-slate-900">{formatCurrency(total)}</div>
+            <div className="text-xs text-slate-500">
+              {order.deliveryFee > 0 ? "Items + delivery" : "Total"}
+            </div>
+            <div className="text-lg font-semibold text-slate-900">{formatCurrency(grandTotal)}</div>
+            {(order as any).promoCode && (order as any).discountAmount && (
+              <div className="text-xs text-green-600 mt-0.5">
+                {(order as any).promoCode} saved {formatCurrency((order as any).discountAmount)}
+              </div>
+            )}
 
             <div className="mt-3 flex flex-col gap-2 items-end">
               {showPayButton && (

@@ -53,7 +53,13 @@ export const getCustomerOrders = async (req: Request, res: Response): Promise<vo
 
     const includeConfig = {
       chef: { select: { id: true, name: true, username: true } },
-      mealsOnOrders: { include: { meal: { select: { id: true, name: true, price: true } } } },
+      mealsOnOrders: {
+        select: {
+          quantity: true,
+          priceAtPurchase: true,
+          meal: { select: { id: true, name: true, price: true } },
+        },
+      },
     };
 
     // Fetch both linked orders AND guest orders by email in parallel
@@ -96,7 +102,11 @@ export const getCustomerOrders = async (req: Request, res: Response): Promise<vo
         id: mo.meal.id,
         name: mo.meal.name,
         price: mo.meal.price,
+        quantity: mo.quantity,
+        priceAtPurchase: mo.priceAtPurchase,
       })),
+      promoCode: o.promoCode,
+      discountAmount: o.discountAmount,
     }));
 
     res.status(200).json(mapped);
