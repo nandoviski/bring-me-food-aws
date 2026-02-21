@@ -66,6 +66,64 @@ function buildMenuSmsBody(data: MenuSmsData): string {
   ].join("\n");
 }
 
+export interface OrderNotificationSmsData {
+  chefName: string;
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  total: number;
+  deliveryFee: number;
+  items: Array<{ name: string; quantity: number }>;
+  dashboardLink: string;
+}
+
+/**
+ * SMS notification sent to the chef when a new order arrives.
+ * Concise — just enough to know who ordered and how much.
+ */
+export async function sendOrderNotificationSms(
+  to: string,
+  data: OrderNotificationSmsData,
+): Promise<{ success: boolean; error?: string }> {
+  const twClient = getClient();
+
+  if (!twClient || !FROM) {
+    console.warn("[sms] Twilio not configured — skipping order SMS to chef", to);
+    return { success: false, error: "Twilio not configured" };
+  }
+
+  const grand = (data.total + data.deliveryFee).toFixed(2);
+  const itemList = data.items
+    .slice(0, 3)
+    .map((i) => `${i.quantity}× ${i.name}`)
+    .join(", ");
+  const moreItems = data.items.length > 3 ? ` +${data.items.length - 3} more` : "";
+
+  const body = [
+    `🆕 New order on Bring Me Food!`,
+    ``,
+    `From: ${data.customerName} (${data.customerPhone})`,
+    `${itemList}${moreItems}`,
+    `Total: $${grand}`,
+    ``,
+    `👉 ${data.dashboardLink}`,
+  ].join("\n");
+
+  try {
+    const params: Record<string, string> = { to, body };
+    if (FROM.startsWith("MG")) {
+      params.messagingServiceSid = FROM;
+    } else {
+      params.from = FROM;
+    }
+    await twClient.messages.create(params as any);
+    return { success: true };
+  } catch (err: any) {
+    console.error("[sms] Order notification SMS failed to", to, err?.message ?? err);
+    return { success: false, error: err?.message ?? "Unknown error" };
+  }
+}
+
 export async function sendMenuSms(
   to: string,
   data: MenuSmsData,

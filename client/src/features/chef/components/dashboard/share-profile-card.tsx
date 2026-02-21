@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Link2, Check } from "lucide-react";
+import { ExternalLink, Link2, Check, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
@@ -59,7 +59,7 @@ export function ShareProfileCard() {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 gap-2">
+      <div className="flex shrink-0 flex-wrap gap-2">
         <Button
           size="sm"
           variant="outline"
@@ -77,6 +77,21 @@ export function ShareProfileCard() {
               Copy link
             </>
           )}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 border-green-200 bg-white text-green-700 hover:bg-green-50"
+          asChild
+        >
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`Check out my home cooking page on Bring Me Food! Order your weekly meals here: ${profileUrl}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            WhatsApp
+          </a>
         </Button>
         <Button
           size="sm"

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { sendOrderConfirmationEmail, sendNewOrderNotification } from "../lib/email";
+import { sendOrderNotificationSms, isSmsConfigured } from "../lib/sms";
 import { isSuburbAllowed } from "./chefController";
 
 const prisma = new PrismaClient();
@@ -176,9 +177,9 @@ export async function createOrder(req: Request, res: Response) {
       return { name: meal.name, quantity: m.quantity, price: meal.price };
     });
 
-    // Send emails async (non-blocking)
+    // Send notifications async (non-blocking)
     setImmediate(() => {
-      // 1. Chef gets new-order notification
+      // 1a. Chef gets new-order email
       if (chefWithUser?.user?.email) {
         sendNewOrderNotification({
           chefName: chefWithUser.name,
@@ -194,6 +195,20 @@ export async function createOrder(req: Request, res: Response) {
           items: orderItems,
           dashboardLink: `${appBaseUrl}/account/chef/orders`,
         }).catch((e) => console.error("[email] new order notification error:", e));
+      }
+
+      // 1b. Chef gets new-order SMS (if they have a phone number and Twilio is configured)
+      if (chefWithUser?.phoneNumber && isSmsConfigured()) {
+        sendOrderNotificationSms(chefWithUser.phoneNumber, {
+          chefName: chefWithUser.name,
+          customerName,
+          customerPhone,
+          orderId: created.id,
+          total: created.total,
+          deliveryFee: created.deliveryFee,
+          items: orderItems,
+          dashboardLink: `${appBaseUrl}/account/chef/orders`,
+        }).catch((e) => console.error("[sms] chef order notification error:", e));
       }
 
       // 2. Guest customer gets confirmation if email provided
