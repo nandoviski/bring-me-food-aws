@@ -15,7 +15,7 @@ export default function ChefSubscribersPage() {
   return (
     <MainPageWithHeader
       title="Subscribers"
-      description="People who get your weekly menu by email"
+      description="People who get your weekly menu by email or SMS"
     >
       <SubscribersList />
     </MainPageWithHeader>

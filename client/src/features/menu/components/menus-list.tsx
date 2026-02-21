@@ -65,7 +65,25 @@ export function MenusList({}: MenusListProps) {
     if (!confirm("Send this menu to all your subscribers now?")) return;
     try {
       const result = await triggerDistribute({ menuId }).unwrap();
-      toast.success(result.message || `Sent to ${result.sent} subscriber${result.sent !== 1 ? "s" : ""}`);
+
+      if (result.totalSent === 0 && result.total === 0) {
+        toast.info("No subscribers yet — share your profile to grow your list!");
+        return;
+      }
+
+      // Build a descriptive success message
+      const parts: string[] = [];
+      if (result.emailSent > 0) parts.push(`${result.emailSent} email${result.emailSent !== 1 ? "s" : ""}`);
+      if (result.smsSent > 0) parts.push(`${result.smsSent} SMS`);
+
+      const sentText = parts.length > 0 ? parts.join(" + ") : "0";
+
+      let msg = `✅ Sent to ${sentText}`;
+      if (result.smsSubscribers > 0 && !result.smsConfigured) {
+        msg += ` · ${result.smsSubscribers} subscriber${result.smsSubscribers !== 1 ? "s" : ""} have SMS — add Twilio to send texts`;
+      }
+
+      toast.success(msg);
     } catch (err: any) {
       const msg = err?.data?.message || "Failed to distribute menu";
       toast.error(msg);

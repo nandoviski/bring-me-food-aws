@@ -1,8 +1,9 @@
 "use client";
 
-import { Mail, Users } from "lucide-react";
+import { Mail, Users, Smartphone, SmartphoneNfc } from "lucide-react";
 import { useGetSubscribersQuery } from "@/state/api";
 import { useAuth } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
 
 export function SubscribersList() {
   const { user: loggedUser } = useAuth();
@@ -23,20 +24,30 @@ export function SubscribersList() {
 
   const count = data?.count ?? 0;
   const subscribers = data?.subscribers ?? [];
+  const smsCount = subscribers.filter((s) => s.phone && !s.smsOptedOut).length;
 
   return (
     <div className="space-y-4">
       {/* Stats banner */}
-      <div className="flex items-center gap-4 rounded-xl border border-orange-100 bg-orange-50 p-5">
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-orange-100 bg-orange-50 p-5">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500">
           <Users className="h-6 w-6 text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-2xl font-bold text-slate-900">{count}</p>
           <p className="text-sm text-slate-600">
-            {count === 1 ? "subscriber" : "subscribers"} will receive your next menu email
+            {count === 1 ? "subscriber" : "subscribers"} — email menu updates
           </p>
         </div>
+        {smsCount > 0 && (
+          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2">
+            <Smartphone className="h-4 w-4 text-green-600" />
+            <div>
+              <p className="text-sm font-bold text-green-800">{smsCount}</p>
+              <p className="text-xs text-green-700">SMS subscribers</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* How it works */}
@@ -46,7 +57,7 @@ export function SubscribersList() {
           <h3 className="mb-2 font-semibold text-slate-900">No subscribers yet</h3>
           <p className="mx-auto max-w-sm text-sm text-slate-500">
             Share your chef profile link with customers. Anyone who visits your page can
-            subscribe to get your weekly menu by email.
+            subscribe to get your weekly menu by email or SMS.
           </p>
           <div className="mt-4 rounded-lg bg-slate-50 p-3">
             <p className="text-xs text-slate-400">Your profile link:</p>
@@ -76,6 +87,25 @@ export function SubscribersList() {
                     <p className="truncate text-sm font-medium text-slate-900">{sub.name}</p>
                   )}
                   <p className="truncate text-sm text-slate-500">{sub.email}</p>
+                  {/* Phone / SMS status */}
+                  {sub.phone && (
+                    <div className="mt-1 flex items-center gap-1.5">
+                      {sub.smsOptedOut ? (
+                        <>
+                          <SmartphoneNfc className="h-3 w-3 text-slate-300" />
+                          <span className="text-xs text-slate-400">{sub.phone} · SMS opted out</span>
+                        </>
+                      ) : (
+                        <>
+                          <Smartphone className="h-3 w-3 text-green-500" />
+                          <span className="text-xs text-green-700">{sub.phone}</span>
+                          <Badge variant="secondary" className="bg-green-100 text-green-700 text-[10px] py-0 px-1.5">
+                            SMS
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <p className="shrink-0 text-xs text-slate-400">
                   {new Date(sub.createdAt).toLocaleDateString("en-AU", {

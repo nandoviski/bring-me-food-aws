@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { sendMenuEmail } from "../lib/email";
+import { sendMenuSms, isSmsConfigured } from "../lib/sms";
 
 const prisma = new PrismaClient();
 
@@ -136,13 +137,23 @@ export const distributeMenu = async (req: Request, res: Response): Promise<void>
     // Fetch active subscribers for this chef
     const subscribers = await prisma.subscriber.findMany({
       where: { chefId: chef.id, unsubscribed: false },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        smsOptedOut: true,
+      },
     });
 
     if (subscribers.length === 0) {
       res.status(200).json({
         message: "No subscribers to send to",
-        sent: 0,
-        failed: 0,
+        emailSent: 0,
+        emailFailed: 0,
+        smsSent: 0,
+        smsFailed: 0,
+        total: 0,
       });
       return;
     }
@@ -150,17 +161,23 @@ export const distributeMenu = async (req: Request, res: Response): Promise<void>
     const fmt = (d: Date) =>
       d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" });
 
-    const results = await Promise.allSettled(
+    const startDate = fmt(new Date(menu.startDate));
+    const endDate = fmt(new Date(menu.endDate));
+    const orderTo = menu.orderTo ? fmt(new Date(menu.orderTo)) : undefined;
+    const orderLink = `${appBaseUrl}/chef/${chef.username}`;
+
+    // ── Email distribution ──────────────────────────────────────────────────
+    const emailResults = await Promise.allSettled(
       subscribers.map((sub) =>
         sendMenuEmail(sub.email, {
           chefName: chef.name,
           chefUsername: chef.username,
           menuName: menu.name,
           menuDescription: menu.description,
-          startDate: fmt(new Date(menu.startDate)),
-          endDate: fmt(new Date(menu.endDate)),
+          startDate,
+          endDate,
           orderFrom: menu.orderFrom ? fmt(new Date(menu.orderFrom)) : undefined,
-          orderTo: menu.orderTo ? fmt(new Date(menu.orderTo)) : undefined,
+          orderTo,
           meals: menu.meals.map((m) => ({
             name: m.name,
             description: m.description,
@@ -168,14 +185,38 @@ export const distributeMenu = async (req: Request, res: Response): Promise<void>
             allergens: m.allergens,
             ingredients: m.ingredients,
           })),
-          orderLink: `${appBaseUrl}/chef/${chef.username}`,
+          orderLink,
           unsubscribeLink: `${appBaseUrl}/api/subscribers/${chef.id}/unsubscribe?email=${encodeURIComponent(sub.email)}`,
         }),
       ),
     );
 
-    const sent = results.filter((r) => r.status === "fulfilled" && (r.value as any).success).length;
-    const failed = results.length - sent;
+    const emailSent = emailResults.filter((r) => r.status === "fulfilled" && (r.value as any).success).length;
+    const emailFailed = emailResults.length - emailSent;
+
+    // ── SMS distribution ────────────────────────────────────────────────────
+    const smsSubscribers = subscribers.filter((s) => s.phone && !s.smsOptedOut);
+    let smsSent = 0;
+    let smsFailed = 0;
+
+    if (smsSubscribers.length > 0 && isSmsConfigured()) {
+      const smsResults = await Promise.allSettled(
+        smsSubscribers.map((sub) =>
+          sendMenuSms(sub.phone!, {
+            chefName: chef.name,
+            chefUsername: chef.username,
+            menuName: menu.name,
+            startDate,
+            endDate,
+            orderTo,
+            orderLink,
+            meals: menu.meals.map((m) => ({ name: m.name, price: m.price })),
+          }),
+        ),
+      );
+      smsSent = smsResults.filter((r) => r.status === "fulfilled" && (r.value as any).success).length;
+      smsFailed = smsResults.length - smsSent;
+    }
 
     // Mark as distributed
     await prisma.menu.update({
@@ -183,11 +224,23 @@ export const distributeMenu = async (req: Request, res: Response): Promise<void>
       data: { distributedAt: new Date() },
     });
 
+    const totalSent = emailSent + smsSent;
+    const smsNote = smsSubscribers.length > 0
+      ? ` + ${smsSent} SMS`
+      : !isSmsConfigured() && smsSubscribers.length > 0
+        ? " (SMS skipped — Twilio not configured)"
+        : "";
+
     res.status(200).json({
-      message: `Menu distributed to ${sent} subscriber${sent !== 1 ? "s" : ""}`,
-      sent,
-      failed,
+      message: `Menu distributed — ${emailSent} email${emailSent !== 1 ? "s" : ""}${smsNote}`,
+      emailSent,
+      emailFailed,
+      smsSent,
+      smsFailed,
+      smsSubscribers: smsSubscribers.length,
+      smsConfigured: isSmsConfigured(),
       total: subscribers.length,
+      totalSent,
     });
   } catch (error: any) {
     res.status(500).json({ message: `Error distributing menu: ${error.message}` });

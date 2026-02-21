@@ -3,15 +3,17 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Smartphone } from "lucide-react";
 
 function UnsubscribedContent() {
   const params = useSearchParams();
   const status = params.get("status");
   const chefUsername = params.get("chef");
   const email = params.get("email");
+  const channel = params.get("channel"); // "sms" | null (null = email)
 
   const isError = status === "error";
+  const isSms = channel === "sms";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -22,6 +24,16 @@ function UnsubscribedContent() {
             <h1 className="mb-2 text-xl font-semibold text-gray-900">Something went wrong</h1>
             <p className="text-sm text-gray-500">
               We couldn&apos;t process your unsubscribe request. Please try again later.
+            </p>
+          </>
+        ) : isSms ? (
+          <>
+            <Smartphone className="mx-auto mb-4 h-12 w-12 text-green-500" />
+            <h1 className="mb-2 text-xl font-semibold text-gray-900">SMS opted out</h1>
+            <p className="text-sm text-gray-500">
+              You&apos;ve been removed from this chef&apos;s SMS list.
+              You won&apos;t receive any more menu text messages.
+              Your email subscription (if any) is unchanged.
             </p>
           </>
         ) : (

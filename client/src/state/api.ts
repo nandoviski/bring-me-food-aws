@@ -289,7 +289,17 @@ export const api = createApi({
 
     // Menu distribution
     distributeMenu: build.mutation<
-      { message: string; sent: number; failed: number; total: number },
+      {
+        message: string;
+        emailSent: number;
+        emailFailed: number;
+        smsSent: number;
+        smsFailed: number;
+        smsSubscribers: number;
+        smsConfigured: boolean;
+        total: number;
+        totalSent: number;
+      },
       { menuId: string }
     >({
       query: ({ menuId }) => ({
@@ -302,16 +312,26 @@ export const api = createApi({
     // Subscribers
     subscribeToChef: build.mutation<
       { message: string; id: string },
-      { chefId: string; email: string; name?: string }
+      { chefId: string; email: string; name?: string; phone?: string }
     >({
-      query: ({ chefId, email, name }) => ({
+      query: ({ chefId, email, name, phone }) => ({
         url: `subscribers/${chefId}`,
         method: "POST",
-        body: { email, name },
+        body: { email, name, phone },
       }),
     }),
     getSubscribers: build.query<
-      { count: number; subscribers: Array<{ id: string; email: string; name: string | null; createdAt: string }> },
+      {
+        count: number;
+        subscribers: Array<{
+          id: string;
+          email: string;
+          name: string | null;
+          phone: string | null;
+          smsOptedOut: boolean;
+          createdAt: string;
+        }>;
+      },
       { chefId: string }
     >({
       query: ({ chefId }) => `subscribers/${chefId}`,
