@@ -36,6 +36,7 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin, initialUserType =
     mode: "onBlur",
     defaultValues: {
       userType: "customer",
+      country: "AU",
     },
   });
 
@@ -70,7 +71,7 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin, initialUserType =
         data.password,
         `${data.firstName} ${data.lastName}`,
         "customer",
-        data,
+        { ...data, country: "AU" },
       );
       onSignUpSuccess?.(data.email, data.username);
     } catch (err: any) {
@@ -273,37 +274,20 @@ export function SignUpForm({ onSignUpSuccess, onSwitchToLogin, initialUserType =
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="customer-country">Country</Label>
-                <Input
-                  id="customer-country"
-                  type="text"
-                  placeholder="AU"
-                  {...customerForm.register("country")}
-                  disabled={isLoading}
-                />
-                {customerForm.formState.errors.country && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {customerForm.formState.errors.country.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="customer-postalCode">Postal Code</Label>
-                <Input
-                  id="customer-postalCode"
-                  type="text"
-                  placeholder="1234"
-                  {...customerForm.register("postalCode")}
-                  disabled={isLoading}
-                />
-                {customerForm.formState.errors.postalCode && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {customerForm.formState.errors.postalCode.message}
-                  </p>
-                )}
-              </div>
+            <div>
+              <Label htmlFor="customer-postalCode">Postal Code</Label>
+              <Input
+                id="customer-postalCode"
+                type="text"
+                placeholder="2000"
+                {...customerForm.register("postalCode")}
+                disabled={isLoading}
+              />
+              {customerForm.formState.errors.postalCode && (
+                <p className="mt-1 text-sm text-red-600">
+                  {customerForm.formState.errors.postalCode.message}
+                </p>
+              )}
             </div>
 
             {customerForm.formState.errors.root && (

@@ -90,9 +90,7 @@ export const CustomerSignUpSchema = z
     state: z
       .string({ message: "State is required" })
       .min(2, "State must be at least 2 characters"),
-    country: z
-      .string({ message: "Country is required" })
-      .min(1, "Country is required"),
+    country: z.string().optional(),
     postalCode: z
       .string({ message: "Postal code is required" })
       .min(1, "Postal code is required"),
