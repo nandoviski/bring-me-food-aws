@@ -19,7 +19,9 @@ export function GettingStarted() {
   const chefId = user?.chef?.id ?? "";
 
   const { data: mealsData } = useGetMealsByChefQuery({ chefId }, { skip: !chefId });
+  // Fetch all menus (no filter) so we can detect distributedAt on past menus too
   const { data: menusData } = useGetMenusByChefQuery({ chefId, filter: "upcoming" }, { skip: !chefId });
+  const { data: allMenusData } = useGetMenusByChefQuery({ chefId }, { skip: !chefId });
   const { data: subscriberData } = useGetSubscribersQuery({ chefId }, { skip: !chefId });
 
   if (!user?.chef) return null;
@@ -30,6 +32,7 @@ export function GettingStarted() {
   const hasMeals = (mealsData?.length ?? 0) > 0;
   const hasMenu = (menusData?.length ?? 0) > 0;
   const hasSubscribers = (subscriberData?.count ?? 0) > 0;
+  const hasDistributed = (allMenusData ?? []).some((m: any) => !!m.distributedAt);
 
   const steps: Step[] = [
     {
@@ -66,11 +69,11 @@ export function GettingStarted() {
     },
     {
       id: "distribute",
-      title: "Send your first menu email",
-      description: "Hit 'Publish & Send' on your menu to email all subscribers",
+      title: "Send your first menu",
+      description: "Hit 'Publish & Send' on your menu to notify all subscribers by email and SMS",
       href: "/account/chef/menus",
       cta: "Go to menus",
-      done: false, // We can't easily check this without distributedAt, which is on the menu
+      done: hasDistributed,
     },
   ];
 
