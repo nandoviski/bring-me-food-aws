@@ -310,6 +310,23 @@ export const api = createApi({
       invalidatesTags: ["MenusByChef"],
     }),
 
+    // Revenue trend chart
+    getRevenueTrend: build.query<
+      {
+        days: number;
+        trend: Array<{
+          date: string;
+          revenue: number;
+          paidRevenue: number;
+          orders: number;
+        }>;
+      },
+      { chefId: string; days?: number }
+    >({
+      query: ({ chefId, days = 30 }) => `chefs/${chefId}/revenue-trend?days=${days}`,
+      providesTags: ["OrdersByChef"],
+    }),
+
     // Promo codes (chef management)
     listPromoCodes: build.query<
       {
@@ -394,6 +411,7 @@ export const api = createApi({
 });
 
 export const {
+  useGetRevenueTrendQuery,
   useListPromoCodesQuery,
   useCreatePromoCodeMutation,
   useDeactivatePromoCodeMutation,

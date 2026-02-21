@@ -345,6 +345,67 @@ export const updateDeliveryZones = async (req: Request, res: Response): Promise<
   }
 };
 
+/**
+ * GET /chefs/:chefId/revenue-trend
+ * Returns daily revenue (total + delivery fee) and order count for the last N days (default 30).
+ * Excludes cancelled orders. Chef-authenticated.
+ */
+export const getRevenueTrend = async (req: Request, res: Response): Promise<void> => {
+  const { chefId } = req.params;
+  const days = Math.min(parseInt(String(req.query.days ?? "30"), 10) || 30, 90);
+
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days + 1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        chefId,
+        status: { not: "CANCELLED" },
+        createdAt: { gte: startDate },
+      },
+      select: {
+        createdAt: true,
+        total: true,
+        deliveryFee: true,
+        paymentStatus: true,
+      },
+    });
+
+    // Bucket by day (YYYY-MM-DD in Australia/Sydney time)
+    const buckets: Record<string, { date: string; revenue: number; paidRevenue: number; orders: number }> = {};
+
+    // Prefill all days so gaps show as zero
+    for (let i = 0; i < days; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const key = d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" }); // YYYY-MM-DD
+      const label = d.toLocaleDateString("en-AU", { timeZone: "Australia/Sydney", day: "numeric", month: "short" });
+      buckets[key] = { date: label, revenue: 0, paidRevenue: 0, orders: 0 };
+    }
+
+    for (const o of orders) {
+      const key = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+      if (!buckets[key]) continue;
+      const grand = o.total + o.deliveryFee;
+      buckets[key].revenue += grand;
+      if (o.paymentStatus === "PAID") buckets[key].paidRevenue += grand;
+      buckets[key].orders += 1;
+    }
+
+    const trend = Object.values(buckets).map((b) => ({
+      ...b,
+      revenue: Math.round(b.revenue * 100) / 100,
+      paidRevenue: Math.round(b.paidRevenue * 100) / 100,
+    }));
+
+    res.status(200).json({ days, trend });
+  } catch (err: any) {
+    res.status(500).json({ message: `Error: ${err.message}` });
+  }
+};
+
 // Helper: check if a suburb is within a chef's delivery zones
 export function isSuburbAllowed(
   suburb: string,

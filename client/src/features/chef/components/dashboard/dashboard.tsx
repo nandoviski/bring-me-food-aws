@@ -14,6 +14,7 @@ import { StatsCards } from "./stats-cards";
 import { GettingStarted } from "./getting-started";
 import { PopularMealsCard } from "./popular-meals-card";
 import { ShareProfileCard } from "./share-profile-card";
+import { RevenueChart } from "./revenue-chart";
 import Link from "next/link";
 
 export function ChefDashboard() {
@@ -26,6 +27,7 @@ export function ChefDashboard() {
         <span>Last 7 days</span>
       </Button>
       <StatsCards />
+      <RevenueChart />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4">
           <CardHeader>

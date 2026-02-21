@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, CheckCircle, Truck, XCircle } from "lucide-react";
+import { MoreHorizontal, CheckCircle, Truck, XCircle, MessageSquare, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -100,6 +100,12 @@ function OrderTableRow({ order }: OrderTableRowProps) {
             ⚠️ Outside zone{(order as any).deliverySuburb ? ` · ${(order as any).deliverySuburb}` : ""}
           </div>
         )}
+        {order.notes && (
+          <div className="mt-1 flex items-start gap-1 text-xs text-slate-500 max-w-[200px]">
+            <MessageSquare className="h-3 w-3 shrink-0 mt-0.5 text-slate-400" />
+            <span className="line-clamp-2 italic">{order.notes}</span>
+          </div>
+        )}
       </TableCell>
       <TableCell className="text-slate-600">
         {itemCount} item{itemCount !== 1 ? "s" : ""}
@@ -113,6 +119,15 @@ function OrderTableRow({ order }: OrderTableRowProps) {
       </TableCell>
       <TableCell className="font-semibold text-slate-900">
         ${order.total.toFixed(2)}
+        {order.promoCode && (
+          <div className="mt-1 flex items-center gap-1 text-xs text-green-600">
+            <Tag className="h-3 w-3" />
+            <span>{order.promoCode}</span>
+            {order.discountAmount && (
+              <span className="text-slate-400">(−${order.discountAmount.toFixed(2)})</span>
+            )}
+          </div>
+        )}
       </TableCell>
       <TableCell className="text-right">
         <OrderRowActions

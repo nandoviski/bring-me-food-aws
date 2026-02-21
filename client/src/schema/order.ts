@@ -23,6 +23,9 @@ export interface Order {
   guestName?: string | null;
   guestPhone?: string | null;
   guestEmail?: string | null;
+  // Promo code
+  promoCode?: string | null;
+  discountAmount?: number | null;
   // Stripe fields
   stripeSessionId?: string | null;
   stripePaymentIntentId?: string | null;
