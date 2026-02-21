@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCreateOrderMutation, useCreateCheckoutSessionMutation } from "@/state/api";
+import { useCreateOrderMutation, useCreateCheckoutSessionMutation, useValidatePromoCodeMutation } from "@/state/api";
 import { useShoppingCart } from "@/features/shopping-cart/context/shoppingCartContext";
 import type { Customer, OrderCreate } from "@/schema";
-import { ChevronDownIcon, TrashIcon, AlertCircle } from "lucide-react";
+import { ChevronDownIcon, TrashIcon, AlertCircle, Tag, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 type Props = {
   customer: Customer;
@@ -18,14 +18,52 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
   const paymentCancelled = searchParams.get("payment_cancelled") === "1";
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
-  const { cartItems, clearCart } = useShoppingCart();
+  const [validatePromo, { isLoading: isValidatingPromo }] = useValidatePromoCodeMutation();
+  const { cartItems, clearCart, cartChefId } = useShoppingCart();
   const [confirmation, setConfirmation] = useState<null | { orderId: string; outsideZone?: boolean; deliverySuburb?: string | null }>(
     null,
   );
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Promo code state
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    discountType: "PERCENTAGE" | "FIXED";
+    discountValue: number;
+  } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
   const isSubmitting = isLoading || isCreatingSession;
+  const subtotalBeforePromo = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
+  const discount = appliedPromo?.discountAmount ?? 0;
+
+  async function handleApplyPromo() {
+    if (!promoInput.trim() || !cartChefId) return;
+    setPromoError(null);
+    try {
+      const result = await validatePromo({
+        code: promoInput.trim(),
+        chefId: cartChefId,
+        orderTotal: subtotalBeforePromo,
+      }).unwrap();
+      if (result.valid && result.discountAmount !== undefined) {
+        setAppliedPromo({
+          code: result.code!,
+          discountType: result.discountType!,
+          discountValue: result.discountValue!,
+          discountAmount: result.discountAmount,
+        });
+        setPromoInput("");
+      } else {
+        setPromoError(result.message ?? "Invalid promo code");
+      }
+    } catch (err: any) {
+      setPromoError(err?.data?.message ?? "Could not validate promo code");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,6 +91,7 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
       deliverySuburb: suburb || undefined,
       chefId: "",
       deliveryFee,
+      promoCode: appliedPromo?.code,
     };
 
     try {
@@ -504,32 +543,78 @@ export default function CheckoutForm({ customer, userEmail }: Props) {
                       </li>
                     ))}
                   </ul>
-                  <dl className="space-y-6 border-t border-gray-200 px-4 py-6 sm:px-6">
+                  <dl className="space-y-4 border-t border-gray-200 px-4 py-6 sm:px-6">
                     <div className="flex items-center justify-between">
                       <dt className="text-sm">Subtotal</dt>
                       <dd className="text-sm font-medium text-gray-900">
-                        $
-                        {cartItems
-                          .reduce((s, it) => s + it.price * it.quantity, 0)
-                          .toFixed(2)}
+                        ${subtotalBeforePromo.toFixed(2)}
                       </dd>
                     </div>
+
+                    {/* Promo code */}
+                    {!appliedPromo ? (
+                      <div className="space-y-1.5">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Tag className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                            <input
+                              type="text"
+                              placeholder="Promo code"
+                              value={promoInput}
+                              onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyPromo())}
+                              disabled={isValidatingPromo || !cartChefId}
+                              className="w-full rounded-md border border-gray-300 bg-white pl-8 pr-3 py-1.5 text-sm uppercase placeholder:normal-case focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleApplyPromo}
+                            disabled={!promoInput.trim() || isValidatingPromo || !cartChefId}
+                            className="shrink-0 rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                          >
+                            {isValidatingPromo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
+                          </button>
+                        </div>
+                        {promoError && (
+                          <div className="flex items-center gap-1 text-xs text-red-600">
+                            <XCircle className="h-3 w-3" />{promoError}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <div>
+                            <p className="text-xs font-medium text-green-800">{appliedPromo.code}</p>
+                            <p className="text-xs text-green-700">
+                              {appliedPromo.discountType === "PERCENTAGE" ? `${appliedPromo.discountValue}%` : `$${appliedPromo.discountValue}`} off
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-800">−${appliedPromo.discountAmount.toFixed(2)}</span>
+                          <button type="button" onClick={() => setAppliedPromo(null)} className="text-xs text-green-600 underline hover:text-green-800">
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
-                      <dt className="text-sm">Shipping</dt>
+                      <dt className="text-sm">Delivery</dt>
                       <dd className="text-sm font-medium text-gray-900">
                         ${deliveryFee.toFixed(2)}
                       </dd>
                     </div>
-                    <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+                    <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                       <dt className="text-base font-medium">Total</dt>
                       <dd className="text-base font-medium text-gray-900">
-                        $
-                        {(
-                          cartItems.reduce(
-                            (s, it) => s + it.price * it.quantity,
-                            0,
-                          ) + deliveryFee
-                        ).toFixed(2)}
+                        ${(Math.max(0, subtotalBeforePromo - discount) + deliveryFee).toFixed(2)}
+                        {discount > 0 && (
+                          <span className="ml-2 text-xs font-normal text-green-600">(saved ${discount.toFixed(2)})</span>
+                        )}
                       </dd>
                     </div>
                   </dl>
