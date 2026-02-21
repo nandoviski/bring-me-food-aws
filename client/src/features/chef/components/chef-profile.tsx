@@ -7,7 +7,7 @@ import {
 } from "@/state/api";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock, ShoppingBag } from "lucide-react";
 import { format } from "date-fns";
 import { WeeklyMenu } from "@/features/chef/components/weekly-menu";
 import { SubscribeWidget } from "@/features/chef/components/subscribe-widget";
@@ -109,12 +109,22 @@ export default function ChefProfile({ username }: { username: string }) {
               {currentMenu?.name ?? "Curated for You"}
            </h2>
            {currentMenu && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-gray-500">
-                 <Calendar className="h-4 w-4" />
-                 <p>
-                    {format(new Date(currentMenu.startDate), "MMM d")} -{" "}
-                    {format(new Date(currentMenu.endDate), "MMM d, yyyy")}
-                 </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-gray-500">
+                 <div className="flex items-center gap-2">
+                   <Calendar className="h-4 w-4" />
+                   <p>
+                      {format(new Date(currentMenu.startDate), "MMM d")} –{" "}
+                      {format(new Date(currentMenu.endDate), "MMM d, yyyy")}
+                   </p>
+                 </div>
+                 {(currentMenu as any).orderTo && (
+                   <div className="flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700">
+                     <Clock className="h-3.5 w-3.5" />
+                     <span className="text-sm font-medium">
+                       Order by {format(new Date((currentMenu as any).orderTo), "EEE d MMM")}
+                     </span>
+                   </div>
+                 )}
               </div>
            )}
         </div>
@@ -126,15 +136,14 @@ export default function ChefProfile({ username }: { username: string }) {
         ) : currentMenu ? (
           <WeeklyMenu meals={currentMenu.meals} />
         ) : (
-          <div className="rounded-lg bg-white p-12 text-center shadow-sm">
-            <p className="text-gray-500">
-              No active menu available at this time.
+          <div className="rounded-xl border border-orange-100 bg-orange-50 p-12 text-center">
+            <ShoppingBag className="mx-auto mb-4 h-10 w-10 text-orange-300" />
+            <h3 className="mb-2 text-lg font-semibold text-slate-800">
+              No menu available this week
+            </h3>
+            <p className="mx-auto max-w-sm text-sm text-slate-600">
+              Subscribe below to be the first to know when {chef.name} publishes their next menu — you&apos;ll get it by email and SMS.
             </p>
-            {isOwnProfile && (
-              <Link href="/dashboard/menus" className="mt-4 inline-block">
-                <Button>Create Menu</Button>
-              </Link>
-            )}
           </div>
         )}
 

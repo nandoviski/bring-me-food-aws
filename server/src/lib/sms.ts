@@ -124,6 +124,40 @@ export async function sendOrderNotificationSms(
   }
 }
 
+/**
+ * SMS notification sent to the chef when a Stripe payment is confirmed.
+ */
+export async function sendPaymentConfirmedSms(
+  to: string,
+  data: { chefName: string; orderId: string; grandTotal: number; dashboardLink: string },
+): Promise<{ success: boolean; error?: string }> {
+  const twClient = getClient();
+  if (!twClient || !FROM) return { success: false, error: "Twilio not configured" };
+
+  const body = [
+    `💳 Payment confirmed on Bring Me Food!`,
+    ``,
+    `Order #${data.orderId.slice(0, 8)} — $${data.grandTotal.toFixed(2)} received via Stripe.`,
+    `Ready to prepare!`,
+    ``,
+    `👉 ${data.dashboardLink}`,
+  ].join("\n");
+
+  try {
+    const params: Record<string, string> = { to, body };
+    if (FROM.startsWith("MG")) {
+      params.messagingServiceSid = FROM;
+    } else {
+      params.from = FROM;
+    }
+    await twClient.messages.create(params as any);
+    return { success: true };
+  } catch (err: any) {
+    console.error("[sms] Payment confirmed SMS failed to", to, err?.message ?? err);
+    return { success: false, error: err?.message ?? "Unknown error" };
+  }
+}
+
 export async function sendMenuSms(
   to: string,
   data: MenuSmsData,

@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { stripe } from "../lib/stripe";
 import Stripe from "stripe";
 import { Resend } from "resend";
+import { isSmsConfigured, sendPaymentConfirmedSms } from "../lib/sms";
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -139,7 +140,13 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 : session.payment_intent?.id ?? null,
           },
           include: {
-            chef: { include: { user: { select: { email: true } } } },
+            chef: {
+              select: {
+                name: true,
+                phoneNumber: true,
+                user: { select: { email: true } },
+              },
+            },
           },
         });
 
@@ -176,6 +183,17 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               </div>
             `,
           }).catch((e: any) => console.error("[stripe] Chef payment notification failed:", e));
+        }
+
+        // Also notify chef via SMS if configured
+        const chefPhone = (updatedOrder.chef as any)?.phoneNumber;
+        if (chefPhone && isSmsConfigured()) {
+          sendPaymentConfirmedSms(chefPhone, {
+            chefName,
+            orderId: updatedOrder.id,
+            grandTotal,
+            dashboardLink: `${APP_BASE_URL}/account/chef/orders`,
+          }).catch((e: any) => console.error("[sms] Chef Stripe payment SMS failed:", e));
         }
         break;
       }
