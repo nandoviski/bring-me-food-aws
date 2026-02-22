@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   ChefHatIcon,
   LayoutDashboardIcon,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
@@ -233,6 +234,17 @@ export function Navbar() {
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
 
+                    {user?.isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex items-center">
+                            <Shield className="mr-2 h-4 w-4 text-purple-600" />
+                            <span className="text-purple-600 font-medium">Admin Panel</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => logout()}
@@ -384,6 +396,14 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
 
+                      {user?.isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex items-center">
+                            <Shield className="mr-2 h-4 w-4 text-purple-600" />
+                            <span className="text-purple-600 font-medium">Admin Panel</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         className="flex items-center"
                         onClick={() => logout()}
