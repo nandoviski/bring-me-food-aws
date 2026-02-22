@@ -92,6 +92,39 @@ export const signup = async (req: Request, res: Response) => {
 
     const token = signToken({ sub: user!.id, email: user!.email, isChef: !!user!.chef });
 
+    // Send welcome email to new chefs (non-blocking)
+    if (user!.chef && process.env.RESEND_API_KEY) {
+      const chefName = user!.chef.name || user!.chef.username;
+      const dashboardUrl = `${APP_URL}/account/chef/dashboard`;
+      const profileUrl = `${APP_URL}/chef/${user!.chef.username}`;
+      resend.emails.send({
+        from: process.env.EMAIL_FROM_ORDERS || "onboarding@resend.dev",
+        to: user!.email,
+        subject: `Welcome to Bring Me Food, ${chefName}! 🍽️`,
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fff">
+            <img src="${APP_URL}/logo.png" alt="Bring Me Food" style="height:40px;margin-bottom:24px" />
+            <h2 style="color:#1a2e25;margin:0 0 8px">Welcome, ${chefName}! 🎉</h2>
+            <p style="color:#444;line-height:1.6">Your chef account is ready. Here's how to get started:</p>
+            <ol style="color:#444;line-height:2;padding-left:20px">
+              <li><strong>Add your meals</strong> — upload photos, set prices, add ingredients</li>
+              <li><strong>Create a weekly menu</strong> — group meals into a menu for ordering</li>
+              <li><strong>Share your page</strong> — send your chef link to customers: <a href="${profileUrl}" style="color:#f97316">${profileUrl}</a></li>
+              <li><strong>Set up Stripe</strong> (optional) — accept online payments from your dashboard</li>
+            </ol>
+            <a href="${dashboardUrl}"
+               style="display:inline-block;margin:24px 0;padding:14px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
+              Go to Dashboard →
+            </a>
+            <p style="color:#888;font-size:13px;margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+              Questions? Just reply to this email. We're here to help.<br/>
+              <span style="color:#bbb">Bring Me Food · Sydney, Australia</span>
+            </p>
+          </div>
+        `,
+      }).catch((err: unknown) => console.error("Welcome email error:", err));
+    }
+
     return res.status(201).json({ success: true, token, user: buildUserResponse(user) });
   } catch (err: any) {
     console.error("signup error", err);
