@@ -18,13 +18,18 @@ function ChefCard({
     specialties: string | null;
     profileImage: string | null;
     featured: boolean;
+    available: boolean;
     _count: { meals: number; order: number };
   };
 }) {
   return (
     <Link
       href={`/chef/${chef.username}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md hover:border-orange-200"
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md ${
+        chef.available
+          ? "border-gray-200 hover:border-orange-200"
+          : "border-gray-200 opacity-60 grayscale hover:opacity-80"
+      }`}
     >
       {/* Avatar */}
       <div className="relative flex h-32 items-center justify-center bg-gradient-to-br from-orange-400 to-pink-500">
@@ -37,10 +42,17 @@ function ChefCard({
         ) : (
           <span className="text-5xl font-bold text-white">{chef.name[0]}</span>
         )}
-        {chef.featured && (
+        {chef.featured && chef.available && (
           <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white shadow">
             <Star className="h-3 w-3 fill-white" />
             Featured
+          </span>
+        )}
+        {!chef.available && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white">
+              On Break 🌿
+            </span>
           </span>
         )}
       </div>

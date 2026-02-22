@@ -345,6 +345,7 @@ export const api = createApi({
           specialties: string | null;
           profileImage: string | null;
           featured: boolean;
+          available: boolean;
           _count: { meals: number; order: number };
         }>;
       },
@@ -512,6 +513,14 @@ export const api = createApi({
     getAdminRevenueTrend: build.query<{ success: boolean; trend: Array<{ date: string; revenue: number }>; days: number }, { days?: number }>({
       query: ({ days = 30 } = {}) => `admin/revenue-trend?days=${days}`,
     }),
+    updateChefAvailability: build.mutation<{ id: string; available: boolean }, { chefId: string; available: boolean }>({
+      query: ({ chefId, available }) => ({
+        url: `chefs/${chefId}/availability`,
+        method: "PATCH",
+        body: { available },
+      }),
+      invalidatesTags: ["ChefByUserId"],
+    }),
     toggleFeaturedChef: build.mutation<{ success: boolean; chef: { id: string; name: string; featured: boolean } }, { chefId: string; featured: boolean }>({
       query: ({ chefId, featured }) => ({
         url: `admin/chefs/${chefId}/featured`,
@@ -566,6 +575,7 @@ export const {
   useToggleAdminFlagMutation,
   useGetAdminRevenueTrendQuery,
   useToggleFeaturedChefMutation,
+  useUpdateChefAvailabilityMutation,
 } = api;
 
 /**

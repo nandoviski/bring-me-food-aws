@@ -253,10 +253,11 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
         specialties: true,
         profileImage: true,
         featured: true,
+        available: true,
         _count: { select: { meals: true, order: true } },
       },
-      // Featured chefs appear first, then by popularity
-      orderBy: [{ featured: "desc" }, { order: { _count: "desc" } }],
+      // Featured + available first, then by popularity
+      orderBy: [{ featured: "desc" }, { available: "desc" }, { order: { _count: "desc" } }],
     });
 
     res.status(200).json({ chefs });
@@ -424,3 +425,28 @@ export function isSuburbAllowed(
   const inCities = cities.some((c) => c.trim().toLowerCase() === s);
   return inZones || inCities;
 }
+
+/**
+ * PATCH /chefs/:chefId/availability
+ * Toggle chef's availability (taking orders or on break)
+ */
+export const updateAvailability = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { chefId } = req.params;
+    const { available } = req.body;
+
+    if (typeof available !== "boolean") {
+      res.status(400).json({ message: "available must be a boolean" }); return;
+    }
+
+    const updated = await prisma.chef.update({
+      where: { id: chefId },
+      data: { available },
+      select: { id: true, available: true },
+    });
+
+    res.status(200).json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: `Error: ${error.message}` });
+  }
+};

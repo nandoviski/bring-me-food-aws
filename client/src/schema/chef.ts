@@ -10,6 +10,8 @@ export interface Chef {
   specialties?: string;
   phoneNumber?: string;
   profileImage?: string;
+  featured?: boolean;
+  available?: boolean;
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;

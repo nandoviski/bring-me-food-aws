@@ -15,11 +15,13 @@ import { GettingStarted } from "./getting-started";
 import { PopularMealsCard } from "./popular-meals-card";
 import { ShareProfileCard } from "./share-profile-card";
 import { RevenueChart } from "./revenue-chart";
+import { AvailabilityToggle } from "./availability-toggle";
 import Link from "next/link";
 
 export function ChefDashboard() {
   return (
     <div className="flex-1 space-y-4 overflow-auto">
+      <AvailabilityToggle />
       <ShareProfileCard />
       <GettingStarted />
       <Button variant="outline" size="sm" className="h-8 gap-1">

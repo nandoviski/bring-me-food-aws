@@ -101,6 +101,16 @@ export default function ChefProfile({ username }: { username: string }) {
         </div>
       </div>
 
+      {/* On Break Banner */}
+      {chef.available === false && (
+        <div className="border-b border-yellow-200 bg-yellow-50 py-4 text-center">
+          <p className="text-sm font-medium text-yellow-800">
+            🌿 {chef.name} is currently on a break and not taking new orders.
+            Check back soon!
+          </p>
+        </div>
+      )}
+
       {/* Menu Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="mb-12 text-center">

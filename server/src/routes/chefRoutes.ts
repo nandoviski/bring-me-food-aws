@@ -12,6 +12,7 @@ import {
   getDeliveryZones,
   updateDeliveryZones,
   getRevenueTrend,
+  updateAvailability,
 } from "../controllers/chefController";
 
 const router = Router();
@@ -29,5 +30,6 @@ router.get("/:username/profile", getChefByUsername);
 router.get("/:username/exists", checkChefUsernameExists);
 router.get("/:chefId/delivery-zones", getDeliveryZones);
 router.put("/:chefId/delivery-zones", requireAuth, requireChef, updateDeliveryZones);
+router.patch("/:chefId/availability", requireAuth, requireChef, updateAvailability);
 
 export default router;
