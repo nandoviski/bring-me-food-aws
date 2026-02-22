@@ -21,6 +21,7 @@ import subscriberRoutes from "./routes/subscriberRoutes";
 import paymentRoutes, { stripeWebhookRouter } from "./routes/paymentRoutes";
 import promoCodeRoutes from "./routes/promoCodeRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import rateLimit from "express-rate-limit";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -55,6 +56,34 @@ app.use(
 /* AUTHENTICATION MIDDLEWARE */
 app.use(authMiddleware);
 
+/* RATE LIMITING */
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests — please try again later." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // Stricter for auth endpoints
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many authentication attempts — please try again in 15 minutes." },
+});
+
+const orderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many orders — please slow down and try again later." },
+  skip: (req) => req.method !== "POST",
+});
+
+app.use("/api", generalLimiter);
+
 /* ROUTES */
 const apiRouter = express.Router();
 
@@ -75,13 +104,13 @@ apiRouter.get("/health", async (req, res) => {
   }
 });
 
-apiRouter.use("/auth", authRoutes);
+apiRouter.use("/auth", authLimiter, authRoutes);
 apiRouter.use("/meals", mealRoutes);
 apiRouter.use("/menus", menuRoutes);
 apiRouter.use("/chefs", chefRoutes);
 apiRouter.use("/customers", customerRoutes);
 apiRouter.use("/upload", uploadRoutes);
-apiRouter.use("/orders", orderRoutes);
+apiRouter.use("/orders", orderLimiter, orderRoutes);
 apiRouter.use("/orders", paymentRoutes); // payment routes mount on /orders too (e.g. /orders/:id/checkout)
 apiRouter.use("/subscribers", subscriberRoutes);
 apiRouter.use("/promo-codes", promoCodeRoutes);
