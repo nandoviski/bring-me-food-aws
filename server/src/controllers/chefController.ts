@@ -107,6 +107,8 @@ export const updateChef = async (req: Request, res: Response): Promise<void> => 
       bio: data.bio,
       specialties: data.specialties,
       phoneNumber: data.phoneNumber,
+      instagramUrl: (data as any).instagramUrl ?? undefined,
+      facebookUrl: (data as any).facebookUrl ?? undefined,
     };
 
     // Normalize username

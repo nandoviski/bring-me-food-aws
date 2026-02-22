@@ -302,6 +302,37 @@ export default function EditChefForm({ chef }: Props) {
           )}
         />
 
+        {/* Social media links */}
+        <div className="space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-4">
+          <p className="text-sm font-medium text-gray-700">Social media <span className="text-gray-400 font-normal">(optional — shown on your public profile)</span></p>
+          <FormField
+            control={form.control}
+            name="instagramUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-gray-500">Instagram URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://instagram.com/yourname" type="url" {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="facebookUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-gray-500">Facebook URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://facebook.com/yourpage" type="url" {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <Button
           type="submit"
           disabled={isSaving || isUploading}

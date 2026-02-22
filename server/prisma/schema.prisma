@@ -62,6 +62,8 @@ model Chef {
   // Delivery zones
   featured       Boolean   @default(false)  // Admin can feature chefs on search page
   available      Boolean   @default(true)   // Chef is currently taking orders
+  instagramUrl   String?                    // Optional Instagram profile URL
+  facebookUrl    String?                    // Optional Facebook page URL
   deliveryMode   String    @default("ALL")  // "ALL" | "ZONES"
   deliveryZones  String[]  @default([])     // specific suburbs allowed
   deliveryCities String[]  @default([])     // all suburbs in these cities allowed

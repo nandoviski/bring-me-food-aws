@@ -7,7 +7,7 @@ import {
 } from "@/state/api";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Calendar, Clock, ShoppingBag } from "lucide-react";
+import { Calendar, Clock, ShoppingBag, Instagram, Facebook } from "lucide-react";
 import { format } from "date-fns";
 import { WeeklyMenu } from "@/features/chef/components/weekly-menu";
 import { SubscribeWidget } from "@/features/chef/components/subscribe-widget";
@@ -87,6 +87,34 @@ export default function ChefProfile({ username }: { username: string }) {
                    </span>
                 ))}
              </div>
+          )}
+
+          {/* Social links */}
+          {(chef.instagramUrl || chef.facebookUrl) && (
+            <div className="mt-6 flex justify-center gap-4">
+              {chef.instagramUrl && (
+                <a
+                  href={chef.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-1.5 text-xs text-gray-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Instagram className="h-3.5 w-3.5" />
+                  Instagram
+                </a>
+              )}
+              {chef.facebookUrl && (
+                <a
+                  href={chef.facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-1.5 text-xs text-gray-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Facebook className="h-3.5 w-3.5" />
+                  Facebook
+                </a>
+              )}
+            </div>
           )}
 
           {isOwnProfile && (

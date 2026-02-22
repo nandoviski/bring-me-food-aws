@@ -12,6 +12,8 @@ export interface Chef {
   profileImage?: string;
   featured?: boolean;
   available?: boolean;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -33,4 +35,6 @@ export const EditChefSchema = z.object({
   specialties: z.string().optional(),
   profileImage: z.string().optional(),
   phoneNumber: z.string().optional(),
+  instagramUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  facebookUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
