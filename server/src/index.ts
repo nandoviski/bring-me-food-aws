@@ -20,6 +20,7 @@ import authRoutes from "./routes/authRoutes";
 import subscriberRoutes from "./routes/subscriberRoutes";
 import paymentRoutes, { stripeWebhookRouter } from "./routes/paymentRoutes";
 import promoCodeRoutes from "./routes/promoCodeRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -84,6 +85,7 @@ apiRouter.use("/orders", orderRoutes);
 apiRouter.use("/orders", paymentRoutes); // payment routes mount on /orders too (e.g. /orders/:id/checkout)
 apiRouter.use("/subscribers", subscriberRoutes);
 apiRouter.use("/promo-codes", promoCodeRoutes);
+apiRouter.use("/admin", adminRoutes);
 
 // Mount the router with a prefix
 app.use("/api", apiRouter);

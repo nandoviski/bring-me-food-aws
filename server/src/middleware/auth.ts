@@ -9,6 +9,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     isChef: boolean;
+    isAdmin: boolean;
   };
 }
 
@@ -39,6 +40,7 @@ export async function authMiddleware(
         id: user.id,
         email: user.email,
         isChef: !!user.chef,
+        isAdmin: user.isAdmin,
       };
     }
   } catch {
@@ -67,6 +69,18 @@ export function requireChef(
 ) {
   if (!req.user?.isChef) {
     return res.status(403).json({ success: false, message: "Chef access required" });
+  }
+  next();
+}
+
+/** Require the user to be a platform admin. Returns 403 otherwise. */
+export function requireAdmin(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ success: false, message: "Admin access required" });
   }
   next();
 }

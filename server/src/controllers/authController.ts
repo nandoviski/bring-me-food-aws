@@ -15,6 +15,7 @@ function buildUserResponse(user: any) {
     username: user.username,
     emailVerified: user.emailVerified,
     isChef: !!user.chef,
+    isAdmin: user.isAdmin ?? false,
     chef: user.chef || null,
     customer: user.customer || null,
   };

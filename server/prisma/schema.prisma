@@ -20,6 +20,7 @@ model User {
   updatedAt      DateTime   @updatedAt
   resetToken       String?   @db.VarChar(64)
   resetTokenExpiry DateTime?
+  isAdmin          Boolean   @default(false)
   chef           Chef?
   customer       Customer?
 
