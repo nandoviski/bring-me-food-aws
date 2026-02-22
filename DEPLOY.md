@@ -49,6 +49,13 @@ TMP_PREFIX=uploads/tmp
 # Email (get your key at resend.com — free: 3000 emails/month)
 RESEND_API_KEY=re_your_key_here
 APP_BASE_URL=https://your-vercel-app.vercel.app
+EMAIL_FROM_MENU=menu@bringmefood.app
+EMAIL_FROM_ORDERS=orders@bringmefood.app
+ADMIN_NOTIFICATION_EMAIL=fmarostega@gmail.com
+
+# Stripe (for online payments — see STRIPE.md for setup)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 ### d. Deploy
@@ -101,7 +108,38 @@ To use a custom domain (e.g. `bringmefood.app`), add it in Vercel project settin
 
 ---
 
-## 5. Post-deploy checklist
+## 5. Admin Panel Setup
+
+After deployment, make yourself an admin so you can access `/admin`.
+
+### Option A: Via Railway CLI
+
+```bash
+railway run npx ts-node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+prisma.user.update({
+  where: { email: 'fmarostega@gmail.com' },
+  data: { isAdmin: true }
+}).then(u => { console.log('Done:', u.email); prisma.\$disconnect(); });
+"
+```
+
+### Option B: Via Railway Database Shell
+
+1. Railway → your PostgreSQL service → Connect → psql
+2. Run: `UPDATE "User" SET "isAdmin" = true WHERE email = 'fmarostega@gmail.com';`
+
+### Admin panel environment variables to add:
+
+```
+# Get notified by email when a new chef signs up
+ADMIN_NOTIFICATION_EMAIL=fmarostega@gmail.com
+```
+
+---
+
+## 6. Post-deploy checklist
 
 - [ ] Hit `GET /api/health` — should return `{"status": "ok", "db": "connected"}`
 - [ ] Create a chef account and sign in
@@ -110,6 +148,7 @@ To use a custom domain (e.g. `bringmefood.app`), add it in Vercel project settin
 - [ ] Subscribe to the email list (use your own email)
 - [ ] Click "Publish & Send" on a menu — verify the email arrives
 - [ ] Place a guest order — verify chef receives notification email
+- [ ] Set yourself as admin (see above) → visit `/admin`
 - [ ] Set up custom domain in Vercel
 
 ---
