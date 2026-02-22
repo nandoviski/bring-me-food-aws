@@ -1,10 +1,30 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo } from "react";
 import { useGetAllChefsQuery } from "@/state/api";
 import Link from "next/link";
 import { MapPin, Search, UtensilsCrossed, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
+
+// ─── Cuisine category filters ─────────────────────────────────────────────────
+const CATEGORIES = [
+  { label: "All", keywords: [] },
+  { label: "🍜 Asian", keywords: ["asian", "chinese", "thai", "vietnamese", "korean", "japanese", "sushi", "ramen", "noodle", "dim sum"] },
+  { label: "🍕 Italian", keywords: ["italian", "pasta", "pizza", "risotto", "mediterranean"] },
+  { label: "🍛 Indian", keywords: ["indian", "curry", "biryani", "masala", "tandoor"] },
+  { label: "🌮 Mexican", keywords: ["mexican", "taco", "burrito", "salsa", "guacamole"] },
+  { label: "🥗 Vegan", keywords: ["vegan", "vegetarian", "plant-based", "plant based"] },
+  { label: "🍱 Japanese", keywords: ["japanese", "sushi", "ramen", "bento", "tempura", "teriyaki"] },
+  { label: "🥩 BBQ", keywords: ["bbq", "grill", "barbecue", "smoked", "roast"] },
+  { label: "🥐 Bakery", keywords: ["bakery", "baking", "bread", "pastry", "cake", "dessert"] },
+];
+
+function matchesCategory(specialties: string | null, keywords: string[]): boolean {
+  if (keywords.length === 0) return true;
+  if (!specialties) return false;
+  const lower = specialties.toLowerCase();
+  return keywords.some((kw) => lower.includes(kw));
+}
 
 function ChefCard({
   chef,
@@ -78,7 +98,7 @@ function ChefCard({
             {chef.specialties.split(/,|;/).slice(0, 3).map((s) => (
               <span
                 key={s}
-                className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs text-orange-700 border border-orange-100"
+                className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-0.5 text-xs text-orange-700"
               >
                 {s.trim()}
               </span>
@@ -86,12 +106,14 @@ function ChefCard({
           </div>
         )}
 
-        <div className="mt-auto pt-4 flex items-center gap-4 text-xs text-gray-400">
+        <div className="mt-auto flex items-center gap-4 pt-4 text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <UtensilsCrossed className="h-3.5 w-3.5" />
             {chef._count.meals} meal{chef._count.meals !== 1 ? "s" : ""}
           </span>
-          <span>{chef._count.order} order{chef._count.order !== 1 ? "s" : ""}</span>
+          <span>
+            {chef._count.order} order{chef._count.order !== 1 ? "s" : ""}
+          </span>
         </div>
       </div>
     </Link>
@@ -101,20 +123,27 @@ function ChefCard({
 function ChefDirectory() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState(0); // index into CATEGORIES
 
   const { data, isLoading } = useGetAllChefsQuery(
     { search: debouncedSearch || undefined },
-    { pollingInterval: 0 }
+    { pollingInterval: 0 },
   );
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearch(e.target.value);
-    // Simple debounce
     const timeout = setTimeout(() => setDebouncedSearch(e.target.value), 400);
     return () => clearTimeout(timeout);
   }
 
-  const chefs = data?.chefs ?? [];
+  const allChefs = data?.chefs ?? [];
+
+  // Client-side category filter (backend already handles search)
+  const chefs = useMemo(() => {
+    const cat = CATEGORIES[activeCategory];
+    if (!cat || cat.keywords.length === 0) return allChefs;
+    return allChefs.filter((c) => matchesCategory(c.specialties, cat.keywords));
+  }, [allChefs, activeCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,6 +167,27 @@ function ChefDirectory() {
         </div>
       </div>
 
+      {/* Category pills */}
+      <div className="sticky top-0 z-10 border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-6xl overflow-x-auto px-4 py-3">
+          <div className="flex gap-2 min-w-max">
+            {CATEGORIES.map((cat, i) => (
+              <button
+                key={cat.label}
+                onClick={() => setActiveCategory(i)}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition ${
+                  activeCategory === i
+                    ? "bg-orange-500 text-white shadow"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Chef grid */}
       <div className="mx-auto max-w-6xl px-4 py-12">
         {isLoading ? (
@@ -150,14 +200,16 @@ function ChefDirectory() {
           <div className="py-24 text-center">
             <UtensilsCrossed className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <h2 className="text-xl font-semibold text-gray-900">
-              {debouncedSearch ? `No chefs found for "${debouncedSearch}"` : "No chefs yet"}
+              {debouncedSearch || activeCategory !== 0
+                ? `No chefs found${debouncedSearch ? ` for "${debouncedSearch}"` : ""}${activeCategory !== 0 ? ` in ${CATEGORIES[activeCategory].label}` : ""}`
+                : "No chefs yet"}
             </h2>
             <p className="mt-2 text-gray-500">
-              {debouncedSearch
-                ? "Try a different search term."
+              {debouncedSearch || activeCategory !== 0
+                ? "Try a different search or category."
                 : "Be the first! Sign up as a chef and start selling today."}
             </p>
-            {!debouncedSearch && (
+            {!debouncedSearch && activeCategory === 0 && (
               <Link
                 href="/account/signin?type=chef"
                 className="mt-6 inline-block rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white hover:bg-orange-600"
@@ -171,6 +223,7 @@ function ChefDirectory() {
             <p className="mb-6 text-sm text-gray-500">
               {chefs.length} chef{chefs.length !== 1 ? "s" : ""} available
               {debouncedSearch && ` for "${debouncedSearch}"`}
+              {activeCategory !== 0 && ` · ${CATEGORIES[activeCategory].label}`}
             </p>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {chefs.map((chef) => (
