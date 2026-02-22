@@ -507,6 +507,9 @@ export const api = createApi({
       }),
       invalidatesTags: ["AdminChefs"],
     }),
+    getAdminRevenueTrend: build.query<{ success: boolean; trend: Array<{ date: string; revenue: number }>; days: number }, { days?: number }>({
+      query: ({ days = 30 } = {}) => `admin/revenue-trend?days=${days}`,
+    }),
   }),
 });
 
@@ -551,6 +554,7 @@ export const {
   useGetAdminOrdersQuery,
   useUpdateUserStatusMutation,
   useToggleAdminFlagMutation,
+  useGetAdminRevenueTrendQuery,
 } = api;
 
 /**

@@ -1,8 +1,10 @@
 "use client";
 
-import { useGetAdminStatsQuery } from "@/state/api";
+import { useState } from "react";
+import { useGetAdminStatsQuery, useGetAdminRevenueTrendQuery } from "@/state/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Users,
   ChefHat,
@@ -13,7 +15,16 @@ import {
   CalendarDays,
   Mail,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 }).format(n);
@@ -72,6 +83,86 @@ function paymentBadge(status: string) {
   if (status === "PENDING") return <Badge variant="outline">PENDING</Badge>;
   if (status === "REFUNDED") return <Badge variant="secondary">REFUNDED</Badge>;
   return <Badge variant="destructive">{status}</Badge>;
+}
+
+function RevenueTrendChart() {
+  const [days, setDays] = useState(30);
+  const { data, isLoading } = useGetAdminRevenueTrendQuery({ days });
+
+  const formatted = (data?.trend ?? []).map((d) => ({
+    ...d,
+    label: format(new Date(d.date + "T00:00:00"), "MMM d"),
+  }));
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <TrendingUp className="h-4 w-4 text-orange-500" />
+            Platform Revenue
+          </CardTitle>
+          <div className="flex gap-1">
+            {[7, 30, 90].map((d) => (
+              <Button
+                key={d}
+                size="sm"
+                variant={days === d ? "default" : "outline"}
+                className="h-7 px-2 text-xs"
+                onClick={() => setDays(d)}
+              >
+                {d}d
+              </Button>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex h-40 items-center justify-center text-gray-400 text-sm">
+            Loading chart…
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={formatted} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                tickLine={false}
+                axisLine={false}
+                interval={days <= 7 ? 0 : Math.floor(formatted.length / 6)}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => `$${v}`}
+                width={45}
+              />
+              <Tooltip
+                formatter={(value: number | undefined) => [`$${(value ?? 0).toFixed(2)}`, "Revenue"]}
+                contentStyle={{ fontSize: 12, border: "1px solid #e5e7eb", borderRadius: 6 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#f97316"
+                strokeWidth={2}
+                fill="url(#revenueGrad)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function AdminDashboardPage() {
@@ -149,6 +240,9 @@ export default function AdminDashboardPage() {
           accent="green"
         />
       </div>
+
+      {/* Revenue trend chart */}
+      <RevenueTrendChart />
 
       {/* Recent activity */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">

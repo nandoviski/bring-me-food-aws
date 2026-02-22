@@ -282,3 +282,43 @@ export const getAllOrders = async (
     return res.status(500).json({ success: false, message: "Failed to fetch orders" });
   }
 };
+
+// ─── GET /api/admin/revenue-trend ────────────────────────────────────────────
+export const getRevenueTrend = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const days = Math.min(90, parseInt(req.query.days as string) || 30);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const orders = await prisma.order.findMany({
+      where: { createdAt: { gte: startDate }, paymentStatus: "PAID" },
+      select: { total: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // Group by date
+    const dateMap: Record<string, number> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      dateMap[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const order of orders) {
+      const key = order.createdAt.toISOString().slice(0, 10);
+      if (key in dateMap) {
+        dateMap[key] += order.total;
+      }
+    }
+
+    const trend = Object.entries(dateMap).map(([date, revenue]) => ({ date, revenue: Math.round(revenue * 100) / 100 }));
+
+    return res.json({ success: true, trend, days });
+  } catch (err) {
+    console.error("getRevenueTrend error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch revenue trend" });
+  }
+};

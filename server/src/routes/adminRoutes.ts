@@ -6,6 +6,7 @@ import {
   updateUserStatus,
   toggleAdmin,
   getAllOrders,
+  getRevenueTrend,
 } from "../controllers/adminController";
 
 const router = Router();
@@ -16,6 +17,7 @@ router.use(authMiddleware, requireAuth, requireAdmin);
 router.get("/stats", getPlatformStats);
 router.get("/chefs", getAllChefs);
 router.get("/orders", getAllOrders);
+router.get("/revenue-trend", getRevenueTrend);
 router.patch("/users/:id/status", updateUserStatus);
 router.patch("/users/:id/make-admin", toggleAdmin);
 
