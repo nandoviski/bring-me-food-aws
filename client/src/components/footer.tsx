@@ -79,15 +79,23 @@ export function Footer() {
           <p className="text-xs text-white/50">
             &copy; {new Date().getFullYear()} Bring Me Food. All rights reserved.
           </p>
-          <p className="text-xs text-white/40">
-            Built with ❤️ by{" "}
-            <Link
-              href="mailto:fmarostega@gmail.com"
-              className="text-white/60 hover:text-orange-400 transition-colors"
-            >
-              Fernando Marostega
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="text-xs text-white/40 hover:text-orange-400 transition-colors">
+              Terms
             </Link>
-          </p>
+            <Link href="/privacy" className="text-xs text-white/40 hover:text-orange-400 transition-colors">
+              Privacy
+            </Link>
+            <p className="text-xs text-white/40">
+              Built with ❤️ by{" "}
+              <Link
+                href="mailto:fmarostega@gmail.com"
+                className="text-white/60 hover:text-orange-400 transition-colors"
+              >
+                Fernando Marostega
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
