@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { signToken } from "../utils/jwt";
 import type { AuthenticatedRequest } from "../middleware/auth";
 import { Resend } from "resend";
+import { sendNewChefSignupNotification } from "../lib/email";
 
 const prisma = new PrismaClient();
 
@@ -91,6 +92,18 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     const token = signToken({ sub: user!.id, email: user!.email, isChef: !!user!.chef });
+
+    // Notify admin of new chef signup (non-blocking)
+    if (user!.chef && process.env.ADMIN_NOTIFICATION_EMAIL) {
+      sendNewChefSignupNotification({
+        chefName: user!.chef.name,
+        chefEmail: user!.email,
+        chefUsername: user!.chef.username,
+        chefLocation: user!.chef.location,
+        profileUrl: `${APP_URL}/chef/${user!.chef.username}`,
+        adminDashboardUrl: `${APP_URL}/admin/chefs`,
+      }).catch((e: unknown) => console.error("[email] admin notification error:", e));
+    }
 
     // Send welcome email to new chefs (non-blocking)
     if (user!.chef && process.env.RESEND_API_KEY) {

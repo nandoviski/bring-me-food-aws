@@ -494,3 +494,44 @@ export async function sendOrderStatusUpdateEmail(
     return { success: false, error: err.message };
   }
 }
+
+// Admin notification when a new chef signs up
+export async function sendNewChefSignupNotification(data: {
+  chefName: string;
+  chefEmail: string;
+  chefUsername: string;
+  chefLocation: string;
+  profileUrl: string;
+  adminDashboardUrl: string;
+}): Promise<void> {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (!adminEmail || !process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+    return;
+  }
+
+  await resend.emails.send({
+    from: `Bring Me Food <${SENDER_ORDERS}>`,
+    to: adminEmail,
+    subject: `🆕 New chef signed up: ${data.chefName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff">
+        <h2 style="color:#1a2e25;margin:0 0 16px">New Chef on the Platform! 🎉</h2>
+        <p style="color:#444;margin:0 0 8px"><strong>${data.chefName}</strong> just signed up as a chef.</p>
+        <table cellpadding="0" cellspacing="0" style="margin:16px 0;background:#f9f9f9;border-radius:8px;border:1px solid #eee;padding:16px;width:100%">
+          <tr><td style="padding:4px 0;font-size:14px;color:#666">Email: <strong style="color:#333">${data.chefEmail}</strong></td></tr>
+          <tr><td style="padding:4px 0;font-size:14px;color:#666">Username: <strong style="color:#333">@${data.chefUsername}</strong></td></tr>
+          <tr><td style="padding:4px 0;font-size:14px;color:#666">Location: <strong style="color:#333">${data.chefLocation}</strong></td></tr>
+        </table>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <a href="${data.profileUrl}" style="display:inline-block;padding:10px 20px;background:#f97316;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;margin-right:8px">
+            View Profile →
+          </a>
+          <a href="${data.adminDashboardUrl}" style="display:inline-block;padding:10px 20px;background:#1a2e25;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px">
+            Admin Panel →
+          </a>
+        </div>
+        <p style="color:#bbb;font-size:12px;margin-top:24px">Bring Me Food · Platform Notification</p>
+      </div>
+    `,
+  }).catch((e: unknown) => console.error("[email] admin signup notification error:", e));
+}
