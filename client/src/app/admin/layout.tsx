@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { LayoutDashboard, Users, ShoppingCart, LogOut, ChefHat } from "lucide-react";
+import { LayoutDashboard, Users, ShoppingCart, LogOut, ChefHat, Mail } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/chefs", label: "Chefs", icon: ChefHat },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/subscribers", label: "Subscribers", icon: Mail },
 ];
 
 function AdminSidebar() {

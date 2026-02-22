@@ -352,3 +352,65 @@ export const toggleFeatured = async (
     return res.status(500).json({ success: false, message: "Failed to update featured status" });
   }
 };
+
+// ─── GET /api/admin/subscribers ──────────────────────────────────────────────
+export const getAllSubscribers = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit as string) || 50);
+    const chefId = req.query.chefId as string;
+    const exportCsv = req.query.export === "csv";
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(chefId ? { chefId } : {}),
+    };
+
+    const [subscribers, total] = await Promise.all([
+      prisma.subscriber.findMany({
+        where,
+        skip: exportCsv ? undefined : skip,
+        take: exportCsv ? undefined : limit,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          email: true,
+          unsubscribed: true,
+          createdAt: true,
+          chef: { select: { id: true, name: true, username: true } },
+        },
+      }),
+      prisma.subscriber.count({ where }),
+    ]);
+
+    if (exportCsv) {
+      const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const rows = [
+        ["Email", "Chef Name", "Chef Username", "Subscribed At", "Unsubscribed"],
+        ...subscribers.map((s) => [
+          escape(s.email),
+          escape(s.chef?.name ?? ""),
+          escape(s.chef?.username ?? ""),
+          escape(new Date(s.createdAt).toISOString()),
+          escape(s.unsubscribed ? "Yes" : "No"),
+        ]),
+      ];
+      const csv = rows.map((r) => r.join(",")).join("\n");
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename="subscribers-${new Date().toISOString().slice(0,10)}.csv"`);
+      return res.send(csv);
+    }
+
+    return res.json({
+      success: true,
+      subscribers,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (err) {
+    console.error("getAllSubscribers error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch subscribers" });
+  }
+};

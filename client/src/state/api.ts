@@ -521,6 +521,17 @@ export const api = createApi({
       }),
       invalidatesTags: ["ChefByUserId"],
     }),
+    getAdminSubscribers: build.query<{
+      success: boolean;
+      subscribers: Array<{ id: string; email: string; unsubscribed: boolean; createdAt: string; chef: { id: string; name: string; username: string } }>;
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }, { page?: number; limit?: number; chefId?: string }>({
+      query: ({ page = 1, limit = 50, chefId = "" } = {}) => {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (chefId) params.set("chefId", chefId);
+        return `admin/subscribers?${params.toString()}`;
+      },
+    }),
     toggleFeaturedChef: build.mutation<{ success: boolean; chef: { id: string; name: string; featured: boolean } }, { chefId: string; featured: boolean }>({
       query: ({ chefId, featured }) => ({
         url: `admin/chefs/${chefId}/featured`,
@@ -576,6 +587,7 @@ export const {
   useGetAdminRevenueTrendQuery,
   useToggleFeaturedChefMutation,
   useUpdateChefAvailabilityMutation,
+  useGetAdminSubscribersQuery,
 } = api;
 
 /**
