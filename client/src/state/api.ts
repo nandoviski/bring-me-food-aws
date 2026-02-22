@@ -58,6 +58,7 @@ export type AdminChef = {
   location: string;
   profileImage: string | null;
   deliveryMode: string;
+  featured: boolean;
   createdAt: string;
   user: { id: string; email: string; status: string; isAdmin: boolean; createdAt: string };
   stats: { orders: number; subscribers: number; meals: number; revenue: number };
@@ -343,6 +344,7 @@ export const api = createApi({
           bio: string | null;
           specialties: string | null;
           profileImage: string | null;
+          featured: boolean;
           _count: { meals: number; order: number };
         }>;
       },
@@ -510,6 +512,14 @@ export const api = createApi({
     getAdminRevenueTrend: build.query<{ success: boolean; trend: Array<{ date: string; revenue: number }>; days: number }, { days?: number }>({
       query: ({ days = 30 } = {}) => `admin/revenue-trend?days=${days}`,
     }),
+    toggleFeaturedChef: build.mutation<{ success: boolean; chef: { id: string; name: string; featured: boolean } }, { chefId: string; featured: boolean }>({
+      query: ({ chefId, featured }) => ({
+        url: `admin/chefs/${chefId}/featured`,
+        method: "PATCH",
+        body: { featured },
+      }),
+      invalidatesTags: ["AdminChefs", "Chefs"],
+    }),
   }),
 });
 
@@ -555,6 +565,7 @@ export const {
   useUpdateUserStatusMutation,
   useToggleAdminFlagMutation,
   useGetAdminRevenueTrendQuery,
+  useToggleFeaturedChefMutation,
 } = api;
 
 /**

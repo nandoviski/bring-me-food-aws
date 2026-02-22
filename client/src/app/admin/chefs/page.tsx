@@ -5,6 +5,7 @@ import {
   useGetAdminChefsQuery,
   useUpdateUserStatusMutation,
   useToggleAdminFlagMutation,
+  useToggleFeaturedChefMutation,
   type AdminChef,
 } from "@/state/api";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { MoreHorizontal, Search, ChevronLeft, ChevronRight, ExternalLink, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
@@ -64,6 +65,7 @@ function formatCurrency(n: number) {
 function ChefRow({ chef }: { chef: AdminChef }) {
   const [updateStatus, { isLoading: updatingStatus }] = useUpdateUserStatusMutation();
   const [toggleAdmin, { isLoading: togglingAdmin }] = useToggleAdminFlagMutation();
+  const [toggleFeatured, { isLoading: togglingFeatured }] = useToggleFeaturedChefMutation();
 
   const handleStatusChange = async (status: string) => {
     try {
@@ -84,12 +86,27 @@ function ChefRow({ chef }: { chef: AdminChef }) {
     }
   };
 
+  const handleFeaturedToggle = async () => {
+    try {
+      const newValue = !chef.featured;
+      await toggleFeatured({ chefId: chef.id, featured: newValue }).unwrap();
+      toast.success(newValue ? "Chef is now featured ⭐" : "Removed from featured");
+    } catch {
+      toast.error("Failed to update featured status");
+    }
+  };
+
   return (
     <TableRow>
       <TableCell>
-        <div>
-          <p className="font-medium text-gray-900">{chef.name}</p>
-          <p className="text-xs text-gray-400">@{chef.username}</p>
+        <div className="flex items-center gap-2">
+          {chef.featured && (
+            <Star className="h-3.5 w-3.5 fill-orange-400 text-orange-400" />
+          )}
+          <div>
+            <p className="font-medium text-gray-900">{chef.name}</p>
+            <p className="text-xs text-gray-400">@{chef.username}</p>
+          </div>
         </div>
       </TableCell>
       <TableCell className="text-sm text-gray-600">{chef.user.email}</TableCell>
@@ -98,6 +115,9 @@ function ChefRow({ chef }: { chef: AdminChef }) {
         <StatusBadge status={chef.user.status} />
         {chef.user.isAdmin && (
           <Badge className="ml-1 bg-purple-100 text-purple-700 hover:bg-purple-100">Admin</Badge>
+        )}
+        {chef.featured && (
+          <Badge className="ml-1 bg-orange-100 text-orange-700 hover:bg-orange-100">Featured</Badge>
         )}
       </TableCell>
       <TableCell className="text-sm text-gray-600">
@@ -124,11 +144,16 @@ function ChefRow({ chef }: { chef: AdminChef }) {
           </a>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7" disabled={updatingStatus || togglingAdmin}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" disabled={updatingStatus || togglingAdmin || togglingFeatured}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleFeaturedToggle}>
+                <Star className="mr-2 h-3.5 w-3.5 text-orange-500" />
+                {chef.featured ? "Remove from featured" : "Feature on search page"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleStatusChange("ACTIVE")}>
                 Set Active
               </DropdownMenuItem>

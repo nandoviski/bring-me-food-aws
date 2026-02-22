@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useGetAllChefsQuery } from "@/state/api";
 import Link from "next/link";
-import { MapPin, Search, UtensilsCrossed } from "lucide-react";
+import { MapPin, Search, UtensilsCrossed, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 function ChefCard({
@@ -17,6 +17,7 @@ function ChefCard({
     bio: string | null;
     specialties: string | null;
     profileImage: string | null;
+    featured: boolean;
     _count: { meals: number; order: number };
   };
 }) {
@@ -35,6 +36,12 @@ function ChefCard({
           />
         ) : (
           <span className="text-5xl font-bold text-white">{chef.name[0]}</span>
+        )}
+        {chef.featured && (
+          <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white shadow">
+            <Star className="h-3 w-3 fill-white" />
+            Featured
+          </span>
         )}
       </div>
 

@@ -231,16 +231,19 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
     const { search } = req.query;
 
     const chefs = await prisma.chef.findMany({
-      where: search
-        ? {
-            OR: [
-              { name: { contains: search as string, mode: "insensitive" } },
-              { location: { contains: search as string, mode: "insensitive" } },
-              { specialties: { contains: search as string, mode: "insensitive" } },
-              { username: { contains: search as string, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
+      where: {
+        deletedAt: null,
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search as string, mode: "insensitive" } },
+                { location: { contains: search as string, mode: "insensitive" } },
+                { specialties: { contains: search as string, mode: "insensitive" } },
+                { username: { contains: search as string, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       select: {
         id: true,
         username: true,
@@ -249,9 +252,11 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
         bio: true,
         specialties: true,
         profileImage: true,
+        featured: true,
         _count: { select: { meals: true, order: true } },
       },
-      orderBy: { order: { _count: "desc" } },
+      // Featured chefs appear first, then by popularity
+      orderBy: [{ featured: "desc" }, { order: { _count: "desc" } }],
     });
 
     res.status(200).json({ chefs });

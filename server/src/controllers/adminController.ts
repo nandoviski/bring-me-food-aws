@@ -155,6 +155,7 @@ export const getAllChefs = async (
       location: c.location,
       profileImage: c.profileImage,
       deliveryMode: c.deliveryMode,
+      featured: c.featured,
       createdAt: c.createdAt,
       user: c.user,
       stats: {
@@ -320,5 +321,34 @@ export const getRevenueTrend = async (
   } catch (err) {
     console.error("getRevenueTrend error:", err);
     return res.status(500).json({ success: false, message: "Failed to fetch revenue trend" });
+  }
+};
+
+// ─── PATCH /api/admin/chefs/:id/featured ─────────────────────────────────────
+export const toggleFeatured = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const { featured } = req.body;
+
+    if (typeof featured !== "boolean") {
+      return res.status(400).json({ success: false, message: "featured must be a boolean" });
+    }
+
+    const chef = await prisma.chef.findUnique({ where: { id } });
+    if (!chef) return res.status(404).json({ success: false, message: "Chef not found" });
+
+    const updated = await prisma.chef.update({
+      where: { id },
+      data: { featured },
+      select: { id: true, name: true, featured: true },
+    });
+
+    return res.json({ success: true, chef: updated });
+  } catch (err) {
+    console.error("toggleFeatured error:", err);
+    return res.status(500).json({ success: false, message: "Failed to update featured status" });
   }
 };

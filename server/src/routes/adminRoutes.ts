@@ -7,6 +7,7 @@ import {
   toggleAdmin,
   getAllOrders,
   getRevenueTrend,
+  toggleFeatured,
 } from "../controllers/adminController";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.get("/orders", getAllOrders);
 router.get("/revenue-trend", getRevenueTrend);
 router.patch("/users/:id/status", updateUserStatus);
 router.patch("/users/:id/make-admin", toggleAdmin);
+router.patch("/chefs/:id/featured", toggleFeatured);
 
 export default router;
