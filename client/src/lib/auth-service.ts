@@ -11,6 +11,7 @@ export type AuthUser = {
   username: string | null;
   emailVerified: boolean;
   isChef: boolean;
+  isAdmin: boolean;
   chef: any | null;
   customer: any | null;
 };

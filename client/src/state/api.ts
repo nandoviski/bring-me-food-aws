@@ -31,6 +31,69 @@ export type DeliveryZones = {
   deliveryCities: string[];
 };
 
+export type AdminStats = {
+  success: boolean;
+  stats: {
+    users: { total: number; chefs: number; customers: number };
+    orders: { total: number; pending: number; thisWeek: number; thisMonth: number };
+    revenue: { total: number; thisWeek: number; thisMonth: number };
+    subscribers: { total: number };
+  };
+  recentChefs: Array<{ id: string; name: string; username: string; location: string; createdAt: string }>;
+  recentOrders: Array<{
+    id: string;
+    status: string;
+    paymentStatus: string;
+    total: number;
+    guestName: string | null;
+    createdAt: string;
+    chef: { name: string; username: string };
+  }>;
+};
+
+export type AdminChef = {
+  id: string;
+  name: string;
+  username: string;
+  location: string;
+  profileImage: string | null;
+  deliveryMode: string;
+  createdAt: string;
+  user: { id: string; email: string; status: string; isAdmin: boolean; createdAt: string };
+  stats: { orders: number; subscribers: number; meals: number; revenue: number };
+};
+
+export type AdminChefsResponse = {
+  success: boolean;
+  chefs: AdminChef[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+};
+
+export type AdminOrder = {
+  id: string;
+  status: string;
+  paymentStatus: string;
+  total: number;
+  deliveryFee: number;
+  deliveryAddress: string;
+  guestName: string | null;
+  guestEmail: string | null;
+  guestPhone: string | null;
+  notes: string | null;
+  promoCode: string | null;
+  discountAmount: number | null;
+  createdAt: string;
+  chef: { id: string; name: string; username: string };
+  customer: { firstName: string; lastName: string; user: { email: string } } | null;
+  mealsOnOrders: Array<{ quantity: number; priceAtPurchase: number; meal: { name: string } }>;
+};
+
+export type AdminOrdersResponse = {
+  success: boolean;
+  orders: AdminOrder[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+};
+
 // import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export const api = createApi({
@@ -58,6 +121,8 @@ export const api = createApi({
     "OrdersByChef",
     "Subscribers",
     "PromoCodes",
+    "AdminChefs",
+    "AdminOrders",
   ],
   endpoints: (build) => ({
     // Meals
@@ -407,6 +472,41 @@ export const api = createApi({
       query: ({ chefId }) => `subscribers/${chefId}`,
       providesTags: ["Subscribers"],
     }),
+
+    // ── Admin endpoints ────────────────────────────────────────────────────
+    getAdminStats: build.query<AdminStats, void>({
+      query: () => "admin/stats",
+    }),
+    getAdminChefs: build.query<AdminChefsResponse, { page?: number; limit?: number; search?: string }>({
+      query: ({ page = 1, limit = 20, search = "" } = {}) =>
+        `admin/chefs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
+      providesTags: ["AdminChefs"],
+    }),
+    getAdminOrders: build.query<AdminOrdersResponse, { page?: number; limit?: number; status?: string; paymentStatus?: string }>({
+      query: ({ page = 1, limit = 20, status = "", paymentStatus = "" } = {}) => {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (status) params.set("status", status);
+        if (paymentStatus) params.set("paymentStatus", paymentStatus);
+        return `admin/orders?${params.toString()}`;
+      },
+      providesTags: ["AdminOrders"],
+    }),
+    updateUserStatus: build.mutation<{ success: boolean; user: { id: string; email: string; status: string } }, { userId: string; status: string }>({
+      query: ({ userId, status }) => ({
+        url: `admin/users/${userId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: ["AdminChefs"],
+    }),
+    toggleAdminFlag: build.mutation<{ success: boolean; user: { id: string; email: string; isAdmin: boolean } }, { userId: string; isAdmin: boolean }>({
+      query: ({ userId, isAdmin }) => ({
+        url: `admin/users/${userId}/make-admin`,
+        method: "PATCH",
+        body: { isAdmin },
+      }),
+      invalidatesTags: ["AdminChefs"],
+    }),
   }),
 });
 
@@ -446,6 +546,11 @@ export const {
   useSubscribeToChefMutation,
   useGetSubscribersQuery,
   useGetAllChefsQuery,
+  useGetAdminStatsQuery,
+  useGetAdminChefsQuery,
+  useGetAdminOrdersQuery,
+  useUpdateUserStatusMutation,
+  useToggleAdminFlagMutation,
 } = api;
 
 /**

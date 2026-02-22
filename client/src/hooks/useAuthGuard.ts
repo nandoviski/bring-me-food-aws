@@ -5,6 +5,7 @@ import { useEffect } from "react";
 type AuthGuardOptions = {
   requireChef?: boolean;
   requireCustomer?: boolean;
+  requireAdmin?: boolean;
   redirectTo?: string;
 };
 
@@ -26,6 +27,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
   const {
     requireChef = false,
     requireCustomer = false,
+    requireAdmin = false,
     redirectTo = "/",
   } = options;
 
@@ -40,6 +42,11 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
     }
 
     // Check role requirements
+    if (requireAdmin && !user.isAdmin) {
+      router.push(redirectTo);
+      return;
+    }
+
     if (requireChef && !user.isChef) {
       router.push(redirectTo);
       return;
@@ -49,7 +56,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       router.push(redirectTo);
       return;
     }
-  }, [user, isLoading, requireChef, requireCustomer, router, redirectTo]);
+  }, [user, isLoading, requireChef, requireCustomer, requireAdmin, router, redirectTo]);
 
   return { user, isLoading };
 }
