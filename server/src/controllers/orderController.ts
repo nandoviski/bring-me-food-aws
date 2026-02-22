@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
-import { sendOrderConfirmationEmail, sendNewOrderNotification } from "../lib/email";
+import { sendOrderConfirmationEmail, sendNewOrderNotification, sendOrderStatusUpdateEmail } from "../lib/email";
 import { sendOrderNotificationSms, isSmsConfigured } from "../lib/sms";
 import { isSuburbAllowed } from "./chefController";
 
@@ -302,13 +302,37 @@ export async function updateOrderStatus(req: Request, res: Response) {
       });
     }
 
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        chef: { include: { user: { select: { email: true } } } },
+        customer: { include: { user: { select: { email: true } } } },
+      },
+    });
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     const updated = await prisma.order.update({
       where: { id: orderId },
       data: { status },
     });
+
+    // Send status update email to customer (non-blocking)
+    if (["CONFIRMED", "DELIVERED", "CANCELLED"].includes(status)) {
+      const customerEmail = order.guestEmail ?? order.customer?.user?.email;
+      const customerName = order.guestName ?? (order.customer ? "Customer" : "Customer");
+      if (customerEmail) {
+        const APP_URL = process.env.APP_BASE_URL || "http://localhost:3000";
+        sendOrderStatusUpdateEmail(customerEmail, {
+          customerName,
+          chefName: order.chef?.name ?? "Chef",
+          chefPhone: order.chef?.phoneNumber ?? undefined,
+          orderId: order.id,
+          newStatus: status as "CONFIRMED" | "DELIVERED" | "CANCELLED",
+          total: order.total,
+          trackingLink: `${APP_URL}/order/${order.id}`,
+        }).catch((e: unknown) => console.error("[email] status update error:", e));
+      }
+    }
 
     return res.status(200).json(updated);
   } catch (err) {

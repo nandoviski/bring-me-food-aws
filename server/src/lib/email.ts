@@ -388,3 +388,109 @@ export async function sendMenuEmail(
     return { success: false, error: err.message };
   }
 }
+
+export interface OrderStatusUpdateEmailData {
+  customerName: string;
+  chefName: string;
+  chefPhone?: string;
+  orderId: string;
+  newStatus: "CONFIRMED" | "DELIVERED" | "CANCELLED";
+  total: number;
+  trackingLink?: string;
+}
+
+function buildOrderStatusUpdateHtml(data: OrderStatusUpdateEmailData): string {
+  const statusConfig = {
+    CONFIRMED: {
+      emoji: "✅",
+      headline: "Order Confirmed!",
+      message: `Great news! <strong>${data.chefName}</strong> has confirmed your order. They'll start preparing your food soon.`,
+      color: "#16a34a",
+    },
+    DELIVERED: {
+      emoji: "🎉",
+      headline: "Order Delivered!",
+      message: `Your order from <strong>${data.chefName}</strong> has been marked as delivered. Enjoy your meal!`,
+      color: "#f97316",
+    },
+    CANCELLED: {
+      emoji: "❌",
+      headline: "Order Cancelled",
+      message: `Your order with <strong>${data.chefName}</strong> has been cancelled. If you paid by card, your refund will appear within 5–10 business days.`,
+      color: "#dc2626",
+    },
+  };
+
+  const cfg = statusConfig[data.newStatus];
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><title>${cfg.headline} – Bring Me Food</title></head>
+<body style="margin:0;padding:0;background:#f9f9f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:32px 16px;">
+    <tr><td>
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:${cfg.color};padding:28px 40px;text-align:center;">
+            <p style="margin:0 0 4px;font-size:28px;">${cfg.emoji}</p>
+            <h1 style="margin:0;font-size:24px;color:#fff;font-weight:700;">${cfg.headline}</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 40px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#333;">Hi ${data.customerName},</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#555;">${cfg.message}</p>
+            <p style="margin:0;font-size:13px;color:#999;">Order ID: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">${data.orderId.slice(0, 8).toUpperCase()}</code></p>
+            ${data.chefPhone && data.newStatus === "CONFIRMED" ? `
+            <p style="margin:16px 0 0;font-size:13px;color:#888;">
+              Questions? Contact ${data.chefName} directly: <strong>${data.chefPhone}</strong>
+            </p>` : ""}
+          </td>
+        </tr>
+        ${data.trackingLink && data.newStatus !== "CANCELLED" ? `
+        <tr>
+          <td style="padding:0 40px 28px;text-align:center;">
+            <a href="${data.trackingLink}" style="display:inline-block;background:${cfg.color};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:8px;">
+              View Order Details →
+            </a>
+          </td>
+        </tr>` : ""}
+        <tr>
+          <td style="background:#f5f5f5;padding:16px 40px;text-align:center;border-top:1px solid #eee;">
+            <p style="margin:0;font-size:12px;color:#999;">Bring Me Food · Thanks for supporting local home cooks!</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendOrderStatusUpdateEmail(
+  to: string,
+  data: OrderStatusUpdateEmailData,
+): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  const subjects: Record<string, string> = {
+    CONFIRMED: `✅ ${data.chefName} confirmed your order!`,
+    DELIVERED: `🎉 Your order has been delivered — enjoy!`,
+    CANCELLED: `Your order has been cancelled`,
+  };
+
+  try {
+    await resend.emails.send({
+      from: `Bring Me Food Orders <${SENDER_ORDERS}>`,
+      to,
+      subject: subjects[data.newStatus] ?? `Order update from ${data.chefName}`,
+      html: buildOrderStatusUpdateHtml(data),
+    });
+    return { success: true };
+  } catch (err: any) {
+    console.error("[email] Order status update email failed:", err);
+    return { success: false, error: err.message };
+  }
+}
