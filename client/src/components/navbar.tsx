@@ -295,21 +295,20 @@ export function Navbar() {
               >
                 How It Works
               </Link>
-              {/* Cart — always visible in mobile menu */}
-              <ShoppingCartSheet onOpen={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start ${navLinkClass} hover:bg-white/10`}
-                >
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Cart
-                  {cartQuantity > 0 && (
-                    <span className="bg-secondary ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
-                      {cartQuantity}
-                    </span>
-                  )}
-                </Button>
-              </ShoppingCartSheet>
+              {/* Cart — navigates to full cart page on mobile */}
+              <Link
+                href="/cart"
+                className={`flex items-center font-medium transition-colors ${navLinkClass}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Cart
+                {cartQuantity > 0 && (
+                  <span className="bg-secondary ml-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                    {cartQuantity}
+                  </span>
+                )}
+              </Link>
               {user && (
                 <>
                   <Link
