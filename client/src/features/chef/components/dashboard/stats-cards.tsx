@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowDown, ArrowUp, DollarSign, Package, Users, Clock, Mail, CreditCard } from "lucide-react";
+import { ArrowDown, ArrowUp, DollarSign, Package, Users, Clock, Mail, CreditCard, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { useGetChefStatsQuery, useGetSubscribersQuery } from "@/state/api";
+import { useGetChefStatsQuery, useGetSubscribersQuery, useGetMyReviewsQuery } from "@/state/api";
+import { StarRating } from "@/features/review/components/star-rating";
+import Link from "next/link";
 
 export function StatsCards() {
   const { user } = useAuth();
@@ -19,12 +21,18 @@ export function StatsCards() {
     { skip: !chefId }
   );
 
+  const { data: reviewData } = useGetMyReviewsQuery(
+    { limit: 1 },
+    { skip: !chefId }
+  );
+
   const subscriberCount = subscriberData?.count ?? 0;
+  const reviewStats = reviewData?.stats;
 
   if (isLoading || !stats) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {[...Array(6)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {[...Array(7)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="bg-muted h-4 w-24 animate-pulse rounded" />
@@ -40,7 +48,7 @@ export function StatsCards() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {/* Revenue */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -130,6 +138,37 @@ export function StatsCards() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Reviews */}
+      <Link href="/account/chef/reviews" className="block">
+        <Card className="h-full transition hover:shadow-md cursor-pointer">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Your Rating</CardTitle>
+            <Star className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            {reviewStats && reviewStats.reviewCount > 0 ? (
+              <>
+                <div className="text-2xl font-bold">
+                  {reviewStats.averageRating?.toFixed(1) ?? "—"}
+                  <span className="ml-1 text-base font-normal text-gray-400">/ 5</span>
+                </div>
+                <div className="mt-1.5">
+                  <StarRating rating={Math.round(reviewStats.averageRating ?? 0)} size="sm" />
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? "s" : ""}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">—</div>
+                <p className="text-muted-foreground text-xs mt-1">No reviews yet</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
     </div>
   );
 }
