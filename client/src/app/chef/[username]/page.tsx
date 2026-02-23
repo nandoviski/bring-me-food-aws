@@ -34,11 +34,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         type: "profile",
         siteName: "Bring Me Food",
+        ...(chef.profileImage
+          ? { images: [{ url: chef.profileImage, width: 600, height: 600, alt: chef.name }] }
+          : {}),
       },
       twitter: {
-        card: "summary",
+        card: chef.profileImage ? "summary_large_image" : "summary",
         title,
         description,
+        ...(chef.profileImage ? { images: [chef.profileImage] } : {}),
       },
     };
   } catch {

@@ -48,6 +48,7 @@ model Customer {
   userId      String    @unique @db.VarChar(50)
   user        User      @relation(fields: [userId], references: [id])
   order       Order[]
+  reviews     Review[]
 }
 
 model Chef {
@@ -77,6 +78,7 @@ model Chef {
   order       Order[]
   subscribers Subscriber[]
   promoCodes  PromoCode[]
+  reviews     Review[]
 
   @@index([username])
 }
@@ -165,6 +167,7 @@ model Order {
   customerId            String?         @db.VarChar(50)
   customer              Customer?       @relation(fields: [customerId], references: [id])
   mealsOnOrders         MealsOnOrders[]
+  review                Review?
 }
 
 enum UserStatus {
@@ -213,6 +216,28 @@ model PromoCode {
 enum DiscountType {
   PERCENTAGE
   FIXED
+}
+
+model Review {
+  id          String   @id @default(uuid()) @db.VarChar(50)
+  chefId      String   @db.VarChar(50)
+  chef        Chef     @relation(fields: [chefId], references: [id])
+  orderId     String?  @db.VarChar(50) @unique  // optional link to an order (prevents double-reviews per order)
+  order       Order?   @relation(fields: [orderId], references: [id])
+  /// Logged-in customer who left the review (null for guest reviews)
+  customerId  String?  @db.VarChar(50)
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  /// Display name when customer or guest name not available
+  authorName  String   @db.VarChar(150)
+  rating      Int      // 1–5
+  comment     String?  @db.VarChar(1000)
+  /// Admin can hide individual reviews
+  hidden      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([chefId])
+  @@index([customerId])
 }
 
 model Subscriber {

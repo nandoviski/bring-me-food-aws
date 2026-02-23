@@ -10,6 +10,11 @@ import {
   toggleFeatured,
   getAllSubscribers,
 } from "../controllers/adminController";
+import {
+  adminListReviews,
+  adminToggleReviewVisibility,
+  adminDeleteReview,
+} from "../controllers/reviewController";
 
 const router = Router();
 
@@ -24,5 +29,10 @@ router.patch("/users/:id/status", updateUserStatus);
 router.patch("/users/:id/make-admin", toggleAdmin);
 router.patch("/chefs/:id/featured", toggleFeatured);
 router.get("/subscribers", getAllSubscribers);
+
+// Reviews
+router.get("/reviews", adminListReviews);
+router.patch("/reviews/:id/visibility", adminToggleReviewVisibility);
+router.delete("/reviews/:id", adminDeleteReview);
 
 export default router;

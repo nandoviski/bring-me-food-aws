@@ -21,6 +21,7 @@ import subscriberRoutes from "./routes/subscriberRoutes";
 import paymentRoutes, { stripeWebhookRouter } from "./routes/paymentRoutes";
 import promoCodeRoutes from "./routes/promoCodeRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import reviewRoutes from "./routes/reviewRoutes";
 import rateLimit from "express-rate-limit";
 
 /* CONFIGURATIONS */
@@ -115,6 +116,7 @@ apiRouter.use("/orders", paymentRoutes); // payment routes mount on /orders too 
 apiRouter.use("/subscribers", subscriberRoutes);
 apiRouter.use("/promo-codes", promoCodeRoutes);
 apiRouter.use("/admin", adminRoutes);
+apiRouter.use("/reviews", reviewRoutes);
 
 // Mount the router with a prefix
 app.use("/api", apiRouter);
