@@ -41,7 +41,7 @@ export default function ShoppingCartSheet({ children }: Props) {
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="flex h-full flex-col p-0" side="right">
+      <SheetContent className="flex h-full w-full flex-col p-0 sm:max-w-sm" side="right">
         <SheetHeader className="border-b p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

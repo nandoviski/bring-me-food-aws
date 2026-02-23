@@ -75,7 +75,7 @@ export default function ChefProfile({ username }: { username: string }) {
               </div>
             )}
           </div>
-          <h1 className="mb-4 font-serif text-5xl font-medium tracking-tight md:text-6xl">
+          <h1 className="mb-4 font-serif text-3xl font-medium tracking-tight sm:text-5xl md:text-6xl">
             {chef.name}
           </h1>
           <p className="mx-auto mb-4 max-w-2xl text-lg text-gray-300 leading-relaxed">

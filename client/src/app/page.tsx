@@ -75,8 +75,8 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Testimonial card */}
-                <div className="absolute top-0 right-0 max-w-[280px] rounded-2xl bg-white/95 p-6 shadow-xl backdrop-blur-sm md:max-w-[320px]">
+                {/* Testimonial card — hidden on mobile to avoid overlap */}
+                <div className="absolute top-0 right-0 hidden max-w-[280px] rounded-2xl bg-white/95 p-6 shadow-xl backdrop-blur-sm sm:block md:max-w-[320px]">
                   <div className="mb-3 flex gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star

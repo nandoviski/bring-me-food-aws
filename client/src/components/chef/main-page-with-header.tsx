@@ -34,7 +34,7 @@ export default function MainPageWithHeader({
                 Back
               </Button>
             )}
-            <h1 className="text-4xl font-normal text-[#1F2937]">{title}</h1>
+            <h1 className="text-2xl font-normal text-[#1F2937] sm:text-4xl">{title}</h1>
             <div className="text-admin-dark-gray flex items-center gap-2 text-sm">
               <span>{description}</span>
               <Info className="h-4 w-4 text-[#9CA3AF]" />
@@ -44,7 +44,7 @@ export default function MainPageWithHeader({
       </div>
 
       {/* Content */}
-      <div className="px-8 pt-4 pb-8">{children}</div>
+      <div className="px-4 pt-4 pb-8 sm:px-8">{children}</div>
     </div>
   );
 }

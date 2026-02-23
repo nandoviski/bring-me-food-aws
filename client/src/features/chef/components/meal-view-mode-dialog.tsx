@@ -41,7 +41,7 @@ export default function MealViewModeDialog({ meal }: Props) {
           View More
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-2xl overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle>{meal.name}</DialogTitle>
         </DialogHeader>

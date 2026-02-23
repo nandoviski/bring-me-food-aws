@@ -26,7 +26,7 @@ export default function MealItem({ meal }: Props) {
       key={meal.id}
       className="group overflow-hidden border-0 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-44 overflow-hidden sm:h-56">
         
         <Image
           src={
@@ -54,7 +54,7 @@ export default function MealItem({ meal }: Props) {
         )}
       </div>
       
-      <CardContent className="flex h-[200px] flex-col justify-between p-6">
+      <CardContent className="flex min-h-[180px] flex-col justify-between p-4 sm:p-6">
         <div>
           <div className="mb-2 flex items-start justify-between">
             <h3 className="font-serif text-xl font-medium text-[#1a2e25] line-clamp-1">
