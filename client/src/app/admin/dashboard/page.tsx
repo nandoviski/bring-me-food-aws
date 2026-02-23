@@ -14,6 +14,7 @@ import {
   Bell,
   CalendarDays,
   Mail,
+  Star,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import {
@@ -223,6 +224,19 @@ export default function AdminDashboardPage() {
           icon={Mail}
           accent="purple"
         />
+        {(stats as any).reviews && (
+          <StatCard
+            title="Platform Reviews"
+            value={(stats as any).reviews.total}
+            subtitle={
+              (stats as any).reviews.averageRating
+                ? `⭐ ${(stats as any).reviews.averageRating.toFixed(1)} avg rating`
+                : "No ratings yet"
+            }
+            icon={Star}
+            accent="orange"
+          />
+        )}
       </div>
 
       {/* Weekly metrics */}

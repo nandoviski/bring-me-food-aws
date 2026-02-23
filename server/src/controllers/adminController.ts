@@ -31,6 +31,7 @@ export const getPlatformStats = async (
       revenueMonth,
       recentChefs,
       recentOrders,
+      reviewStats,
     ] = await Promise.all([
       prisma.user.count({ where: { deletedAt: null } }),
       prisma.chef.count({ where: { deletedAt: null } }),
@@ -72,6 +73,12 @@ export const getPlatformStats = async (
           chef: { select: { name: true, username: true } },
         },
       }),
+      // Review aggregate stats
+      prisma.review.aggregate({
+        _count: { id: true },
+        _avg: { rating: true },
+        where: { hidden: false },
+      }),
     ]);
 
     return res.json({
@@ -90,6 +97,12 @@ export const getPlatformStats = async (
           thisMonth: revenueMonth._sum.total ?? 0,
         },
         subscribers: { total: totalSubscribers },
+        reviews: {
+          total: reviewStats._count.id,
+          averageRating: reviewStats._avg.rating
+            ? Math.round(reviewStats._avg.rating * 10) / 10
+            : null,
+        },
       },
       recentChefs,
       recentOrders,
