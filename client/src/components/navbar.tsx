@@ -296,11 +296,10 @@ export function Navbar() {
                 How It Works
               </Link>
               {/* Cart — always visible in mobile menu */}
-              <ShoppingCartSheet>
+              <ShoppingCartSheet onOpen={() => setIsMenuOpen(false)}>
                 <Button
                   variant="ghost"
                   className={`w-full justify-start ${navLinkClass} hover:bg-white/10`}
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Cart

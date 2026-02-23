@@ -19,9 +19,10 @@ import { Separator } from "@/components/ui/separator";
 
 type Props = {
   children: ReactNode;
+  onOpen?: () => void;
 };
 
-export default function ShoppingCartSheet({ children }: Props) {
+export default function ShoppingCartSheet({ children, onOpen }: Props) {
   const router = useRouter();
   const {
     cartItems,
@@ -39,7 +40,7 @@ export default function ShoppingCartSheet({ children }: Props) {
   const total = subtotal + deliveryFee;
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={(open) => { if (open && onOpen) onOpen(); }}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="flex h-full w-full flex-col p-0 sm:max-w-sm" side="right">
         <SheetHeader className="border-b p-4">
