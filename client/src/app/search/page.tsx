@@ -4,6 +4,7 @@ import { Suspense, useState, useMemo } from "react";
 import { useGetAllChefsQuery } from "@/state/api";
 import Link from "next/link";
 import { MapPin, Search, UtensilsCrossed, Star } from "lucide-react";
+import { StarRating } from "@/features/review/components/star-rating";
 import { Input } from "@/components/ui/input";
 
 // ─── Cuisine category filters ─────────────────────────────────────────────────
@@ -40,6 +41,7 @@ function ChefCard({
     featured: boolean;
     available: boolean;
     _count: { meals: number; order: number };
+    reviewStats?: { averageRating: number | null; reviewCount: number };
   };
 }) {
   return (
@@ -103,6 +105,22 @@ function ChefCard({
                 {s.trim()}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Review stats */}
+        {chef.reviewStats && chef.reviewStats.reviewCount > 0 && (
+          <div className="mt-3 flex items-center gap-1.5">
+            <StarRating
+              rating={Math.round(chef.reviewStats.averageRating ?? 0)}
+              size="sm"
+            />
+            <span className="text-xs font-medium text-gray-700">
+              {chef.reviewStats.averageRating?.toFixed(1)}
+            </span>
+            <span className="text-xs text-gray-400">
+              ({chef.reviewStats.reviewCount})
+            </span>
           </div>
         )}
 

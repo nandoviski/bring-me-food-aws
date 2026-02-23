@@ -232,37 +232,62 @@ export const getAllChefs = async (req: Request, res: Response): Promise<void> =>
   try {
     const { search } = req.query;
 
-    const chefs = await prisma.chef.findMany({
-      where: {
-        deletedAt: null,
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search as string, mode: "insensitive" } },
-                { location: { contains: search as string, mode: "insensitive" } },
-                { specialties: { contains: search as string, mode: "insensitive" } },
-                { username: { contains: search as string, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        location: true,
-        bio: true,
-        specialties: true,
-        profileImage: true,
-        featured: true,
-        available: true,
-        _count: { select: { meals: true, order: true } },
-      },
-      // Featured + available first, then by popularity
-      orderBy: [{ featured: "desc" }, { available: "desc" }, { order: { _count: "desc" } }],
-    });
+    const [chefs, reviewAggregates] = await Promise.all([
+      prisma.chef.findMany({
+        where: {
+          deletedAt: null,
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search as string, mode: "insensitive" } },
+                  { location: { contains: search as string, mode: "insensitive" } },
+                  { specialties: { contains: search as string, mode: "insensitive" } },
+                  { username: { contains: search as string, mode: "insensitive" } },
+                ],
+              }
+            : {}),
+        },
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          location: true,
+          bio: true,
+          specialties: true,
+          profileImage: true,
+          featured: true,
+          available: true,
+          _count: { select: { meals: true, order: true } },
+        },
+        // Featured + available first, then by popularity
+        orderBy: [{ featured: "desc" }, { available: "desc" }, { order: { _count: "desc" } }],
+      }),
+      // Aggregate visible reviews per chef
+      prisma.review.groupBy({
+        by: ["chefId"],
+        where: { hidden: false },
+        _avg: { rating: true },
+        _count: { id: true },
+      }),
+    ]);
 
-    res.status(200).json({ chefs });
+    // Merge review stats into chef objects
+    const reviewMap = new Map(
+      reviewAggregates.map((r) => [
+        r.chefId,
+        {
+          averageRating: r._avg.rating ? Math.round(r._avg.rating * 10) / 10 : null,
+          reviewCount: r._count.id,
+        },
+      ]),
+    );
+
+    const chefsWithReviews = chefs.map((chef) => ({
+      ...chef,
+      reviewStats: reviewMap.get(chef.id) ?? { averageRating: null, reviewCount: 0 },
+    }));
+
+    res.status(200).json({ chefs: chefsWithReviews });
   } catch (error: any) {
     res.status(500).json({ message: `Error listing chefs: ${error.message}` });
   }

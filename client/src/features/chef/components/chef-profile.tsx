@@ -11,11 +11,16 @@ import { Calendar, Clock, ShoppingBag, Instagram, Facebook } from "lucide-react"
 import { format } from "date-fns";
 import { WeeklyMenu } from "@/features/chef/components/weekly-menu";
 import { SubscribeWidget } from "@/features/chef/components/subscribe-widget";
+import { ReviewsSection } from "@/features/review/components/reviews-section";
+import { StarRating } from "@/features/review/components/star-rating";
 import { useEffect } from "react";
 import Error from "@/components/error";
+import { useAuth } from "@/lib/auth";
+import { useGetChefReviewsQuery } from "@/state/api";
 
 export default function ChefProfile({ username }: { username: string }) {
   const isOwnProfile = false;
+  const { user } = useAuth();
 
   const { data: chef, isLoading: isLoadingChef } = useGetChefByUsernameQuery({
     username,
@@ -25,6 +30,13 @@ export default function ChefProfile({ username }: { username: string }) {
     trigger,
     { data: currentMenu, isLoading: isLoadingMenu, isError: isErrorMenu },
   ] = useLazyGetChefsWeeklyMenuQuery();
+
+  // Fetch review stats for hero display
+  const { data: reviewData } = useGetChefReviewsQuery(
+    { chefId: chef?.id ?? "", limit: 1 },
+    { skip: !chef?.id },
+  );
+  const reviewStats = reviewData?.stats;
 
   useEffect(() => {
     if (chef?.id) {
@@ -66,9 +78,22 @@ export default function ChefProfile({ username }: { username: string }) {
           <h1 className="mb-4 font-serif text-5xl font-medium tracking-tight md:text-6xl">
             {chef.name}
           </h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-300 leading-relaxed">
+          <p className="mx-auto mb-4 max-w-2xl text-lg text-gray-300 leading-relaxed">
             {chef.bio}
           </p>
+
+          {/* Review aggregate in hero */}
+          {reviewStats && reviewStats.reviewCount > 0 && (
+            <div className="mb-6 flex items-center justify-center gap-2">
+              <StarRating rating={Math.round(reviewStats.averageRating ?? 0)} size="sm" />
+              <span className="text-sm font-semibold text-white">
+                {reviewStats.averageRating?.toFixed(1)}
+              </span>
+              <span className="text-sm text-gray-400">
+                ({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? "s" : ""})
+              </span>
+            </div>
+          )}
           
           <div className="flex flex-wrap justify-center gap-6 text-sm tracking-wide uppercase text-gray-400">
              <div className="flex items-center gap-2">
@@ -189,6 +214,22 @@ export default function ChefProfile({ username }: { username: string }) {
         {chef && (
           <div className="mx-auto mt-16 max-w-md">
             <SubscribeWidget chefId={chef.id} chefName={chef.name} />
+          </div>
+        )}
+
+        {/* Reviews section */}
+        {chef && (
+          <div className="mx-auto mt-8 max-w-2xl">
+            <ReviewsSection
+              chefId={chef.id}
+              chefName={chef.name}
+              isLoggedIn={!!user}
+              customerName={
+                user?.customer
+                  ? user.customer.firstName
+                  : undefined
+              }
+            />
           </div>
         )}
       </div>

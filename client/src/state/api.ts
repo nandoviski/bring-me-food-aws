@@ -124,6 +124,8 @@ export const api = createApi({
     "PromoCodes",
     "AdminChefs",
     "AdminOrders",
+    "Reviews",
+    "AdminReviews",
   ],
   endpoints: (build) => ({
     // Meals
@@ -540,6 +542,74 @@ export const api = createApi({
       }),
       invalidatesTags: ["AdminChefs", "Chefs"],
     }),
+
+    // ── Reviews ──────────────────────────────────────────────────────────────
+
+    getChefReviews: build.query<
+      import("@/schema").ReviewsResponse,
+      { chefId: string; page?: number; limit?: number }
+    >({
+      query: ({ chefId, page = 1, limit = 10 }) =>
+        `reviews/${chefId}?page=${page}&limit=${limit}`,
+      providesTags: (_result, _err, { chefId }) => [{ type: "Reviews" as const, id: chefId }],
+    }),
+
+    createReview: build.mutation<
+      { review: import("@/schema").Review },
+      import("@/schema").CreateReviewType
+    >({
+      query: (body) => ({ url: "reviews", method: "POST", body }),
+      invalidatesTags: (_result, _err, { chefId }) => [{ type: "Reviews" as const, id: chefId }],
+    }),
+
+    canReview: build.query<
+      { canReview: boolean; reason?: string },
+      { chefId: string; orderId?: string }
+    >({
+      query: ({ chefId, orderId }) =>
+        orderId
+          ? `reviews/${chefId}/can-review?orderId=${orderId}`
+          : `reviews/${chefId}/can-review`,
+    }),
+
+    getMyReviews: build.query<
+      { reviews: import("@/schema").Review[]; pagination: { total: number; page: number; limit: number; totalPages: number }; stats: import("@/schema").ReviewStats },
+      { page?: number; limit?: number }
+    >({
+      query: ({ page = 1, limit = 20 } = {}) =>
+        `reviews/mine?page=${page}&limit=${limit}`,
+      providesTags: ["Reviews"],
+    }),
+
+    // Admin review management
+    getAdminReviews: build.query<
+      { reviews: (import("@/schema").Review & { chef: { id: string; name: string; username: string } })[]; pagination: { total: number; page: number; limit: number; totalPages: number } },
+      { page?: number; limit?: number; hidden?: boolean }
+    >({
+      query: ({ page = 1, limit = 20, hidden } = {}) => {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (hidden !== undefined) params.set("hidden", String(hidden));
+        return `admin/reviews?${params.toString()}`;
+      },
+      providesTags: ["AdminReviews"],
+    }),
+
+    toggleReviewVisibility: build.mutation<
+      { review: import("@/schema").Review },
+      { id: string; hidden: boolean }
+    >({
+      query: ({ id, hidden }) => ({
+        url: `admin/reviews/${id}/visibility`,
+        method: "PATCH",
+        body: { hidden },
+      }),
+      invalidatesTags: ["AdminReviews", "Reviews"],
+    }),
+
+    deleteReview: build.mutation<{ message: string }, string>({
+      query: (id) => ({ url: `admin/reviews/${id}`, method: "DELETE" }),
+      invalidatesTags: ["AdminReviews", "Reviews"],
+    }),
   }),
 });
 
@@ -588,6 +658,14 @@ export const {
   useToggleFeaturedChefMutation,
   useUpdateChefAvailabilityMutation,
   useGetAdminSubscribersQuery,
+  useGetChefReviewsQuery,
+  useCreateReviewMutation,
+  useCanReviewQuery,
+  useLazyCanReviewQuery,
+  useGetMyReviewsQuery,
+  useGetAdminReviewsQuery,
+  useToggleReviewVisibilityMutation,
+  useDeleteReviewMutation,
 } = api;
 
 /**
