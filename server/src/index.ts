@@ -47,7 +47,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: (origin, callback) => {
+      const allowed = (process.env.CORS_ORIGIN || "http://localhost:3000")
+        .split(",")
+        .map((o) => o.trim());
+      if (!origin || allowed.includes(origin) || origin.endsWith(".trycloudflare.com")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
